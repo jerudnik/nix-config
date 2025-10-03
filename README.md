@@ -53,6 +53,9 @@ A clean, simple Nix configuration for macOS using nix-darwin and Home Manager, w
 5. **Clean old generations:**
    ```bash
    ./scripts/build.sh clean
+   
+   # Or for comprehensive cleanup
+   ./scripts/cleanup.sh
    ```
 
 ## Manual Commands

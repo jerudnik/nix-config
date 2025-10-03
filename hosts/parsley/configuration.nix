@@ -34,9 +34,12 @@
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
       ];
+      
+      # Auto-optimize store to save disk space
+      auto-optimise-store = true;
     };
     
-    # Garbage collection
+    # Garbage collection - enhanced for better cleanup
     gc = {
       automatic = true;
       interval = { Weekday = 7; Hour = 3; Minute = 15; };  # Weekly on Sunday at 3:15 AM
