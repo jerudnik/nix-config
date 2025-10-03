@@ -1,6 +1,6 @@
 # John's Nix Configuration
 
-> **📚 Documentation:** See [`docs/`](docs/) for comprehensive guides
+> **📚 Documentation:** See [`docs/`](docs/) for daily-use guides • [`docs/deep-dive/`](docs/deep-dive/) for architectural details
 
 A clean, modular Nix configuration for macOS using nix-darwin and Home Manager. Built with reusable modules following the NixOS module pattern.
 
@@ -68,7 +68,6 @@ A clean, modular Nix configuration for macOS using nix-darwin and Home Manager. 
 
 - **Build:** `darwin-rebuild build --flake ~/nix-config`
 - **Switch:** `darwin-rebuild switch --flake ~/nix-config`
-- **Home Manager (standalone):** `home-manager switch --flake ~/nix-config#jrudnik@parsley`
 
 ## Architectural Evolution
 
@@ -162,4 +161,4 @@ home = {
 
 ### New User
 1. Create `home/new-user/home.nix`
-2. Add to `flake.nix` in `homeConfigurations`
+2. Add to system config's home-manager.users

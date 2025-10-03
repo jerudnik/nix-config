@@ -18,15 +18,6 @@
   outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, ... }:
     let
       system = "aarch64-darwin";
-      
-      # Create pkgs with our configuration
-      pkgs = import nixpkgs {
-        inherit system;
-        config = {
-          allowUnfree = true;
-        };
-      };
-
     in {
       # Custom packages and modifications, exported as overlays
       overlays = import ./overlays { inherit inputs; };
@@ -49,6 +40,9 @@
           inherit system;
           specialArgs = self._specialArgs;
           modules = [
+            # Configure nixpkgs
+            { nixpkgs.config.allowUnfree = true; }
+            
             # Import the host configuration
             ./hosts/parsley/configuration.nix
             
@@ -63,16 +57,6 @@
               };
             }
           ];
-        };
-      };
-
-      # Standalone home-manager configurations  
-      # Accessible via 'home-manager --flake .#jrudnik@parsley'
-      homeConfigurations = {
-        "jrudnik@parsley" = home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          extraSpecialArgs = self._specialArgs;
-          modules = [ ./home/jrudnik/home.nix ];
         };
       };
     };

@@ -78,7 +78,7 @@ in {
     # Essential environment variables
     home.sessionVariables = {
       EDITOR = cfg.editor;
-      # SHELL is managed by nix-darwin system configuration
+      # Note: SHELL is automatically managed by the system, do not override
     };
   };
 }

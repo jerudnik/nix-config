@@ -41,8 +41,8 @@ in {
     };
     
     configPath = mkOption {
-      type = types.str;
-      default = "~/nix-config";
+      type = types.str;  # Use str since we need to interpolate in shell aliases
+      default = "$HOME/nix-config";
       description = "Path to nix configuration for shortcuts";
     };
     

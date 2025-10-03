@@ -22,6 +22,12 @@ in {
   };
 
   config = mkIf cfg.enable {
+    # Validate required configuration
+    assertions = [{
+      assertion = cfg.primaryUser != "";
+      message = "darwin.security.primaryUser must be set when security module is enabled";
+    }];
+    
     # Enable Touch ID for sudo
     security.pam.services.sudo_local.touchIdAuth = mkIf cfg.touchIdForSudo true;
     
