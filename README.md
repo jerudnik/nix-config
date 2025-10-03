@@ -1,6 +1,10 @@
 # John's Nix Configuration
 
+> **📚 Documentation:** See [`docs/`](docs/) for comprehensive guides
+
 A clean, simple Nix configuration for macOS using nix-darwin and Home Manager, without external frameworks or abstractions.
+
+**Migration Note:** This configuration was migrated from a previous Nilla-based setup to eliminate framework dependencies and improve maintainability.
 
 ## Structure
 
