@@ -27,8 +27,8 @@
         "..." = "cd ../..";
         
         # Nix shortcuts
-        nrs = "darwin-rebuild switch --flake ~/nix-config";
-        nrb = "darwin-rebuild build --flake ~/nix-config";
+        nrs = "sudo darwin-rebuild switch --flake ~/nix-config#parsley";
+        nrb = "darwin-rebuild build --flake ~/nix-config#parsley";
         nfu = "nix flake update";
         nfc = "nix flake check";
         ngc = "nix-collect-garbage -d && sudo nix-collect-garbage -d";

@@ -26,7 +26,7 @@ echo
 case "$ACTION" in
     "switch")
         echo -e "${YELLOW}Building and switching to new configuration...${NC}"
-        darwin-rebuild switch --flake "$CONFIG_DIR#parsley"
+        sudo darwin-rebuild switch --flake "$CONFIG_DIR#parsley"
         ;;
     "build")
         echo -e "${YELLOW}Building configuration (no switch)...${NC}"
