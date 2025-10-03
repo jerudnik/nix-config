@@ -89,7 +89,7 @@
   # Essential environment variables
   home.sessionVariables = {
     EDITOR = "micro";
-    SHELL = "${pkgs.zsh}/bin/zsh"; 
+    # SHELL is managed by nix-darwin system configuration
   };
 
   # XDG directories
