@@ -17,7 +17,6 @@
 
   outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, ... }:
     let
-      inherit (self) outputs;
       system = "aarch64-darwin";
       
       # Create pkgs with our configuration
@@ -28,11 +27,6 @@
         };
       };
 
-      # Create specialArgs that all modules can access
-      specialArgs = {
-        inherit inputs outputs;
-      };
-
     in {
       # Custom packages and modifications, exported as overlays
       overlays = import ./overlays { inherit inputs; };
@@ -41,12 +35,19 @@
       nixosModules = import ./modules/nixos;
       darwinModules = import ./modules/darwin;
       homeManagerModules = import ./modules/home;
+      
+      # Create specialArgs that all modules can access
+      _specialArgs = {
+        inherit inputs;
+        outputs = self.outputs;
+      };
 
       # nix-darwin configurations
       # Accessible via 'darwin-rebuild --flake .#parsley'
       darwinConfigurations = {
         parsley = nix-darwin.lib.darwinSystem {
-          inherit system specialArgs;
+          inherit system;
+          specialArgs = self._specialArgs;
           modules = [
             # Import the host configuration
             ./hosts/parsley/configuration.nix
@@ -57,7 +58,7 @@
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                extraSpecialArgs = specialArgs;
+                extraSpecialArgs = self._specialArgs;
                 users.jrudnik = import ./home/jrudnik/home.nix;
               };
             }
@@ -70,7 +71,7 @@
       homeConfigurations = {
         "jrudnik@parsley" = home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
-          extraSpecialArgs = specialArgs;
+          extraSpecialArgs = self._specialArgs;
           modules = [ ./home/jrudnik/home.nix ];
         };
       };

@@ -1,8 +1,7 @@
 # Darwin (macOS) system modules
 {
-  # Import Darwin modules here
-  # homebrew = import ./homebrew;
-  # nix-core = import ./nix-core;  
-  # security = import ./security;
-  # users = import ./users;
+  core = import ./core/default.nix;
+  security = import ./security/default.nix;
+  nix-settings = import ./nix-settings/default.nix;
+  system-defaults = import ./system-defaults/default.nix;
 }

@@ -1,7 +1,6 @@
 # Home-manager modules
 {
-  # Import home-manager modules here  
-  # development = import ./development;
-  # shell = import ./shell;
-  # git = import ./git;
+  shell = import ./shell/default.nix;
+  development = import ./development/default.nix;
+  git = import ./git/default.nix;
 }
