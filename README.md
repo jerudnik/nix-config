@@ -2,9 +2,9 @@
 
 > **📚 Documentation:** See [`docs/`](docs/) for comprehensive guides
 
-A clean, simple Nix configuration for macOS using nix-darwin and Home Manager, without external frameworks or abstractions.
+A clean, modular Nix configuration for macOS using nix-darwin and Home Manager. Built with reusable modules following the NixOS module pattern.
 
-**Migration Note:** This configuration was migrated from a previous Nilla-based setup to eliminate framework dependencies and improve maintainability.
+**Migration Note:** Evolved from a framework-dependent setup to a pure, modular architecture that's maintainable and scalable.
 
 ## Structure
 
@@ -13,19 +13,25 @@ A clean, simple Nix configuration for macOS using nix-darwin and Home Manager, w
 ├── flake.nix                 # Main flake configuration
 ├── home/
 │   └── jrudnik/
-│       └── home.nix          # Home-manager config for user jrudnik
+│       └── home.nix          # Clean 51-line user config using modules
 ├── hosts/
 │   └── parsley/
-│       └── configuration.nix # Darwin system config for host parsley
-├── lib/                      # Shared library functions
+│       └── configuration.nix # Clean 38-line system config using modules
 ├── modules/
 │   ├── darwin/              # Reusable Darwin system modules
+│   │   ├── core/            # Essential packages & shell
+│   │   ├── security/        # Touch ID & user management
+│   │   ├── nix-settings/    # Nix daemon & optimization
+│   │   └── system-defaults/ # macOS system preferences
 │   ├── home/                # Reusable home-manager modules
-│   └── nixos/               # Reusable NixOS system modules (future)
-├── overlays/                # Custom package overlays
-├── scripts/                 # Helper scripts
-│   └── build.sh            # Build/switch/check script
-└── secrets/                 # Encrypted secrets (age/gpg)
+│   │   ├── shell/           # Zsh with oh-my-zsh & aliases
+│   │   ├── development/     # Dev tools & languages
+│   │   └── git/             # Git configuration
+│   └── nixos/               # NixOS modules (future)
+├── scripts/
+│   ├── build.sh            # Build/switch/check script
+│   └── cleanup.sh          # System cleanup script
+└── docs/                    # Comprehensive documentation
 ```
 
 ## Quick Start
@@ -64,30 +70,79 @@ A clean, simple Nix configuration for macOS using nix-darwin and Home Manager, w
 - **Switch:** `darwin-rebuild switch --flake ~/nix-config`
 - **Home Manager (standalone):** `home-manager switch --flake ~/nix-config#jrudnik@parsley`
 
-## Migration from dot-nilla
+## Architectural Evolution
 
-This configuration is migrated from a previous Nilla-based setup to be simpler and more maintainable:
+This configuration evolved from framework-dependent to advanced modular architecture:
 
-- ✅ Direct nix-darwin and home-manager usage
-- ✅ No external framework dependencies
-- ✅ Clean, understandable structure
-- ✅ Standard Nix community patterns
-- ✅ Easier debugging and maintenance
+- ✅ **Modular Design**: 7 reusable modules with rich options
+- ✅ **Massive Simplification**: 100+ line configs → 38-51 lines
+- ✅ **Type Safety**: Options with validation and documentation
+- ✅ **NixOS Module Pattern**: Advanced community standards
+- ✅ **Easy Scaling**: Zero duplication when adding hosts/users
+- ✅ **Framework-Free**: Pure nix-darwin + home-manager
 
 ## Features
 
+### Modular Architecture
+- **7 reusable modules** with rich configuration options
+- **NixOS module pattern** with options/config structure
+- **Type-safe configuration** with validation and documentation
+- **38-line system config** (reduced from 100+ lines)
+- **51-line home config** (reduced from 100+ lines)
+- **Easy to extend** - add hosts/users without duplication
+
 ### System (nix-darwin)
-- Touch ID for sudo
-- Sensible macOS defaults (Dock, Finder, etc.)
-- Nix binary cache configuration
-- Automatic garbage collection
+- Touch ID for sudo authentication
+- Sensible macOS defaults (Dock, Finder, Global)
+- Nix daemon optimization and binary caches
+- Automatic garbage collection and store optimization
 
 ### Home Manager
-- Zsh with oh-my-zsh
-- Git configuration
-- Direnv integration
-- Essential development tools (Rust, Go, Python)
-- Micro text editor
+- Zsh with oh-my-zsh and intelligent aliases
+- Git configuration with sensible defaults
+- Development environment (Rust, Go, Python)
+- Micro text editor and essential utilities
+
+## Modular Configuration Examples
+
+### System Configuration (38 lines)
+```nix
+# hosts/parsley/configuration.nix
+darwin = {
+  core.enable = true;
+  
+  security = {
+    enable = true;
+    primaryUser = "jrudnik";
+  };
+  
+  nix-settings.enable = true;
+  system-defaults.enable = true;
+};
+```
+
+### Home Configuration (51 lines)
+```nix
+# home/jrudnik/home.nix
+home = {
+  shell = {
+    enable = true;
+    aliases.deploy = "cd ~/projects && ./deploy.sh";
+  };
+  
+  development = {
+    enable = true;
+    languages = { rust = true; go = true; python = true; };
+    editor = "micro";
+  };
+  
+  git = {
+    enable = true;
+    userName = "jrudnik";
+    userEmail = "john.rudnik@gmail.com";
+  };
+};
+```
 
 ## Adding Configuration
 

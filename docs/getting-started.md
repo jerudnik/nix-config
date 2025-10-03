@@ -4,7 +4,8 @@ This guide will help you get up and running with this clean Nix configuration sy
 
 > **📚 Essential Reading:**
 > - **[`workflow.md`](workflow.md)** - Complete workflow reference ⚡
-> - **[`architecture.md`](architecture.md)** - Architecture concepts
+> - **[`modular-architecture.md`](modular-architecture.md)** - Advanced modular design 🏗️
+> - **[`architecture.md`](architecture.md)** - System architecture overview
 > - **[`quick-reference.md`](quick-reference.md)** - Quick commands and patterns
 
 ## Prerequisites
