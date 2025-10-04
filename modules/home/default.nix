@@ -6,4 +6,5 @@
   cli-tools = import ./cli-tools/default.nix;
   spotlight = import ./spotlight/default.nix;
   window-manager = import ./window-manager/default.nix;
+  launcher = import ./launcher/default.nix;
 }

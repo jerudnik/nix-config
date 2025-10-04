@@ -8,6 +8,7 @@
     outputs.homeManagerModules.cli-tools
     outputs.homeManagerModules.spotlight
     outputs.homeManagerModules.window-manager
+    outputs.homeManagerModules.launcher
   ];
 
   # Home Manager configuration
@@ -79,6 +80,15 @@
       # - Alt-based keybindings
       # - Clean window gaps and layout
       # - Warp terminal integration (Alt+Enter)
+    };
+    
+    launcher = {
+      enable = true;
+      raycast = {
+        enable = true;
+        # Raycast will replace macOS Spotlight as your application launcher
+        # It has excellent integration with nix-darwin apps
+      };
     };
     
   };
