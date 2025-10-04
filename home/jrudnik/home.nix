@@ -8,8 +8,6 @@
     outputs.homeManagerModules.cli-tools
     outputs.homeManagerModules.spotlight
     outputs.homeManagerModules.window-manager
-    # Enhanced SketchyBar with Lua configuration
-    (import ./sketchybar.nix { inherit pkgs; })
   ];
 
   # Home Manager configuration

@@ -29,27 +29,18 @@ in {
       description = "Install common system fonts (Charter, etc.)";
     };
     
-    # Nerd Fonts for SketchyBar and terminal icons
+    # Nerd Fonts for terminal icons
     nerdFonts = {
       enable = mkOption {
         type = types.bool;
         default = true;
-        description = "Install Nerd Fonts for SketchyBar icons and terminal symbols";
+        description = "Install Nerd Fonts for terminal symbols";
       };
       
       fonts = mkOption {
         type = types.listOf types.str;
         default = [ "FiraCode" "JetBrainsMono" "Hack" "SourceCodePro" ];
         description = "List of Nerd Fonts to install";
-      };
-    };
-    
-    # SketchyBar specific fonts
-    sketchyBar = {
-      enable = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Install SketchyBar app font for status bar icons";
       };
     };
   };
@@ -71,17 +62,12 @@ in {
           texlivePackages.charter  # Serif font
         ]
         
-        # Nerd Fonts for SketchyBar icons and terminal
+        # Nerd Fonts for terminal
         ++ optionals cfg.nerdFonts.enable [
           nerd-fonts.fira-code
           nerd-fonts.jetbrains-mono
           nerd-fonts.hack
           nerd-fonts.sauce-code-pro
-        ]
-        
-        # SketchyBar app font for status bar icons
-        ++ optionals cfg.sketchyBar.enable [
-          sketchybar-app-font
         ];
     };
     

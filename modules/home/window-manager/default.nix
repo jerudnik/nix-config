@@ -61,19 +61,6 @@ in {
       # Mouse follows focus when focused monitor changes
       on-focus-changed = ['move-mouse monitor-lazy-center']
       
-      # Notify SketchyBar when workspace changes (for workspace indicators)
-      exec-on-workspace-change = [
-        '/bin/bash',
-        '-c',
-        'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE PREV_WORKSPACE=$AEROSPACE_PREV_WORKSPACE && sketchybar --trigger space_windows_change'
-      ]
-      
-      # Notify SketchyBar when focus changes
-      on-focus-changed = [
-        'move-mouse monitor-lazy-center',
-        'exec-and-forget sketchybar --trigger space_windows_change'
-      ]
-      
       # Key mapping preset
       [key-mapping]
       preset = 'qwerty'
@@ -84,7 +71,7 @@ in {
       inner.vertical = 8
       outer.left = 8
       outer.bottom = 8
-      outer.top = 40  # 32px SketchyBar height + 8px margin
+      outer.top = 8   # Standard margin
       outer.right = 8
       
       # Main mode bindings

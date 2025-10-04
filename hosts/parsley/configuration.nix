@@ -11,7 +11,6 @@
     outputs.darwinModules.window-manager
     outputs.darwinModules.theming
     outputs.darwinModules.fonts
-    # outputs.darwinModules.sketchybar  # Removed - using nix-darwin service
   ];
 
   # Host identification
@@ -38,9 +37,7 @@
     
     system-defaults = {
       enable = true;
-      # Hide macOS menu bar since we're using SketchyBar
-      globalDomain.hideMenuBar = true;
-      # All other settings use module defaults, can override here if needed
+      # All settings use module defaults, can override here if needed
     };
     
     keyboard = {
@@ -80,6 +77,5 @@
       # Charter serif font enabled by default
     };
     
-    # SketchyBar is now managed by home-manager with enhanced Lua configuration
   };
 }
