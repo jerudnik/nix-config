@@ -50,8 +50,8 @@
       emacs = true;    # Emacs with automatic Stylix theming enabled!
       neovim = false;  # Alternative: Neovim with automatic theming
       
-      # Add GitHub CLI for repository management
-      extraPackages = with pkgs; [ gh ];
+      # Enable GitHub CLI with shell completion
+      github.enable = true;
     };
     
     git = {
@@ -59,7 +59,11 @@
       userName = "jrudnik";
       userEmail = "john.rudnik@gmail.com";
       
-      # Productive git aliases for faster workflow
+      # Git aliases: Choose one approach:
+      # Option 1: Use comprehensive built-in aliases (38 curated shortcuts)
+      # aliases = {};  # Empty = use built-in productivity aliases
+      
+      # Option 2: Custom aliases (overrides all built-in aliases)
       aliases = {
         # Essential shortcuts
         st = "status";
@@ -82,6 +86,7 @@
         please = "push --force-with-lease";
         commend = "commit --amend --no-edit";
       };
+      # To see all built-in aliases, check: docs/module-options.md
     };
     
     cli-tools = {

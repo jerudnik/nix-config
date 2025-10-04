@@ -45,6 +45,10 @@ in {
         description = "Additional utility packages";
       };
     };
+    
+    github = {
+      enable = mkEnableOption "GitHub CLI (gh) with shell completion";
+    };
   };
 
   config = mkIf cfg.enable {
@@ -79,12 +83,26 @@ in {
     # Note: Emacs is handled by programs.emacs, not direct package installation
     ++ optionals cfg.neovim [ neovim ]
     
+    # GitHub CLI
+    ++ optionals cfg.github.enable [ gh ]
+    
     # Extra packages
     ++ cfg.extraPackages
     ++ cfg.utilities.extraUtils;
     
-    # Configure editors with theming support where applicable
+    # Configure programs
     programs = mkMerge [
+      # GitHub CLI with shell completion
+      (mkIf cfg.github.enable {
+        gh = {
+          enable = true;
+          settings = {
+            git_protocol = "https";
+            editor = cfg.editor;
+          };
+        };
+      })
+      
       # Emacs with Stylix theming (Stylix has excellent Emacs support)
       (mkIf cfg.emacs {
         emacs = {
