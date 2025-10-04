@@ -30,7 +30,7 @@ in {
     
     terminals = {
       alacritty = mkEnableOption "GPU-accelerated terminal (alacritty)" // { default = true; };
-      warp = mkEnableOption "Warp terminal (managed via Homebrew cask)" // { default = false; }; # Managed in homebrew config, not Nix
+      warp = mkEnableOption "Warp terminal (installed via darwin.core module)" // { default = false; }; # Installed system-wide via nixpkgs
     };
     
     # Shell integration control
@@ -82,7 +82,7 @@ in {
       ++ optional cfg.gitTools.delta delta
       ++ optional cfg.gitTools.lazygit lazygit
       ++ optional cfg.gitTools.gitui gitui
-      # warp-terminal is managed via Homebrew cask, not Nix package
+      # warp-terminal is installed system-wide via darwin.core module
       ;
     
     # Configure individual tools
