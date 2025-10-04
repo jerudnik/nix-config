@@ -36,12 +36,12 @@ in {
         package = mkOption {
           type = types.nullOr types.package;
           default = null;
-          description = "Monospace font package";
+          description = "Monospace font package (iM-Writing Nerd Font provides iA Writer aesthetic with icons)";
         };
         
         name = mkOption {
           type = types.str;
-          default = "iA Writer Mono V";
+          default = "iMWritingMonoNerdFont";
           description = "Monospace font name";
         };
       };
@@ -50,12 +50,12 @@ in {
         package = mkOption {
           type = types.nullOr types.package;
           default = null;
-          description = "Sans-serif font package";
+          description = "Sans-serif font package (iM-Writing Quat provides proportional iA Writer aesthetic)";
         };
         
         name = mkOption {
           type = types.str;
-          default = "iA Writer Quattro V";
+          default = "iMWritingQuatNerdFont";
           description = "Sans-serif font name";
         };
       };
@@ -115,11 +115,11 @@ in {
       # Font configuration
       fonts = {
         monospace = {
-          package = pkgs.ia-writer-mono;
+          package = pkgs.nerd-fonts.im-writing;
           name = cfg.fonts.monospace.name;
         };
         sansSerif = {
-          package = pkgs.ia-writer-quattro;
+          package = pkgs.nerd-fonts.im-writing;
           name = cfg.fonts.sansSerif.name;
         };
         serif = {
