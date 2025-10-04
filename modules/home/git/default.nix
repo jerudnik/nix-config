@@ -21,15 +21,18 @@ in {
     };
     
     defaultBranch = mkOption {
-      type = types.str;
+      type = types.enum [ "main" "master" "develop" ];
       default = "main";
       description = "Default branch name for new repositories";
     };
     
     editor = mkOption {
-      type = types.str;
+      type = types.enum [ 
+        "micro" "nano" "vim" "nvim" "emacs" 
+        "code" "subl" "atom" "gedit" "kate"
+      ];
       default = "micro";
-      description = "Default Git editor";
+      description = "Default Git editor from common editors";
     };
     
     extraConfig = mkOption {

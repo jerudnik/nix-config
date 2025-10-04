@@ -6,6 +6,7 @@ This guide will help you get up and running with this clean Nix configuration sy
 > - **[`workflow.md`](workflow.md)** - Complete workflow reference ⚡
 > - **[`modular-architecture.md`](modular-architecture.md)** - Advanced modular design 🏗️
 > - **[`architecture.md`](architecture.md)** - System architecture overview
+> - **[`exceptions.md`](exceptions.md)** - Exception handling framework 🛡️
 > - **[`quick-reference.md`](quick-reference.md)** - Quick commands and patterns
 
 ## Prerequisites

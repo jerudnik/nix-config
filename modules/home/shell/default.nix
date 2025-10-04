@@ -53,9 +53,34 @@ in {
     
     ohMyZsh = {
       theme = mkOption {
-        type = types.str;
+        type = types.enum [ 
+          "robbyrussell" "agnoster" "powerlevel10k" "spaceship"
+          "pure" "minimal" "refined" "gallois" "bira" "clean"
+          "daveverwer" "dieter" "dogenpunk" "dpoggi" "dst"
+          "duellj" "eastwood" "essembeh" "evan" "fishy"
+          "flazz" "fox" "frisk" "fwalch" "gallifrey"
+          "garyblessington" "gentoo" "geoffgarside" "gianu"
+          "gnzh" "gozilla" "half-life" "humza" "imajes"
+          "intheloop" "itchy" "jaischeema" "jbergantine"
+          "jispwoso" "jnrowe" "jonathan" "josh" "jreese"
+          "jtriley" "juanghurtado" "junkfood" "kafeitu"
+          "kardan" "kennethreitz" "kiwi" "kolo" "kphoen"
+          "lambda" "linuxonly" "lukerandall" "macovsky"
+          "maran" "mh" "michelebologna" "miloshadzic"
+          "mortalscumbag" "mrtazz" "murilasso" "muse"
+          "nanotech" "nebirhos" "nicoulaj" "norm"
+          "obraun" "peepcode" "philips" "pmcgee"
+          "re5et" "rgm" "risto" "rkj" "rkj-repos"
+          "sammy" "simple" "simonoff" "sonicradish"
+          "sorin" "sporty_256" "steeef" "strug"
+          "sunaku" "sunrise" "superjarin" "suvash"
+          "takashiyoshida" "terminalparty" "theunraveler"
+          "tjkirch" "tonotdo" "trapd00r" "wedisagree"
+          "wezm" "wezm+" "xiong-chiamiov" "xiong-chiamiov-plus"
+          "ys" "zhann" 
+        ];
         default = "robbyrussell";
-        description = "Oh My Zsh theme to use";
+        description = "Oh My Zsh theme to use from available themes";
       };
       
       plugins = mkOption {

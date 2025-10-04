@@ -109,14 +109,8 @@ in {
         );
     };
     
-    # Ensure fonts are available system-wide
-    # This makes them available to all applications, including Alacritty
-    system.activationScripts.fonts = {
-      text = ''
-        echo "Activating system fonts..."
-        # The fonts.packages configuration automatically handles system font installation
-      '';
-    };
+    # Fonts are automatically installed system-wide through fonts.packages
+    # No activation scripts needed - nix-darwin handles this declaratively
     
     # System font preferences
     system.defaults.NSGlobalDomain = mkMerge [

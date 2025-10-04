@@ -1,0 +1,10 @@
+flake.nix:18:    nix-homebrew = {
+flake.nix:19:      url = "github:zhaofengli/nix-homebrew";
+flake.nix:39:  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, nix-homebrew, homebrew-core, homebrew-cask, stylix, ... }:
+flake.nix:85:            nix-homebrew.darwinModules.nix-homebrew
+flake.nix:87:              nix-homebrew = {
+flake.nix:108:            # Align homebrew taps config with nix-homebrew
+flake.nix:110:              homebrew.taps = builtins.attrNames config.nix-homebrew.taps;
+modules/darwin/homebrew/default.nix:9:    enable = mkEnableOption "Homebrew package management via nix-homebrew";
+modules/darwin/homebrew/default.nix:57:    # Configure homebrew packages (nix-homebrew handles installation)
+flake.nix:104:                mutableTaps = false;

@@ -9,10 +9,26 @@ in {
     enable = mkEnableOption "System-wide theming with Stylix";
     
     colorScheme = mkOption {
-      type = types.str;
+      type = types.enum [
+        # Gruvbox variants
+        "gruvbox-material-dark-medium" "gruvbox-material-light-medium"
+        "gruvbox-dark-hard" "gruvbox-dark-medium" "gruvbox-dark-soft"
+        "gruvbox-light-hard" "gruvbox-light-medium" "gruvbox-light-soft"
+        # Catppuccin variants  
+        "catppuccin-latte" "catppuccin-frappe" "catppuccin-macchiato" "catppuccin-mocha"
+        # Tokyo Night variants
+        "tokyo-night" "tokyo-night-dark" "tokyo-night-light" "tokyo-night-storm"
+        # Nord and similar cool themes
+        "nord" "one-dark" "dracula" "solarized-dark" "solarized-light"
+        # Popular modern themes
+        "rose-pine" "rose-pine-dawn" "rose-pine-moon"
+        "kanagawa" "everforest" "github" "github-dark"
+        # Monochrome options
+        "black-metal" "white" "grayscale-dark" "grayscale-light"
+      ];
       default = "gruvbox-material-dark-medium";
-      description = "Base16 color scheme to use";
-      example = "gruvbox-material-light-medium";
+      description = "Base16 color scheme to use from popular themes";
+      example = "catppuccin-mocha";
     };
     
     wallpaper = mkOption {

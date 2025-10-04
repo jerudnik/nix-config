@@ -553,6 +553,70 @@ home.git = {
 
 ---
 
+### `home.raycast`
+
+Raycast launcher configuration.
+
+```nix
+home.raycast = {
+  enable = true;                    # Enable Raycast launcher
+  package = pkgs.raycast;           # Raycast package
+  followSystemAppearance = true;    # Follow system theme
+  globalHotkey = {
+    keyCode = 49;                   # Key code (49 = Space)
+    modifierFlags = 1048576;        # Modifier (1048576 = Cmd)
+  };
+  extraDefaults = {};              # Additional preferences
+};
+```
+
+**Options:**
+- `enable` (bool, default: `false`) - Enable Raycast launcher installed and configured declaratively
+- `package` (package, default: `pkgs.raycast`) - Raycast application package from nixpkgs (unfree)
+- `followSystemAppearance` (bool, default: `true`) - Follow system appearance for light/dark mode
+- `globalHotkey` (nullOr submodule, default: `{ keyCode = 49; modifierFlags = 1048576; }`) - Global hotkey configuration
+  - `keyCode` (int) - Key code for the global hotkey (49 = space, 36 = return)
+  - `modifierFlags` (int) - Modifier flags (1048576 = Cmd, 524288 = Option, 262144 = Ctrl, 131072 = Shift)
+- `extraDefaults` (attrsOf (oneOf [ bool int float str ]), default: `{}`) - Additional com.raycast.macos defaults
+
+**Provides:**
+- Raycast application installed via nixpkgs (requires unfree packages allowed)
+- Declarative preference configuration via macOS defaults
+- Automatic Spotlight shortcut disabling (Cmd+Space, Cmd+Option+Space)
+- Global hotkey configuration for Raycast activation
+
+**Platform Requirements:**
+- macOS only (includes Darwin platform assertion)
+- Unfree packages must be allowed via `allowUnfreePredicate`
+
+**Configuration Keys:**
+- Maps `followSystemAppearance` → `com.raycast.macos.raycastShouldFollowSystemAppearance`
+- Maps `globalHotkey` → `com.raycast.macos.raycastGlobalHotkey`
+- Enables hotkey monitoring and skips onboarding dialogs
+
+**Example:**
+```nix
+home.raycast = {
+  enable = true;
+  followSystemAppearance = true;
+  globalHotkey = {
+    keyCode = 49;           # Space key
+    modifierFlags = 1048576; # Command modifier
+  };
+  extraDefaults = {
+    "onboarding_setupHotkey" = true;
+  };
+};
+```
+
+**Limitations:**
+- Only simple hotkey combinations supported via typed interface
+- Extension management not supported
+- Complex nested preferences require `extraDefaults`
+- Settings apply on next Raycast launch, not immediately
+
+---
+
 ## Configuration Examples
 
 ### Minimal Configuration

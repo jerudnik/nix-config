@@ -1,0 +1,13 @@
+modules/home/raycast/default.nix:65:    home.packages = [ cfg.package ];
+home/jrudnik/home.nix:25:  # home.packages = with pkgs; [ ];
+modules/home/raycast/README.md:114:- Verify `home.packages` includes the Raycast package
+docs/getting-started.md:111:home.packages = with pkgs; [
+docs/workflow.md:92:home.packages = with pkgs; [
+modules/home/development/default.nix:51:    home.packages = with pkgs; [
+modules/home/cli-tools/default.nix:72:    # configuration below, so they don't need to be in home.packages
+modules/home/cli-tools/default.nix:73:    home.packages = with pkgs; []
+modules/home/window-manager/default.nix:40:    home.packages = [ pkgs.aerospace ];
+modules/home/spotlight/default.nix:42:        paths = config.home.packages;
+docs/architecture.md:127:  home.packages = with pkgs; [ ... ];
+docs/architecture.md:230:home.packages = with pkgs; [
+docs/quick-reference.md:99:home.packages = with pkgs; [

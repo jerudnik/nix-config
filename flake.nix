@@ -64,7 +64,10 @@
             # Configure nixpkgs - allow only specific unfree packages
             ({ lib, ... }: {
               nixpkgs.config.allowUnfreePredicate = pkg:
-                lib.elem (lib.getName pkg) [ "raycast" ];
+                lib.elem (lib.getName pkg) [ 
+                  "raycast" 
+                  "warp-terminal"
+                ];
             })
             
             # Import the host configuration

@@ -1,0 +1,5 @@
+modules/home/spotlight/default.nix:14:      description = "Folder name in ~/Applications for home-manager apps";
+modules/home/spotlight/default.nix:20:      description = "Folder name in ~/Applications for system-level nix-darwin apps";
+modules/home/spotlight/default.nix:43:        pathsToLink = "/Applications";
+modules/home/spotlight/default.nix:45:    in mkIf pkgs.stdenv.targetPlatform.isDarwin "${apps}/Applications";
+modules/home/spotlight/default.nix:49:      source = config.lib.file.mkOutOfStoreSymlink "/run/current-system/Applications";

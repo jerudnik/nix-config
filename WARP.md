@@ -101,22 +101,52 @@
 
 ---
 
-## LAW 5: FILE SYSTEM AND DIRECTORY RULES
+## LAW 5: SOURCE INTEGRITY - NIXPKGS-FIRST INSTALLATION
 
-**RULE 5.1: Repository Boundary Enforcement**
+**RULE 5.1: Nixpkgs Priority Mandate**
+- ❌ **NEVER** use Homebrew for applications available in nixpkgs
+- ❌ **NEVER** use external package managers when Nix equivalents exist
+- ❌ **NEVER** mix installation sources for the same application category
+- ✅ **ALWAYS** check nixpkgs availability first before considering alternatives
+- ✅ **ALWAYS** prefer nixpkgs for maximum reproducibility and hermetic builds
+- ✅ **ALWAYS** document exceptions with clear technical justification
+
+**RULE 5.2: Exception Documentation Requirements**
+- ❌ **NEVER** use non-nixpkgs sources without documented justification
+- ❌ **NEVER** assume an application "doesn't work" in nixpkgs without testing
+- ✅ **ALWAYS** document why nixpkgs installation failed or is unsuitable
+- ✅ **ALWAYS** include specific error messages or technical limitations
+- ✅ **ALWAYS** revisit exceptions periodically as nixpkgs evolves
+
+**RULE 5.3: Reproducibility Justification**
+- ❌ **NEVER** sacrifice reproducibility for convenience
+- ❌ **NEVER** use "it's easier" as justification for non-nixpkgs sources
+- ✅ **ALWAYS** prioritize hermetic builds over installation simplicity
+- ✅ **ALWAYS** ensure configurations work from clean state
+- ✅ **PRINCIPLE**: Single source of truth enables reproducible deployments
+
+**Current Documented Exceptions:**
+- **Warp Terminal**: nixpkgs installation failed due to [specific technical issues - requires documentation]
+- Future exceptions require similar detailed justification
+
+---
+
+## LAW 6: FILE SYSTEM AND DIRECTORY RULES
+
+**RULE 6.1: Repository Boundary Enforcement**
 - ❌ **NEVER** modify files outside `/Users/jrudnik/nix-config/`
 - ❌ **NEVER** create symlinks or files in user home directory manually
 - ❌ **NEVER** touch system directories outside nix-darwin mechanisms
 - ✅ **ONLY** work within the nix-config repository boundaries
 - ✅ **ONLY** let nix-darwin and home-manager manage external files
 
-**RULE 5.2: Documentation Synchronization**
+**RULE 6.2: Documentation Synchronization**
 - ❌ **NEVER** write documentation for non-existent code
 - ❌ **NEVER** leave outdated documentation after changes
 - ✅ **ALWAYS** update documentation when making changes
 - ✅ **ALWAYS** ensure code and documentation stay in sync
 
-**RULE 5.3: Module Organization Standards**
+**RULE 6.3: Module Organization Standards**
 ```
 ✅ CORRECT MODULE STRUCTURE:
 modules/
@@ -129,9 +159,9 @@ modules/
 
 ---
 
-## LAW 6: WORKFLOW AND PROCESS ADHERENCE
+## LAW 7: WORKFLOW AND PROCESS ADHERENCE
 
-**RULE 6.1: Mandatory Documentation Reading**
+**RULE 7.1: Mandatory Documentation Reading**
 - ❌ **NEVER** make changes without reading documentation first
 - ✅ **ALWAYS** review these files before making changes:
   - `docs/architecture.md` - System architecture and design philosophy
@@ -140,14 +170,14 @@ modules/
   - `docs/module-options.md` - Available module options reference
   - `docs/getting-started.md` - Setup and configuration guide
 
-**RULE 6.2: Git and Version Control Standards**
+**RULE 7.2: Git and Version Control Standards**
 - ❌ **NEVER** commit broken configurations
 - ❌ **NEVER** push without testing changes locally
 - ✅ **ALWAYS** test with `./scripts/build.sh build` before committing
 - ✅ **ALWAYS** use descriptive commit messages following conventional commits
 - ✅ **ALWAYS** commit working state before making next change
 
-**RULE 6.3: Simplicity Enforcement**
+**RULE 7.3: Simplicity Enforcement**
 - ❌ **NEVER** create a module when direct configuration suffices
 - ❌ **NEVER** use conditionals when simple declarations work
 - ✅ **ALWAYS** choose the simplest solution that works
@@ -155,21 +185,21 @@ modules/
 
 ---
 
-## LAW 7: PURE FUNCTIONAL CONFIGURATION
+## LAW 8: PURE FUNCTIONAL CONFIGURATION
 
-**RULE 7.1: No Side Effects**
+**RULE 8.1: No Side Effects**
 - ❌ **NEVER** create configurations that depend on external state
 - ❌ **NEVER** assume files or commands exist outside nix store
 - ✅ **ALWAYS** make configuration completely hermetic and reproducible
 - ✅ **ALWAYS** ensure configuration works from clean state
 
-**RULE 7.2: Declarative State Management**
+**RULE 8.2: Declarative State Management**
 - ❌ **NEVER** manage state imperatively
 - ❌ **NEVER** create scripts that modify configuration outside build process
 - ✅ **ALWAYS** let nix-darwin and home-manager manage all state
 - ✅ **ALWAYS** use proper nix mechanisms for system changes
 
-**RULE 7.3: Reproducibility Guarantee**
+**RULE 8.3: Reproducibility Guarantee**
 - ❌ **NEVER** create configurations that work only on your machine
 - ❌ **NEVER** hardcode paths or assume specific system state
 - ✅ **ALWAYS** ensure configurations work on fresh installations

@@ -1,0 +1,7 @@
+modules/darwin/theming/default.nix:144:    environment.systemPackages = with pkgs; [
+WARP.md:96:- ❌ **NEVER** put non-essential packages in `environment.systemPackages`
+docs/modular-architecture.md:543:  environment.systemPackages = [ pkgs.git ]
+docs/quick-reference.md:114:environment.systemPackages = with pkgs; [
+modules/darwin/core/default.nix:21:    environment.systemPackages = with pkgs; [
+docs/architecture.md:218:environment.systemPackages = with pkgs; [
+docs/workflow.md:109:environment.systemPackages = with pkgs; [

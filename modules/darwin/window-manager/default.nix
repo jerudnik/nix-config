@@ -23,11 +23,8 @@ in {
       fi
     '';
     
-    # Print a deprecation warning
-    system.activationScripts.windowManager.text = ''
-      echo "Warning: darwin.window-manager module is deprecated."
-      echo "Please use 'home.window-manager.aerospace.enable = true' in your home-manager config instead."
-      echo "The home-manager module provides better configuration management."
-    '';
+    # NOTE: This module is deprecated.
+    # Use 'home.window-manager.aerospace.enable = true' in home-manager config instead.
+    # The home-manager module provides better declarative configuration management.
   };
 }
