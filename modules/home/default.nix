@@ -5,4 +5,6 @@
   git = import ./git/default.nix;
   cli-tools = import ./cli-tools/default.nix;
   spotlight = import ./spotlight/default.nix;
+  window-manager = import ./window-manager/default.nix;
+  sketchybar = import ./sketchybar/default.nix;
 }
