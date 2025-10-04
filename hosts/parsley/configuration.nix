@@ -8,6 +8,9 @@
     outputs.darwinModules.system-defaults
     outputs.darwinModules.keyboard
     outputs.darwinModules.homebrew
+    outputs.darwinModules.window-manager
+    outputs.darwinModules.theming
+    outputs.darwinModules.fonts
   ];
 
   # Host identification
@@ -44,7 +47,35 @@
     
     homebrew = {
       enable = true;
-      # Package lists can be configured here or in separate files
+      # Homebrew casks
+      casks = [ "warp" ];
+    };
+    
+    window-manager = {
+      enable = true;
+      # Uses default AeroSpace configuration with Alt-based bindings
+    };
+    
+    theming = {
+      enable = true;
+      # Uses Gruvbox Material with auto light/dark switching
+      colorScheme = "gruvbox-material-dark-medium";
+      polarity = "either"; # Allows automatic light/dark switching
+      
+      # Optional: Set a wallpaper to generate colors from
+      # wallpaper = ./wallpapers/your-wallpaper.jpg;
+      
+      # Easy color scheme alternatives to try:
+      # colorScheme = "gruvbox-material-light-medium";  # Light version
+      # colorScheme = "catppuccin-mocha";               # Purple theme
+      # colorScheme = "tokyo-night-dark";               # Blue theme  
+      # colorScheme = "nord";                           # Cool gray theme
+    };
+    
+    fonts = {
+      enable = true;
+      # iA Writer fonts enabled by default
+      # Charter serif font enabled by default
     };
   };
 }

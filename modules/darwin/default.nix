@@ -6,4 +6,7 @@
   system-defaults = import ./system-defaults/default.nix;
   keyboard = import ./keyboard/default.nix;
   homebrew = import ./homebrew/default.nix;
+  window-manager = import ./window-manager/default.nix;
+  theming = import ./theming/default.nix;
+  fonts = import ./fonts/default.nix;
 }

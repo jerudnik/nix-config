@@ -16,10 +16,14 @@ in {
     };
     
     editor = mkOption {
-      type = types.enum [ "micro" "nano" "vim" "code" ];
+      type = types.enum [ "micro" "nano" "vim" "emacs" ];
       default = "micro";
       description = "Default text editor";
     };
+    
+    # Optional: enable editors with excellent Stylix theming
+    emacs = mkEnableOption "Emacs with excellent Stylix theming";
+    neovim = mkEnableOption "Neovim with Stylix theming (alternative to Emacs)";
     
     extraPackages = mkOption {
       type = types.listOf types.package;
@@ -71,9 +75,34 @@ in {
       nodejs yarn
     ]
     
+    # Optional editor packages
+    # Note: Emacs is handled by programs.emacs, not direct package installation
+    ++ optionals cfg.neovim [ neovim ]
+    
     # Extra packages
     ++ cfg.extraPackages
     ++ cfg.utilities.extraUtils;
+    
+    # Configure editors with theming support where applicable
+    programs = mkMerge [
+      # Emacs with Stylix theming (Stylix has excellent Emacs support)
+      (mkIf cfg.emacs {
+        emacs = {
+          enable = true;
+          # Stylix will automatically apply colors, fonts, and generate theme
+          # No additional configuration needed - Stylix handles everything!
+        };
+      })
+      
+      # Neovim with Stylix theming (alternative to Emacs)
+      (mkIf cfg.neovim {
+        neovim = {
+          enable = true;
+          defaultEditor = mkIf (cfg.editor == "neovim") true;
+          # Stylix will automatically apply colors and fonts
+        };
+      })
+    ];
     
     # Essential environment variables
     home.sessionVariables = {

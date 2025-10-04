@@ -28,9 +28,15 @@
       url = "github:homebrew/homebrew-cask";
       flake = false;
     };
+    
+    # System-wide theming framework
+    stylix = {
+      url = "github:danth/stylix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, nix-homebrew, homebrew-core, homebrew-cask, ... }:
+  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, nix-homebrew, homebrew-core, homebrew-cask, stylix, ... }:
     let
       system = "aarch64-darwin";
     in {
@@ -100,6 +106,9 @@
             ({ config, ... }: {
               homebrew.taps = builtins.attrNames config.nix-homebrew.taps;
             })
+            
+            # System-wide theming with Stylix
+            stylix.darwinModules.stylix
           ];
         };
       };

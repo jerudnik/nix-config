@@ -1,6 +1,6 @@
 # John's Nix Configuration
 
-> **📚 Documentation:** See [`docs/`](docs/) for daily-use guides • [`docs/deep-dive/`](docs/deep-dive/) for architectural details
+> **📚 Documentation:** See [`docs/`](docs/) for comprehensive guides and architectural details
 
 A clean, modular Nix configuration for macOS using nix-darwin and Home Manager. Built with reusable modules following the NixOS module pattern.
 
@@ -13,20 +13,28 @@ A clean, modular Nix configuration for macOS using nix-darwin and Home Manager. 
 ├── flake.nix                 # Main flake configuration
 ├── home/
 │   └── jrudnik/
-│       └── home.nix          # Clean 51-line user config using modules
+│       └── home.nix          # Clean 78-line user config using modules
 ├── hosts/
 │   └── parsley/
-│       └── configuration.nix # Clean 38-line system config using modules
+│       └── configuration.nix # Clean 81-line system config using modules
 ├── modules/
-│   ├── darwin/              # Reusable Darwin system modules
+│   ├── darwin/              # Reusable Darwin system modules (9 modules)
 │   │   ├── core/            # Essential packages & shell
 │   │   ├── security/        # Touch ID & user management
 │   │   ├── nix-settings/    # Nix daemon & optimization
-│   │   └── system-defaults/ # macOS system preferences
-│   ├── home/                # Reusable home-manager modules
+│   │   ├── system-defaults/ # macOS system preferences
+│   │   ├── keyboard/        # Keyboard & input settings
+│   │   ├── homebrew/        # Homebrew package management
+│   │   ├── window-manager/  # AeroSpace tiling window manager
+│   │   ├── theming/         # Stylix theming system
+│   │   └── fonts/           # Font configuration
+│   ├── home/                # Reusable home-manager modules (6 modules)
 │   │   ├── shell/           # Zsh with oh-my-zsh & aliases
-│   │   ├── development/     # Dev tools & languages
-│   │   └── git/             # Git configuration
+│   │   ├── development/     # Dev tools, languages & editors
+│   │   ├── git/             # Git configuration
+│   │   ├── cli-tools/       # Modern CLI utilities
+│   │   ├── spotlight/       # macOS Spotlight integration
+│   │   └── window-manager/  # User window manager settings
 │   └── nixos/               # NixOS modules (future)
 ├── scripts/
 │   ├── build.sh            # Build/switch/check script
@@ -73,8 +81,8 @@ A clean, modular Nix configuration for macOS using nix-darwin and Home Manager. 
 
 This configuration evolved from framework-dependent to advanced modular architecture:
 
-- ✅ **Modular Design**: 7 reusable modules with rich options
-- ✅ **Massive Simplification**: 100+ line configs → 38-51 lines
+- ✅ **Modular Design**: 15 reusable modules with rich options
+- ✅ **Significant Simplification**: 100+ line configs → 78-81 lines
 - ✅ **Type Safety**: Options with validation and documentation
 - ✅ **NixOS Module Pattern**: Advanced community standards
 - ✅ **Easy Scaling**: Zero duplication when adding hosts/users
@@ -83,11 +91,11 @@ This configuration evolved from framework-dependent to advanced modular architec
 ## Features
 
 ### Modular Architecture
-- **7 reusable modules** with rich configuration options
+- **15 reusable modules** (9 darwin + 6 home) with rich configuration options
 - **NixOS module pattern** with options/config structure
 - **Type-safe configuration** with validation and documentation
-- **38-line system config** (reduced from 100+ lines)
-- **51-line home config** (reduced from 100+ lines)
+- **81-line system config** (reduced from 100+ lines)
+- **78-line home config** (reduced from 100+ lines)
 - **Easy to extend** - add hosts/users without duplication
 
 ### System (nix-darwin)
@@ -95,16 +103,23 @@ This configuration evolved from framework-dependent to advanced modular architec
 - Sensible macOS defaults (Dock, Finder, Global)
 - Nix daemon optimization and binary caches
 - Automatic garbage collection and store optimization
+- AeroSpace tiling window manager with Alt-based keybindings
+- Stylix theming system with Gruvbox Material theme
+- Homebrew cask integration for GUI applications
+- Font management with iA Writer and Charter fonts
 
 ### Home Manager
 - Zsh with oh-my-zsh and intelligent aliases
 - Git configuration with sensible defaults
-- Development environment (Rust, Go, Python)
-- Micro text editor and essential utilities
+- Development environment (Rust, Go, Python) with optional Emacs
+- Modern CLI tools (eza, bat, ripgrep, fd, fzf, starship)
+- System monitor (btop) with beautiful Stylix theming
+- macOS Spotlight integration for Nix packages
+- Alacritty terminal with automatic theming
 
 ## Modular Configuration Examples
 
-### System Configuration (38 lines)
+### System Configuration (81 lines)
 ```nix
 # hosts/parsley/configuration.nix
 darwin = {
@@ -117,10 +132,20 @@ darwin = {
   
   nix-settings.enable = true;
   system-defaults.enable = true;
+  keyboard.enable = true;
+  homebrew.casks = [ "warp" ];
+  window-manager.enable = true;
+  
+  theming = {
+    enable = true;
+    colorScheme = "gruvbox-material-dark-medium";
+  };
+  
+  fonts.enable = true;
 };
 ```
 
-### Home Configuration (51 lines)
+### Home Configuration (78 lines)
 ```nix
 # home/jrudnik/home.nix
 home = {
@@ -133,6 +158,12 @@ home = {
     enable = true;
     languages = { rust = true; go = true; python = true; };
     editor = "micro";
+    emacs = true;  # Optional: Excellent Stylix theming!
+  };
+  
+  cli-tools = {
+    enable = true;
+    systemMonitor = "btop";  # Beautiful Stylix theming
   };
   
   git = {
@@ -140,6 +171,8 @@ home = {
     userName = "jrudnik";
     userEmail = "john.rudnik@gmail.com";
   };
+  
+  spotlight.enable = true;
 };
 ```
 

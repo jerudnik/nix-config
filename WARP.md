@@ -75,6 +75,13 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 
 Unless certain about how to do something, it's best practice to leverage MCP servers to better formulate an approach.
 
+**📚 Essential Reading Before Making Changes:**
+- **[`docs/architecture.md`](docs/architecture.md)** - System architecture and design philosophy
+- **[`docs/modular-architecture.md`](docs/modular-architecture.md)** - Advanced module patterns and examples  
+- **[`docs/workflow.md`](docs/workflow.md)** - Complete development workflow guide
+- **[`docs/module-options.md`](docs/module-options.md)** - All available module options reference
+- **[`docs/getting-started.md`](docs/getting-started.md)** - Setup and configuration guide
+
 ## Development Commands
 
 ### Build and Switch Configuration
@@ -125,19 +132,22 @@ This is a **modular Nix configuration** for macOS using nix-darwin and Home Mana
 ```
 ~/nix-config/
 ├── flake.nix              # Main configuration with inputs/outputs
-├── hosts/parsley/          # System configuration (38 lines)
-├── home/jrudnik/           # User configuration (51 lines) 
+├── hosts/parsley/          # System configuration (65 lines)
+├── home/jrudnik/           # User configuration (61 lines) 
 ├── modules/
-│   ├── darwin/            # System modules (7 modules)
-│   └── home/              # User modules (3 modules)
+│   ├── darwin/            # System modules (8 modules)
+│   ├── home/              # User modules (4 modules)
+│   └── nixos/             # Linux modules (future)
+├── overlays/              # Package overlays and modifications
 ├── scripts/               # Build and cleanup scripts
+├── secrets/               # Encrypted secrets (future)
 └── docs/                  # Comprehensive documentation
 ```
 
 ### Configuration Philosophy
 - **No external frameworks** - Direct nix-darwin + home-manager usage
-- **Modular design** - 7 reusable Darwin modules, 3 Home Manager modules
-- **Minimal complexity** - 38-line system config, 51-line user config
+- **Modular design** - 8 reusable Darwin modules, 4 Home Manager modules
+- **Minimal complexity** - 65-line system config, 61-line user config
 - **Type-safe options** - All modules use proper NixOS module pattern with options/config
 - **Easy scaling** - Add hosts/users without duplication
 
@@ -147,11 +157,17 @@ This is a **modular Nix configuration** for macOS using nix-darwin and Home Mana
 - `security` - Touch ID, user management 
 - `nix-settings` - Nix daemon optimization, binary caches
 - `system-defaults` - macOS system preferences
+- `keyboard` - Keyboard and input configuration
+- `homebrew` - Homebrew casks and Mac App Store apps
+- `window-manager` - AeroSpace window management
+- `theming` - System-wide theming with Stylix
 
 **Home modules** (user-level):
 - `shell` - Zsh with oh-my-zsh, aliases, configuration
 - `development` - Programming languages (Rust, Go, Python), editors
 - `git` - Git configuration and settings
+- `cli-tools` - Modern CLI tools (eza, bat, ripgrep, fd, zoxide, etc.)
+- `spotlight` - Enhanced Spotlight integration for Nix applications
 
 ### Integration Pattern
 System and user configurations are **integrated** - nix-darwin manages the Home Manager configuration:
@@ -244,6 +260,15 @@ macOS system preferences are managed declaratively in `modules/darwin/system-def
 2. Test build: `./scripts/build.sh build` 
 3. Check module options: See `docs/module-options.md`
 4. Review logs: Build output shows detailed error information
+
+### Application Availability Issues
+If applications installed via Nix aren't available after switching:
+
+1. **Restart your shell**: `refresh-env` (alias) or `exec zsh`
+2. **Reload configuration**: `reload-path` (alias) or `source ~/.zshrc`
+3. **Check PATH**: `echo $PATH` should include `/etc/profiles/per-user/$USER/bin`
+4. **Enable debugging**: Set `home.shell.debugEnvironment = true;` in your config
+5. **Manual PATH check**: `ls -la /etc/profiles/per-user/$USER/bin/` to verify binaries exist
 
 ### Managing Generations
 - Quick cleanup: `./scripts/build.sh clean`

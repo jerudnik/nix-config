@@ -5,6 +5,8 @@
     outputs.homeManagerModules.shell
     outputs.homeManagerModules.development
     outputs.homeManagerModules.git
+    outputs.homeManagerModules.cli-tools
+    outputs.homeManagerModules.spotlight
   ];
 
   # Home Manager configuration
@@ -16,6 +18,11 @@
 
   # Let Home Manager install and manage itself
   programs.home-manager.enable = true;
+  
+  # Additional packages (moved warp to Homebrew cask)
+  # home.packages = with pkgs; [ ];
+  
+  # Note: nixpkgs config is managed globally via useGlobalPkgs in flake.nix
 
   # Module configuration
   home = {
@@ -37,12 +44,32 @@
         python = true;
       };
       editor = "micro";
+      # Optional: Enable Emacs - it has excellent Stylix theming support!
+      emacs = true;    # Emacs with automatic Stylix theming enabled!
+      neovim = false;  # Alternative: Neovim with automatic theming
     };
     
     git = {
       enable = true;
       userName = "jrudnik";
       userEmail = "john.rudnik@gmail.com";
+    };
+    
+    cli-tools = {
+      enable = true;
+      # All modern CLI tools with sensible defaults
+      # Includes: eza, bat, ripgrep, fd, zoxide, fzf, starship, alacritty
+      
+      # Optional: Modern system monitor (btop has beautiful Stylix theming)
+      systemMonitor = "btop";  # Options: "none", "htop", "btop"
+    };
+    
+    spotlight = {
+      enable = true;
+      appsFolder = "Applications/home-manager";  # Home Manager apps folder
+      linkSystemApps = true;  # Link system-level nix-darwin apps
+      systemAppsFolder = "Applications/nix-darwin";  # System apps folder
+      reindexInterval = "daily";  # Periodic reindexing
     };
   };
 

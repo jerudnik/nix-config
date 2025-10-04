@@ -8,7 +8,7 @@ This configuration uses the **NixOS Module Pattern** to create a highly modular,
 
 ### Key Benefits
 
-✅ **Dramatic Simplification**: Host configs reduced from 100+ lines to 38 lines  
+✅ **Significant Simplification**: Host configs reduced from 100+ lines to 78-81 lines
 ✅ **Type Safety**: Rich options with validation and documentation  
 ✅ **Reusability**: Zero code duplication across hosts and users  
 ✅ **Maintainability**: Clear separation of concerns  
@@ -120,6 +120,74 @@ darwin.system-defaults = {
 - Global domain preferences
 - System UI behavior
 
+#### `keyboard` - Keyboard & Input Settings
+```nix
+darwin.keyboard = {
+  enable = true;
+  remapCapsLockToControl = true;  # Default
+};
+```
+
+**Provides:**
+- Caps Lock to Control key remapping
+- Keyboard input method settings
+- Modifier key configurations
+
+#### `homebrew` - Package Management
+```nix
+darwin.homebrew = {
+  enable = true;
+  casks = [ "warp" "docker" ];
+};
+```
+
+**Provides:**
+- Homebrew cask management
+- GUI application installation
+- Declarative cask configuration
+
+#### `window-manager` - AeroSpace Configuration
+```nix
+darwin.window-manager = {
+  enable = true;
+  # Uses sensible Alt-based defaults
+};
+```
+
+**Provides:**
+- AeroSpace tiling window manager
+- Alt-based keyboard shortcuts
+- Auto-startup configuration
+- Applications folder symlink
+
+#### `theming` - Stylix Theme System
+```nix
+darwin.theming = {
+  enable = true;
+  colorScheme = "gruvbox-material-dark-medium";
+  polarity = "either";  # Auto light/dark switching
+};
+```
+
+**Provides:**
+- System-wide color theming via Stylix
+- Automatic light/dark mode switching
+- Multiple color scheme options
+- Application theme consistency
+
+#### `fonts` - Font Management
+```nix
+darwin.fonts = {
+  enable = true;
+  # iA Writer and Charter fonts enabled by default
+};
+```
+
+**Provides:**
+- iA Writer font family (Mono, Duo, Quattro)
+- Charter serif font
+- System font registration
+
 ### Home Manager Modules (`modules/home/`)
 
 User-level modules for personal configuration:
@@ -154,13 +222,17 @@ home.development = {
     node = false;
   };
   editor = "micro";
+  emacs = true;   # Optional: Excellent Stylix theming
+  neovim = false; # Alternative to Emacs
   extraPackages = [ pkgs.docker pkgs.kubectl ];
 };
 ```
 
 **Provides:**
-- Development languages and tools
-- Text editor configuration
+- Development languages and tools (Rust, Go, Python, Node.js)
+- Text editor configuration (micro, nano, vim, emacs)
+- Optional Emacs with automatic Stylix theming
+- Optional Neovim with theming support
 - Utility packages (tree, jq)
 - Custom package additions
 
@@ -184,18 +256,57 @@ home.git = {
 - Git aliases
 - Additional git configuration
 
+#### `cli-tools` - Modern CLI Utilities
+```nix
+home.cli-tools = {
+  enable = true;
+  systemMonitor = "btop";  # Options: "none", "htop", "btop"
+  # eza, bat, ripgrep, fd, fzf, starship, alacritty enabled by default
+};
+```
+
+**Provides:**
+- Modern CLI replacements (eza, bat, ripgrep, fd)
+- Fuzzy finder (fzf) with file integration
+- Cross-shell prompt (starship) with git integration
+- GPU-accelerated terminal (alacritty)
+- System monitor (htop/btop with beautiful theming)
+- Automatic shell integration
+
+#### `spotlight` - macOS Integration
+```nix
+home.spotlight = {
+  enable = true;
+  appsFolder = "Applications/home-manager";
+  linkSystemApps = true;
+  reindexInterval = "daily";
+};
+```
+
+**Provides:**
+- macOS Spotlight integration for Nix packages
+- Application folder organization
+- System app linking
+- Automatic reindexing
+- Command-line app availability
+
 ## Configuration Examples
 
 ### Complete System Configuration
 
 ```nix
-# hosts/parsley/configuration.nix (38 lines)
+# hosts/parsley/configuration.nix (81 lines)
 { inputs, outputs, ... }: {
   imports = [
     outputs.darwinModules.core
     outputs.darwinModules.security
     outputs.darwinModules.nix-settings
     outputs.darwinModules.system-defaults
+    outputs.darwinModules.keyboard
+    outputs.darwinModules.homebrew
+    outputs.darwinModules.window-manager
+    outputs.darwinModules.theming
+    outputs.darwinModules.fonts
   ];
 
   # Host identification
@@ -223,12 +334,14 @@ home.git = {
 ### Complete Home Configuration
 
 ```nix
-# home/jrudnik/home.nix (51 lines)
+# home/jrudnik/home.nix (78 lines)
 { inputs, outputs, ... }: {
   imports = [
     outputs.homeManagerModules.shell
     outputs.homeManagerModules.development
     outputs.homeManagerModules.git
+    outputs.homeManagerModules.cli-tools
+    outputs.homeManagerModules.spotlight
   ];
 
   # Home Manager basics
@@ -258,6 +371,12 @@ home.git = {
         python = true;
       };
       editor = "micro";
+      emacs = true;  # Optional: Excellent Stylix theming!
+    };
+    
+    cli-tools = {
+      enable = true;
+      systemMonitor = "btop";  # Beautiful Stylix theming
     };
     
     git = {
@@ -265,6 +384,8 @@ home.git = {
       userName = "jrudnik";
       userEmail = "john.rudnik@gmail.com";
     };
+    
+    spotlight.enable = true;
   };
   
   xdg.enable = true;

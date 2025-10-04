@@ -179,6 +179,56 @@ darwin.system-defaults = {
 
 ---
 
+### `darwin.homebrew`
+
+Homebrew package management via nix-homebrew.
+
+```nix
+darwin.homebrew = {
+  enable = true;                    # Enable Homebrew management
+  brews = [];                       # Homebrew formulae to install
+  casks = [ "warp" "firefox" ];      # Homebrew casks to install
+  masApps = {};                     # Mac App Store apps
+  onActivation = {
+    autoUpdate = false;             # Auto-update Homebrew
+    upgrade = false;                # Upgrade packages on activation
+    cleanup = "none";               # Cleanup strategy
+  };
+};
+```
+
+**Options:**
+- `enable` (bool, default: `false`) - Enable Homebrew package management
+- `brews` (list of strings, default: `[]`) - List of Homebrew formulae to install
+- `casks` (list of strings, default: `[]`) - List of Homebrew casks to install
+- `masApps` (attrs of ints, default: `{}`) - Mac App Store apps (name = app store id)
+- `onActivation.autoUpdate` (bool, default: `false`) - Auto-update Homebrew and packages
+- `onActivation.upgrade` (bool, default: `false`) - Upgrade packages on activation
+- `onActivation.cleanup` (enum: "none"|"uninstall"|"zap", default: `"none"`) - Cleanup strategy
+
+**Provides:**
+- Declarative Homebrew formula management
+- Homebrew cask installation for GUI applications
+- Mac App Store app installation
+- Cleanup and maintenance automation
+
+**Example:**
+```nix
+darwin.homebrew = {
+  enable = true;
+  casks = [ "warp" "firefox" "docker" "visual-studio-code" ];
+  masApps = {
+    "Xcode" = 497799835;
+    "1Password 7" = 1333542190;
+  };
+  onActivation = {
+    cleanup = "uninstall";  # Remove unlisted packages
+  };
+};
+```
+
+---
+
 ## Home Manager Modules
 
 ### `home.shell`
@@ -307,6 +357,134 @@ home.development = {
   };
 };
 ```
+
+---
+
+### `home.cli-tools`
+
+Modern CLI tools collection with shell integration.
+
+```nix
+home.cli-tools = {
+  enable = true;                    # Enable CLI tools collection
+  enableShellIntegration = true;    # Enable shell integration for tools
+  fileManager = {
+    eza = true;                     # Modern ls replacement (eza)
+    zoxide = true;                  # Smart directory navigation (zoxide)
+    fzf = true;                     # Fuzzy finder (fzf)
+  };
+  textTools = {
+    bat = true;                     # Syntax-highlighted cat (bat)
+    ripgrep = true;                 # Fast text search (ripgrep)
+    fd = true;                      # Fast find alternative (fd)
+  };
+  prompt = {
+    starship = true;                # Cross-shell prompt (starship)
+  };
+  terminals = {
+    alacritty = true;               # GPU-accelerated terminal (alacritty)
+    warp = false;                   # Warp terminal (managed via Homebrew cask)
+  };
+};
+```
+
+**Options:**
+- `enable` (bool, default: `false`) - Enable modern CLI tools collection
+- `enableShellIntegration` (bool, default: `true`) - Enable shell integration for CLI tools
+- `fileManager.eza` (bool, default: `true`) - Enable eza (modern ls replacement)
+- `fileManager.zoxide` (bool, default: `true`) - Enable zoxide (smart directory navigation)
+- `fileManager.fzf` (bool, default: `true`) - Enable fzf (fuzzy finder)
+- `textTools.bat` (bool, default: `true`) - Enable bat (syntax-highlighted cat)
+- `textTools.ripgrep` (bool, default: `true`) - Enable ripgrep (fast text search)
+- `textTools.fd` (bool, default: `true`) - Enable fd (fast find alternative)
+- `prompt.starship` (bool, default: `true`) - Enable starship (cross-shell prompt)
+- `terminals.alacritty` (bool, default: `true`) - Enable alacritty (GPU terminal)
+- `terminals.warp` (bool, default: `false`) - Enable warp terminal (managed via Homebrew)
+
+**Provides:**
+- File management: `eza` (ls replacement), `zoxide` (smart cd), `fzf` (fuzzy finder)
+- Text processing: `bat` (cat with syntax highlighting), `ripgrep` (fast grep), `fd` (fast find)
+- Shell enhancement: `starship` (modern prompt)
+- Terminal applications: `alacritty` (GPU-accelerated terminal)
+- Shell integration for supported tools (configurable)
+
+**Built-in Configurations:**
+- **Eza**: Git integration, icons, colors
+- **Zoxide**: Zsh integration handled manually in shell module
+- **Fzf**: Integration with fd for file searching
+- **Bat**: Syntax highlighting with base16 theme
+- **Starship**: Minimal, fast prompt configuration
+- **Alacritty**: macOS-optimized settings with zsh integration
+
+**Example:**
+```nix
+home.cli-tools = {
+  enable = true;
+  enableShellIntegration = true;
+  fileManager = {
+    eza = true;
+    zoxide = true;
+    fzf = true;
+  };
+  textTools = {
+    bat = true;
+    ripgrep = true;
+    fd = true;
+  };
+  prompt.starship = true;
+  terminals = {
+    alacritty = false;  # Disable if using different terminal
+    warp = false;       # Managed via Homebrew cask
+  };
+};
+```
+
+---
+
+### `home.spotlight`
+
+Enhanced Spotlight integration for Nix applications.
+
+```nix
+home.spotlight = {
+  enable = true;                    # Enable Spotlight integration
+  appsFolder = "Applications/HomeManager"; # Folder name for apps (avoid spaces)
+  forceReindex = true;              # Auto-reindex Spotlight after changes
+};
+```
+
+**Options:**
+- `enable` (bool, default: `false`) - Enable enhanced Spotlight integration
+- `appsFolder` (string, default: `"Applications/HomeManager"`) - Folder name in ~/Applications for home-manager apps
+- `forceReindex` (bool, default: `true`) - Force Spotlight to reindex applications after activation
+
+**Provides:**
+- Creates organized application links in `~/Applications/` for Spotlight discovery
+- Automatic Spotlight reindexing after configuration changes
+- Better folder naming (without spaces) for improved indexing
+- Session variables for GUI application resource discovery
+- User feedback during activation about indexing status
+
+**How it works:**
+- Replaces the default "Home Manager Apps" folder with a cleaner named folder
+- Uses `buildEnv` with `pathsToLink = "/Applications"` to create proper symlinks
+- Triggers Spotlight reindexing using `mdutil` commands
+- Provides clear feedback about indexing status and timing
+
+**Example:**
+```nix
+home.spotlight = {
+  enable = true;
+  appsFolder = "Applications/NixApps";  # Custom folder name
+  forceReindex = true;  # Ensure Spotlight finds new apps
+};
+```
+
+**Troubleshooting:**
+- Applications typically appear in Spotlight within 2-5 minutes after activation
+- Manual reindexing: `mdutil -E ~/Applications`
+- Check indexing status: `mdutil -s ~/Applications`
+- Verify links exist: `ls -la ~/Applications/[your-apps-folder]/`
 
 ---
 
