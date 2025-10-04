@@ -1,75 +1,179 @@
-# WARP.md
+# WARP.md - MANDATORY CONFIGURATION RULES
 
-This file provides guidance to WARP (warp.dev) when working with code in this repository.
+**⚠️ CRITICAL: This file contains MANDATORY RULES that must be followed without exception when working with this nix-config repository. These are not suggestions or guidelines - they are hard requirements.**
 
-# Project Rules
+**🚫 VIOLATIONS WILL BE REJECTED 🚫**
 
-## Core Principles
+---
 
-1. One module, one concern
+# CONFIGURATION PURITY LAWS
 
-- Each module should do exactly one thing
-- If a module file exceeds ~100 lines, consider splitting it
-- Name modules by what they do, not by category (good: docker, bad: containers)
+## LAW 1: DECLARATIVE ONLY - NO IMPERATIVE ACTIONS
 
+**RULE 1.1: No Manual System Modifications**
+- ❌ **NEVER** run scripts or commands outside of nix-config to configure applications
+- ❌ **NEVER** use manual `defaults write`, `plutil`, `osascript`, or system modification commands
+- ❌ **NEVER** create or modify files outside the nix-config directory tree
+- ✅ **ONLY** use declarative configuration through the module system
+- ✅ **ONLY** modify files within `/Users/jrudnik/nix-config/`
 
-2. System packages stay minimal
+**RULE 1.2: Build Script Adherence**
+- ❌ **NEVER** use `darwin-rebuild` directly without using provided scripts
+- ❌ **NEVER** use `sudo darwin-rebuild switch --flake` manually
+- ✅ **ALWAYS** use `./scripts/build.sh build` to test
+- ✅ **ALWAYS** use `./scripts/build.sh switch` to apply
+- ✅ **ALWAYS** use `./scripts/build.sh check` to validate
 
-- Only put in environment.systemPackages what absolutely must be system-wide
-- When in doubt, use home-manager packages
-- Rule of thumb: if you can't explain why it must be system-level, it shouldn't be
+**RULE 1.3: No External State Manipulation**
+- ❌ **NEVER** create activation scripts that modify external files
+- ❌ **NEVER** use `home.activation.*` to run system commands
+- ❌ **NEVER** modify system state outside of nix-darwin/home-manager mechanisms
+- ✅ **ONLY** use `targets.darwin.defaults` for system preferences
+- ✅ **ONLY** use home-manager's built-in configuration options
 
+---
 
-3. Provide good defaults, allow overrides
+## LAW 2: ARCHITECTURAL BOUNDARIES ARE SACRED
 
-- Every module option should have a sensible default
-- Users shouldn't have to configure anything they don't care about
-- Make the simple case simple, make the complex case possible
+**RULE 2.1: Module Responsibility Separation**
+- ❌ **NEVER** put Darwin-specific options in NixOS modules or vice versa
+- ❌ **NEVER** mix system and user concerns in the same module
+- ✅ **ALWAYS** keep `modules/darwin/`, `modules/nixos/`, and `modules/home/` strictly separate
+- ✅ **ALWAYS** use the correct module type for the configuration layer
 
+**RULE 2.2: One Module, One Concern**
+- ❌ **NEVER** create modules that handle multiple unrelated features
+- ❌ **NEVER** exceed ~100 lines per module file without splitting
+- ✅ **ALWAYS** name modules by what they do, not by category (good: `docker`, bad: `containers`)
+- ✅ **ALWAYS** create focused, single-responsibility modules
 
-4. Use types for validation
+**RULE 2.3: Platform Separation Enforcement**
+- ❌ **NEVER** use platform conditionals in system modules
+- ❌ **NEVER** share code between Darwin and NixOS system modules
+- ✅ **ONLY** home modules may use platform detection when necessary
+- ✅ **ALWAYS** create separate implementations for different platforms
 
-- Never use types.str when there's a more specific type (types.path, types.port, types.enum)
-- Use types.listOf, types.attrsOf for collections
-- Add descriptions to every option
+---
 
+## LAW 3: TYPE SAFETY AND VALIDATION
 
+**RULE 3.1: Strict Type Usage**
+- ❌ **NEVER** use `types.str` when more specific types exist
+- ❌ **NEVER** create options without type specifications
+- ✅ **ALWAYS** use `types.path` for paths, `types.port` for ports, `types.enum` for choices
+- ✅ **ALWAYS** use `types.listOf`, `types.attrsOf` for collections
 
-## Structural Rules
+**RULE 3.2: Documentation Requirements**
+- ❌ **NEVER** create options without descriptions
+- ❌ **NEVER** use generic or unhelpful descriptions
+- ✅ **ALWAYS** add meaningful descriptions to every option
+- ✅ **ALWAYS** document the impact and usage of each option
 
-1. Avoid conditionals in host configs
+**RULE 3.3: Default Value Mandates**
+- ❌ **NEVER** create options without sensible defaults
+- ❌ **NEVER** force users to configure things they don't care about
+- ✅ **ALWAYS** provide working defaults for all options
+- ✅ **ALWAYS** make the simple case simple, complex case possible
 
-- Host configs should be declarative statements, not logic
-- Logic belongs in modules, configuration belongs in hosts
-- If you find yourself writing if or mkIf in a host config, extract it to a module
+---
 
+## LAW 4: BUILD AND TEST DISCIPLINE
 
-2. Test incrementally
+**RULE 4.1: Incremental Testing Protocol**
+- ❌ **NEVER** apply changes without testing builds first
+- ❌ **NEVER** make multiple logical changes simultaneously
+- ✅ **ALWAYS** run `./scripts/build.sh build` before `./scripts/build.sh switch`
+- ✅ **ALWAYS** make one logical change at a time
+- ✅ **ALWAYS** commit working configurations before the next change
 
-- Always run ./scripts/build.sh build before ./scripts/build.sh switch
-- Make one logical change at a time
-- Commit working configurations before making the next change
+**RULE 4.2: Configuration Logic Restrictions**
+- ❌ **NEVER** put conditionals or logic in host configs
+- ❌ **NEVER** use `mkIf` or complex expressions in host configurations
+- ✅ **ALWAYS** keep host configs as declarative statements only
+- ✅ **ALWAYS** extract logic to modules if needed
 
+**RULE 4.3: Package Management Boundaries**
+- ❌ **NEVER** put non-essential packages in `environment.systemPackages`
+- ❌ **NEVER** duplicate packages between system and user configuration
+- ✅ **ONLY** system packages: essential tools that must be system-wide
+- ✅ **ALWAYS** prefer home-manager packages for user applications
+- ✅ **RULE OF THUMB**: if you can't explain why it must be system-level, it shouldn't be
 
-3. Platform separation is sacred
+---
 
-- Never put Darwin-specific options in NixOS modules or vice versa
-- Keep modules/darwin/, modules/nixos/, and modules/home/ strictly separate
-- Home modules can use platform detection, but system modules should not
+## LAW 5: FILE SYSTEM AND DIRECTORY RULES
 
+**RULE 5.1: Repository Boundary Enforcement**
+- ❌ **NEVER** modify files outside `/Users/jrudnik/nix-config/`
+- ❌ **NEVER** create symlinks or files in user home directory manually
+- ❌ **NEVER** touch system directories outside nix-darwin mechanisms
+- ✅ **ONLY** work within the nix-config repository boundaries
+- ✅ **ONLY** let nix-darwin and home-manager manage external files
 
-4. Documentation follows code
+**RULE 5.2: Documentation Synchronization**
+- ❌ **NEVER** write documentation for non-existent code
+- ❌ **NEVER** leave outdated documentation after changes
+- ✅ **ALWAYS** update documentation when making changes
+- ✅ **ALWAYS** ensure code and documentation stay in sync
 
-- Every module option needs a description
-- Update README.md when you add major features
-- Don't write documentation for code that doesn't exist yet
+**RULE 5.3: Module Organization Standards**
+```
+✅ CORRECT MODULE STRUCTURE:
+modules/
+├── darwin/              # System modules (nix-darwin)
+├── home/                # User modules (home-manager)
+└── nixos/               # Linux modules (future)
 
+❌ NEVER mix concerns across these boundaries
+```
 
-5. Simplicity is the goal
+---
 
-- If you can accomplish something without a module, don't make a module
-- If you can accomplish something without conditionals, don't use conditionals
-- The best code is the code you don't write
+## LAW 6: WORKFLOW AND PROCESS ADHERENCE
+
+**RULE 6.1: Mandatory Documentation Reading**
+- ❌ **NEVER** make changes without reading documentation first
+- ✅ **ALWAYS** review these files before making changes:
+  - `docs/architecture.md` - System architecture and design philosophy
+  - `docs/modular-architecture.md` - Advanced module patterns
+  - `docs/workflow.md` - Complete development workflow
+  - `docs/module-options.md` - Available module options reference
+  - `docs/getting-started.md` - Setup and configuration guide
+
+**RULE 6.2: Git and Version Control Standards**
+- ❌ **NEVER** commit broken configurations
+- ❌ **NEVER** push without testing changes locally
+- ✅ **ALWAYS** test with `./scripts/build.sh build` before committing
+- ✅ **ALWAYS** use descriptive commit messages following conventional commits
+- ✅ **ALWAYS** commit working state before making next change
+
+**RULE 6.3: Simplicity Enforcement**
+- ❌ **NEVER** create a module when direct configuration suffices
+- ❌ **NEVER** use conditionals when simple declarations work
+- ✅ **ALWAYS** choose the simplest solution that works
+- ✅ **PRINCIPLE**: The best code is the code you don't write
+
+---
+
+## LAW 7: PURE FUNCTIONAL CONFIGURATION
+
+**RULE 7.1: No Side Effects**
+- ❌ **NEVER** create configurations that depend on external state
+- ❌ **NEVER** assume files or commands exist outside nix store
+- ✅ **ALWAYS** make configuration completely hermetic and reproducible
+- ✅ **ALWAYS** ensure configuration works from clean state
+
+**RULE 7.2: Declarative State Management**
+- ❌ **NEVER** manage state imperatively
+- ❌ **NEVER** create scripts that modify configuration outside build process
+- ✅ **ALWAYS** let nix-darwin and home-manager manage all state
+- ✅ **ALWAYS** use proper nix mechanisms for system changes
+
+**RULE 7.3: Reproducibility Guarantee**
+- ❌ **NEVER** create configurations that work only on your machine
+- ❌ **NEVER** hardcode paths or assume specific system state
+- ✅ **ALWAYS** ensure configurations work on fresh installations
+- ✅ **ALWAYS** test reproducibility across different machines when possible
 
 ## Tool Utilization
 
