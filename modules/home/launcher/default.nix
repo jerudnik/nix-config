@@ -45,70 +45,72 @@ in {
     home.packages = with pkgs; []
       ++ optional cfg.raycast.enable cfg.raycast.package;
     
-    # Disable Spotlight shortcut when replacing with Raycast
-    # This uses the targets.darwin.defaults system to set macOS defaults
-    targets.darwin.defaults = mkIf (cfg.raycast.enable && cfg.raycast.replaceSpotlight) {
-      "com.apple.symbolichotkeys" = {
-        AppleSymbolicHotKeys = {
-          # Disable "Show Spotlight search" (Cmd+Space)
-          "64" = {
-            enabled = false;
-            value = {
-              parameters = [ 32 49 1048576 ];
-              type = "standard";
+    # Configure macOS defaults (both Spotlight disable and Raycast configuration)
+    targets.darwin.defaults = mkMerge [
+      # Disable Spotlight shortcuts when replacing with Raycast
+      (mkIf (cfg.raycast.enable && cfg.raycast.replaceSpotlight) {
+        "com.apple.symbolichotkeys" = {
+          AppleSymbolicHotKeys = {
+            # Disable "Show Spotlight search" (Cmd+Space)
+            "64" = {
+              enabled = false;
+              value = {
+                parameters = [ 32 49 1048576 ];
+                type = "standard";
+              };
             };
-          };
-          # Disable "Show Finder search window" (Cmd+Option+Space) 
-          "65" = {
-            enabled = false;
-            value = {
-              parameters = [ 32 49 1572864 ];
-              type = "standard";
+            # Disable "Show Finder search window" (Cmd+Option+Space) 
+            "65" = {
+              enabled = false;
+              value = {
+                parameters = [ 32 49 1572864 ];
+                type = "standard";
+              };
             };
           };
         };
-      };
-    };
-    
-    # Configure Raycast preferences declaratively
-    targets.darwin.defaults = mkIf (cfg.raycast.enable && cfg.raycast.hotkey.enable) {
-      "com.raycast.macos" = {
-        # Set Raycast hotkey using the standard format
-        # This corresponds to the global hotkey for opening Raycast
-        raycastGlobalHotkey = let
-          modifierFlags = let
-            modMap = {
-              command = 1048576;    # kCGEventFlagMaskCommand
-              option = 524288;      # kCGEventFlagMaskAlternate  
-              control = 262144;     # kCGEventFlagMaskControl
-              shift = 131072;       # kCGEventFlagMaskShift
-            };
-            enabledMods = builtins.filter (mod: builtins.elem mod cfg.raycast.hotkey.modifiers) 
-                         (builtins.attrNames modMap);
-          in builtins.foldl' (acc: mod: acc + modMap.${mod}) 0 enabledMods;
+      })
+      
+      # Configure Raycast preferences declaratively
+      (mkIf (cfg.raycast.enable && cfg.raycast.hotkey.enable) {
+        "com.raycast.macos" = {
+          # Set Raycast hotkey using the standard format
+          # This corresponds to the global hotkey for opening Raycast
+          raycastGlobalHotkey = let
+            modifierFlags = let
+              modMap = {
+                command = 1048576;    # kCGEventFlagMaskCommand
+                option = 524288;      # kCGEventFlagMaskAlternate  
+                control = 262144;     # kCGEventFlagMaskControl
+                shift = 131072;       # kCGEventFlagMaskShift
+              };
+              enabledMods = builtins.filter (mod: builtins.elem mod cfg.raycast.hotkey.modifiers) 
+                           (builtins.attrNames modMap);
+            in builtins.foldl' (acc: mod: acc + modMap.${mod}) 0 enabledMods;
+            
+            keyCode = let
+              keyMap = {
+                space = 49;
+                return = 36;
+                tab = 48;
+                escape = 53;
+                delete = 51;
+                # Add more keys as needed
+              };
+            in keyMap.${cfg.raycast.hotkey.key} or 49; # default to space
+          in {
+            keyCode = keyCode;
+            modifierFlags = modifierFlags;
+          };
           
-          keyCode = let
-            keyMap = {
-              space = 49;
-              return = 36;
-              tab = 48;
-              escape = 53;
-              delete = 51;
-              # Add more keys as needed
-            };
-          in keyMap.${cfg.raycast.hotkey.key} or 49; # default to space
-        in {
-          keyCode = keyCode;
-          modifierFlags = modifierFlags;
+          # Enable hotkey monitoring
+          mainWindow_isMonitoringGlobalHotkeys = true;
+          
+          # Mark onboarding hotkey setup as complete
+          onboarding_setupHotkey = true;
         };
-        
-        # Enable hotkey monitoring
-        mainWindow_isMonitoringGlobalHotkeys = true;
-        
-        # Mark onboarding hotkey setup as complete
-        onboarding_setupHotkey = true;
-      };
-    };
+      })
+    ];
     
     # Launch Raycast at login
     launchd.agents.raycast = mkIf cfg.raycast.enable {
