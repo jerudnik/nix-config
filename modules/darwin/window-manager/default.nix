@@ -45,6 +45,14 @@ let
     # Drop it from your config, if you don't like this behavior
     # See https://nikitabobko.github.io/AeroSpace/guide.html#on-focus-changed
     on-focus-changed = ['move-mouse monitor-lazy-center']
+    
+    # Notify SketchyBar when workspace changes (for workspace indicators)
+    # See: https://nikitabobko.github.io/AeroSpace/guide.html#exec-on-workspace-change
+    exec-on-workspace-change = [
+      '/bin/bash',
+      '-c',
+      'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE PREV_WORKSPACE=$AEROSPACE_PREV_WORKSPACE'
+    ]
 
     # Gaps between windows (inner-*) and between monitor edges (outer-*).
     # Possible values:
@@ -55,11 +63,11 @@ let
     #                 See: https://nikitabobko.github.io/AeroSpace/guide.html#assign-workspaces-to-monitors
     [gaps]
     inner.horizontal = 8
-    inner.vertical =   8
-    outer.left =       8
-    outer.bottom =     8
-    outer.top =        8
-    outer.right =      8
+    inner.vertical = 8
+    outer.left = 8
+    outer.bottom = 8
+    outer.top = 40  # 32px SketchyBar height + 8px margin
+    outer.right = 8
 
     # 'main' binding mode declaration
     # See: https://nikitabobko.github.io/AeroSpace/guide.html#binding-modes
@@ -123,16 +131,17 @@ let
     alt-0 = 'workspace 10'
 
     # See: https://nikitabobko.github.io/AeroSpace/commands.html#move-node-to-workspace
-    alt-shift-1 = 'move-node-to-workspace 1'
-    alt-shift-2 = 'move-node-to-workspace 2'
-    alt-shift-3 = 'move-node-to-workspace 3'
-    alt-shift-4 = 'move-node-to-workspace 4'
-    alt-shift-5 = 'move-node-to-workspace 5'
-    alt-shift-6 = 'move-node-to-workspace 6'
-    alt-shift-7 = 'move-node-to-workspace 7'
-    alt-shift-8 = 'move-node-to-workspace 8'
-    alt-shift-9 = 'move-node-to-workspace 9'
-    alt-shift-0 = 'move-node-to-workspace 10'
+    # Using --focus-follows-window to update SketchyBar immediately
+    alt-shift-1 = 'move-node-to-workspace 1 --focus-follows-window'
+    alt-shift-2 = 'move-node-to-workspace 2 --focus-follows-window'
+    alt-shift-3 = 'move-node-to-workspace 3 --focus-follows-window'
+    alt-shift-4 = 'move-node-to-workspace 4 --focus-follows-window'
+    alt-shift-5 = 'move-node-to-workspace 5 --focus-follows-window'
+    alt-shift-6 = 'move-node-to-workspace 6 --focus-follows-window'
+    alt-shift-7 = 'move-node-to-workspace 7 --focus-follows-window'
+    alt-shift-8 = 'move-node-to-workspace 8 --focus-follows-window'
+    alt-shift-9 = 'move-node-to-workspace 9 --focus-follows-window'
+    alt-shift-0 = 'move-node-to-workspace 10 --focus-follows-window'
 
     # See: https://nikitabobko.github.io/AeroSpace/commands.html#workspace-back-and-forth
     alt-tab = 'workspace-back-and-forth'
@@ -223,16 +232,18 @@ in {
         echo "Creating AeroSpace.app symlink in /Applications"
         ln -sf "${cfg.package}/Applications/AeroSpace.app" "/Applications/AeroSpace.app"
       fi
-      
-      # Register as login item if start-at-login is enabled
-      ${lib.optionalString cfg.startAtLogin ''      
-        echo "Registering AeroSpace as login item..."
-        # Remove any existing login item first
-        /usr/bin/osascript -e 'tell application "System Events" to delete (every login item whose name is "AeroSpace")' 2>/dev/null || true
-        # Add new login item
-        /usr/bin/osascript -e 'tell application "System Events" to make new login item at end of login items with properties {path:"/Applications/AeroSpace.app", hidden:false, name:"AeroSpace"}' || true
-      ''}
     '';
+    
+    # Use launchd to start AeroSpace at login (more reliable than AppleScript)
+    # This creates a user agent that launches AeroSpace when the user logs in
+    launchd.user.agents.aerospace = mkIf cfg.startAtLogin {
+      serviceConfig = {
+        ProgramArguments = [ "/usr/bin/open" "-a" "/Applications/AeroSpace.app" ];
+        RunAtLoad = true;
+        KeepAlive = false;
+        ProcessType = "Interactive";
+      };
+    };
     
     # Optional: Add shell aliases for common aerospace commands
     environment.interactiveShellInit = ''

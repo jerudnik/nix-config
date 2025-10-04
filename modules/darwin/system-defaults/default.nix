@@ -54,6 +54,14 @@ in {
       };
     };
     
+    missionControl = {
+      separateSpaces = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Displays have separate Spaces (required for SketchyBar)";
+      };
+    };
+    
     globalDomain = {
       disableAutomaticCapitalization = mkOption {
         type = types.bool;
@@ -84,6 +92,12 @@ in {
         default = true;
         description = "Automatically switch between light and dark mode";
       };
+      
+      hideMenuBar = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Hide the macOS menu bar (useful when using SketchyBar)";
+      };
     };
   };
 
@@ -97,6 +111,10 @@ in {
           autohide = cfg.dock.autohide;
           orientation = cfg.dock.orientation;
           show-recents = cfg.dock.showRecents;
+          
+          # Mission Control: Displays have separate Spaces
+          # This is required for SketchyBar to work properly
+          mru-spaces = !cfg.missionControl.separateSpaces;
         };
         
         # Finder configuration
@@ -129,6 +147,9 @@ in {
           # Scrolling and interface settings
           "com.apple.swipescrolldirection" = cfg.globalDomain.naturalScrolling;
           AppleInterfaceStyleSwitchesAutomatically = cfg.globalDomain.automaticSwitchAppearance;
+          
+          # Menu bar visibility
+          _HIHideMenuBar = cfg.globalDomain.hideMenuBar;
         };
       };
     };

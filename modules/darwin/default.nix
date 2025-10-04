@@ -9,4 +9,5 @@
   window-manager = import ./window-manager/default.nix;
   theming = import ./theming/default.nix;
   fonts = import ./fonts/default.nix;
+  sketchybar = import ./sketchybar;
 }

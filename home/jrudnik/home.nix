@@ -75,4 +75,109 @@
 
   # XDG directories
   xdg.enable = true;
+  
+  # SketchyBar plugin scripts
+  xdg.configFile."sketchybar/plugins/aerospace.sh" = {
+    text = ''
+      #!/bin/bash
+      
+      WORKSPACE="$1"
+      FOCUSED=$(aerospace list-workspaces --focused)
+      
+      if [ "$WORKSPACE" = "$FOCUSED" ]; then
+        sketchybar --set space.$WORKSPACE background.drawing=on background.color=0xff7c6f64
+      else
+        sketchybar --set space.$WORKSPACE background.drawing=on background.color=0xff32302f
+      fi
+    '';
+    executable = true;
+  };
+  
+  xdg.configFile."sketchybar/plugins/battery.sh" = {
+    text = ''
+      #!/bin/bash
+      
+      PERCENTAGE=$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)
+      CHARGING=$(pmset -g batt | grep 'AC Power')
+      
+      if [[ $PERCENTAGE -ge 90 ]]; then
+        ICON="󰁹"
+      elif [[ $PERCENTAGE -ge 80 ]]; then
+        ICON="󰂂"
+      elif [[ $PERCENTAGE -ge 70 ]]; then
+        ICON="󰂁"
+      elif [[ $PERCENTAGE -ge 60 ]]; then
+        ICON="󰂀"
+      elif [[ $PERCENTAGE -ge 50 ]]; then
+        ICON="󰁿"
+      elif [[ $PERCENTAGE -ge 40 ]]; then
+        ICON="󰁾"
+      elif [[ $PERCENTAGE -ge 30 ]]; then
+        ICON="󰁽"
+      elif [[ $PERCENTAGE -ge 20 ]]; then
+        ICON="󰁼"
+      else
+        ICON="󰁺"
+      fi
+      
+      if [[ $CHARGING != "" ]]; then
+        ICON="󰂄"
+      fi
+      
+      sketchybar --set battery icon="$ICON" label="''${PERCENTAGE}%"
+    '';
+    executable = true;
+  };
+  
+  xdg.configFile."sketchybar/plugins/volume.sh" = {
+    text = ''
+      #!/bin/bash
+      
+      VOLUME=$(osascript -e "output volume of (get volume settings)")
+      MUTED=$(osascript -e "output muted of (get volume settings)")
+      
+      if [[ $MUTED == "true" ]]; then
+        ICON="󰸈"
+        LABEL="Muted"
+      else
+        case $((($VOLUME + 12) / 25)) in
+          [4-9]) ICON="󰕾" ;;
+          [1-3]) ICON="󰖀" ;;
+          *) ICON="󰕿" ;;
+        esac
+        LABEL="''${VOLUME}%"
+      fi
+      
+      sketchybar --set volume icon="$ICON" label="$LABEL"
+    '';
+    executable = true;
+  };
+  
+  xdg.configFile."sketchybar/plugins/wifi.sh" = {
+    text = ''
+      #!/bin/bash
+      
+      WIFI_DEVICE=$(networksetup -listallhardwareports | grep -A 1 Wi-Fi | tail -n 1 | awk '{print $2}')
+      SSID=$(networksetup -getairportnetwork "$WIFI_DEVICE" 2>/dev/null | cut -d":" -f2 | sed 's/^ *//')
+      
+      if [[ -n "$SSID" && "$SSID" != "You are not associated with an AirPort network." ]]; then
+        sketchybar --set wifi icon="󰖩" label="$SSID"
+      else
+        sketchybar --set wifi icon="󰖪" label="No WiFi"
+      fi
+    '';
+    executable = true;
+  };
+  
+  xdg.configFile."sketchybar/plugins/cpu.sh" = {
+    text = ''
+      #!/bin/bash
+      
+      CPU_USAGE=$(ps -A -o %cpu | awk '{s+=$1} END {printf "%.0f", s/8}')
+      MEMORY_PRESSURE=$(memory_pressure | grep "System-wide memory free percentage:" | awk '{print 100-$5}' | cut -d'.' -f1)
+      
+      sketchybar --set cpu label="$CPU_USAGE% 󰍛 ''${MEMORY_PRESSURE}%"
+    '';
+    executable = true;
+  };
 }
