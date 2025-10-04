@@ -92,7 +92,6 @@
     };
     
   };
-  };
   
   # XDG directories
   xdg.enable = true;
