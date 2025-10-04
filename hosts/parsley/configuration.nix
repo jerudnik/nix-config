@@ -73,8 +73,9 @@
     
     fonts = {
       enable = true;
-      # iA Writer fonts enabled by default
-      # Charter serif font enabled by default
+      # iM-Writing Nerd Font as default (iA Writer aesthetic + icons)
+      # Multiple Nerd Fonts installed: FiraCode, JetBrains Mono, Hack, etc.
+      # iA Writer fonts and Charter serif also available
     };
     
   };

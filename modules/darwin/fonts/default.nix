@@ -39,8 +39,37 @@ in {
       
       fonts = mkOption {
         type = types.listOf types.str;
-        default = [ "FiraCode" "JetBrainsMono" "Hack" "SourceCodePro" ];
-        description = "List of Nerd Fonts to install";
+        default = [ 
+          "IMWriting"        # iA Writer aesthetic with Nerd Font icons
+          "FiraCode"
+          "JetBrainsMono" 
+          "Hack"
+          "SourceCodePro"
+          "Iosevka"
+          "UbuntuMono"
+        ];
+        description = "List of Nerd Fonts to install for terminal use";
+      };
+      
+      defaultMonospace = mkOption {
+        type = types.str;
+        default = "iMWritingMonoNerdFont";
+        description = "Preferred monospace font for applications";
+      };
+    };
+    
+    # System font preferences
+    systemPreferences = {
+      enableFontSmoothing = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable font smoothing system-wide";
+      };
+      
+      fontSmoothingStyle = mkOption {
+        type = types.enum [ "automatic" "light" "medium" "strong" ];
+        default = "automatic";
+        description = "Font smoothing style preference";
       };
     };
   };
@@ -62,13 +91,22 @@ in {
           texlivePackages.charter  # Serif font
         ]
         
-        # Nerd Fonts for terminal
-        ++ optionals cfg.nerdFonts.enable [
-          nerd-fonts.fira-code
-          nerd-fonts.jetbrains-mono
-          nerd-fonts.hack
-          nerd-fonts.sauce-code-pro
-        ];
+        # Nerd Fonts for terminal (enhanced selection)
+        ++ optionals cfg.nerdFonts.enable (
+          map (font: pkgs.nerd-fonts.${font}) (
+            # Map font names to nerd-fonts package names
+            map (font: 
+              if font == "IMWriting" then "im-writing"
+              else if font == "FiraCode" then "fira-code"
+              else if font == "JetBrainsMono" then "jetbrains-mono" 
+              else if font == "Hack" then "hack"
+              else if font == "SourceCodePro" then "sauce-code-pro"
+              else if font == "Iosevka" then "iosevka"
+              else if font == "UbuntuMono" then "ubuntu-mono"
+              else font
+            ) cfg.nerdFonts.fonts
+          )
+        );
     };
     
     # Ensure fonts are available system-wide
@@ -79,5 +117,16 @@ in {
         # The fonts.packages configuration automatically handles system font installation
       '';
     };
+    
+    # System font preferences
+    system.defaults.NSGlobalDomain = mkMerge [
+      (mkIf cfg.systemPreferences.enableFontSmoothing {
+        AppleFontSmoothing = 
+          if cfg.systemPreferences.fontSmoothingStyle == "light" then 1
+          else if cfg.systemPreferences.fontSmoothingStyle == "medium" then 2
+          else if cfg.systemPreferences.fontSmoothingStyle == "strong" then 3
+          else 0; # automatic
+      })
+    ];
   };
 }

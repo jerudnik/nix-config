@@ -49,6 +49,21 @@ in {
       default = "htop";
       description = "System monitor to install (btop has better Stylix theming)";
     };
+    
+    # Shell enhancements
+    shellEnhancements = {
+      direnv = mkEnableOption "Directory-specific environment variables (direnv)" // { default = true; };
+      atuin = mkEnableOption "Magical shell history (atuin)" // { default = true; };
+      mcfly = mkEnableOption "Intelligent command history search (alternative to atuin)" // { default = false; };
+      payRespects = mkEnableOption "Command correction tool (pay-respects, modern thefuck alternative)" // { default = true; };
+    };
+    
+    # Git enhancements
+    gitTools = {
+      delta = mkEnableOption "Better git diff viewer (delta)" // { default = true; };
+      lazygit = mkEnableOption "Terminal UI for git (lazygit)" // { default = true; };
+      gitui = mkEnableOption "Blazing fast terminal UI for git (alternative to lazygit)" // { default = false; };
+    };
   };
 
   config = mkIf cfg.enable {
@@ -61,6 +76,12 @@ in {
       # System monitor (Stylix themes btop beautifully)
       ++ optional (cfg.systemMonitor == "htop") htop
       ++ optional (cfg.systemMonitor == "btop") btop
+      # Shell enhancements
+      ++ optional cfg.shellEnhancements.payRespects pay-respects
+      # Git tools
+      ++ optional cfg.gitTools.delta delta
+      ++ optional cfg.gitTools.lazygit lazygit
+      ++ optional cfg.gitTools.gitui gitui
       # warp-terminal is managed via Homebrew cask, not Nix package
       ;
     
@@ -102,9 +123,43 @@ in {
         };
       };
       
+      # Direnv (directory-specific environments)
+      direnv = mkIf cfg.shellEnhancements.direnv {
+        enable = true;
+        enableZshIntegration = cfg.enableShellIntegration;
+        nix-direnv.enable = true; # Better Nix support
+      };
+      
+      # Atuin (magical shell history)
+      atuin = mkIf cfg.shellEnhancements.atuin {
+        enable = true;
+        enableZshIntegration = cfg.enableShellIntegration;
+        settings = {
+          auto_sync = true;
+          sync_frequency = "10m";
+          sync_address = "https://api.atuin.sh";
+          search_mode = "fuzzy";
+          filter_mode_shell_up_key_binding = "directory";
+          show_preview = true;
+          max_preview_height = 4;
+          exit_mode = "return-original";
+          word_jump_mode = "emacs";
+          scroll_context_lines = 1;
+        };
+      };
+      
+      # McFly (alternative to atuin)
+      mcfly = mkIf cfg.shellEnhancements.mcfly {
+        enable = true;
+        enableZshIntegration = cfg.enableShellIntegration;
+        keyScheme = "emacs";
+        fuzzySearchFactor = 2;
+      };
+      
       # Note: Starship configuration is handled in ./starship.nix
       # Note: Alacritty configuration is handled in ./alacritty.nix
       # Note: System monitor (htop/btop) gets automatic Stylix theming when installed
+      # Note: pay-respects, delta, lazygit, gitui are installed as packages (no special config needed)
     };
     
     # Note: Shell aliases are managed by the shell module

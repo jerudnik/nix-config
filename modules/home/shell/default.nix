@@ -133,6 +133,27 @@ in {
         # z is handled by zoxide shell integration, don't override it
         zi = "zoxide query -i";  # Interactive zoxide
         zb = "zoxide query -l";  # List zoxide database
+        
+        # Git enhancements
+        lg = "lazygit";  # Quick lazygit access
+        tig = "gitui";   # Alternative TUI for git
+        gdiff = "delta";  # Better diff viewer
+        
+        # System monitoring shortcuts
+        top = "btop";     # Modern system monitor
+        htop = "btop";    # Redirect htop to btop
+        
+        # Useful development shortcuts  
+        serve = "python3 -m http.server 8000";  # Quick HTTP server
+        myip = "curl -s https://httpbin.org/ip | jq -r .origin";  # Get external IP
+        ports = "sudo lsof -iTCP -sTCP:LISTEN -n -P";  # Show listening ports
+        
+        # Command correction
+        fuck = "pay-respects";  # Modern thefuck replacement
+        
+        # Quick editing
+        edit = "$EDITOR";
+        e = "$EDITOR";
       }) // cfg.aliases;
       
       oh-my-zsh = {
