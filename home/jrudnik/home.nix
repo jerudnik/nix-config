@@ -49,12 +49,39 @@
       # Optional: Enable Emacs - it has excellent Stylix theming support!
       emacs = true;    # Emacs with automatic Stylix theming enabled!
       neovim = false;  # Alternative: Neovim with automatic theming
+      
+      # Add GitHub CLI for repository management
+      extraPackages = with pkgs; [ gh ];
     };
     
     git = {
       enable = true;
       userName = "jrudnik";
       userEmail = "john.rudnik@gmail.com";
+      
+      # Productive git aliases for faster workflow
+      aliases = {
+        # Essential shortcuts
+        st = "status";
+        co = "checkout";
+        br = "branch";
+        ci = "commit";
+        
+        # Workflow shortcuts
+        pushf = "push --force-with-lease";
+        unstage = "reset HEAD --";
+        amend = "commit --amend";
+        undo = "reset --soft HEAD~1";
+        last = "log -1 HEAD";
+        visual = "log --oneline --graph --decorate --all";
+        
+        # Branch management
+        recent = "for-each-ref --sort=-committerdate refs/heads/ --format='%(committerdate:short) %(refname:short)'";
+        
+        # Handy workflows
+        please = "push --force-with-lease";
+        commend = "commit --amend --no-edit";
+      };
     };
     
     cli-tools = {

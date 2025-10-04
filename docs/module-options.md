@@ -265,16 +265,43 @@ home.shell = {
 - Direnv integration with nix-direnv
 
 **Built-in Aliases:**
+
+*Basic File Operations:*
 - `ll` → `ls -alF`
 - `la` → `ls -A`
 - `l` → `ls -CF`
 - `..` → `cd ..`
 - `...` → `cd ../..`
+
+*Nix Operations:*
 - `nrs` → `sudo darwin-rebuild switch --flake ~/nix-config#parsley`
 - `nrb` → `darwin-rebuild build --flake ~/nix-config#parsley`
 - `nfu` → `nix flake update`
 - `nfc` → `nix flake check`
 - `ngc` → `nix-collect-garbage -d && sudo nix-collect-garbage -d`
+
+*Productivity Aliases:*
+- `c` → `clear`
+- `h` → `history`
+- `j` → `jobs`
+- `reload` → `exec zsh`
+- `path` → `echo $PATH | tr : '
+'`
+- `mkdir` → `mkdir -p`
+- `ping` → `ping -c 5`
+- `df` → `df -h`
+- `du` → `du -h`
+- `free` → `vm_stat`
+- `ps` → `ps aux`
+- `top` → `top -o cpu`
+- `ports` → `sudo lsof -i -P -n | grep LISTEN`
+- `myip` → `curl -s ifconfig.me`
+- `localip` → `ipconfig getifaddr en0`
+- `edit` → `$EDITOR`
+- `cat` → `bat` (if bat is installed)
+- `grep` → `rg` (if ripgrep is installed)
+- `find` → `fd` (if fd is installed)
+- `ls` → `eza --icons --git` (if eza is installed)
 
 **Example:**
 ```nix
@@ -326,12 +353,14 @@ home.development = {
 - `extraPackages` (list of packages, default: `[]`) - Additional development packages
 - `utilities.enableBasicUtils` (bool, default: `true`) - Enable basic utilities (tree, jq)
 - `utilities.extraUtils` (list of packages, default: `[]`) - Additional utility packages
+- `github.enable` (bool, default: `false`) - Enable GitHub CLI and authentication
 
 **Provides:**
 - Always: git, curl, wget, chosen editor
 - Language-specific tools based on enabled languages
 - Basic utilities: tree, jq (if enabled)
 - EDITOR environment variable
+- GitHub CLI (gh) when enabled with shell completion
 
 **Language Tools:**
 - **Rust**: `rustc`, `cargo`
@@ -355,6 +384,7 @@ home.development = {
     enableBasicUtils = true;
     extraUtils = with pkgs; [ htop ripgrep fd bat ];
   };
+  github.enable = true;  # Enable GitHub CLI
 };
 ```
 
@@ -518,12 +548,53 @@ home.git = {
 - Sensible defaults (init.defaultBranch, pull.rebase = false, push.default = simple)
 - Custom editor configuration
 - Additional configuration and aliases
+- Curated productivity aliases for common workflows
 
 **Built-in Configuration:**
 - `init.defaultBranch` → Set to `defaultBranch` option
 - `core.editor` → Set to `editor` option
 - `pull.rebase` → `false`
 - `push.default` → `"simple"`
+
+**Built-in Aliases (when aliases = {})**:
+- `st` → `status --short --branch`
+- `s` → `status --short`
+- `co` → `checkout`
+- `sw` → `switch`
+- `br` → `branch`
+- `ci` → `commit`
+- `cm` → `commit -m`
+- `ca` → `commit --amend`
+- `can` → `commit --amend --no-edit`
+- `d` → `diff`
+- `ds` → `diff --staged`
+- `dt` → `difftool`
+- `mt` → `mergetool`
+- `cp` → `cherry-pick`
+- `rb` → `rebase`
+- `rbi` → `rebase -i`
+- `rbc` → `rebase --continue`
+- `rba` → `rebase --abort`
+- `f` → `fetch`
+- `fa` → `fetch --all`
+- `fp` → `fetch --prune`
+- `pl` → `pull`
+- `ps` → `push`
+- `psu` → `push -u origin HEAD`
+- `psf` → `push --force-with-lease`
+- `lg` → `log --oneline --graph --decorate`
+- `lga` → `log --oneline --graph --decorate --all`
+- `ll` → `log --pretty=format:'%C(yellow)%h%Creset %ad %Cgreen%an%Creset %s' --date=relative`
+- `today` → `log --since='6am' --oneline --author='$(git config user.email)'`
+- `yesterday` → `log --since='yesterday' --until='6am' --oneline --author='$(git config user.email)'`
+- `week` → `log --since='1 week ago' --oneline --author='$(git config user.email)'`
+- `standup` → `log --since='yesterday' --until='6am' --oneline --author='$(git config user.email)'`
+- `unstage` → `reset HEAD --`
+- `uncommit` → `reset --soft HEAD~1`
+- `amend` → `commit --amend --reuse-message=HEAD`
+- `undo` → `reset HEAD~1 --mixed`
+- `tree` → `log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit`
+- `aliases` → `config --get-regexp '^alias\.'`
 
 **Example:**
 ```nix
@@ -540,16 +611,18 @@ home.git = {
     core.autocrlf = "input";
   };
   
+  # Custom aliases (overrides built-in ones)
   aliases = {
-    st = "status";
-    co = "checkout";
-    br = "branch";
-    ci = "commit";
-    unstage = "reset HEAD --";
-    visual = "!gitk";
+    please = "push --force-with-lease";
+    commend = "commit --amend --no-edit";
+    it = "!git init && git add . && git commit -m 'Initial commit'";
+    stash-all = "stash save --include-untracked";
+    grog = "log --graph --abbrev-commit --decorate --all --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(dim white) - %an%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n %C(white)%s%C(reset)'";
   };
 };
 ```
+
+**Note:** When `aliases = {}` (empty), the module provides a comprehensive set of built-in productivity aliases. When you define custom aliases, they completely override the built-in set, so include any built-in aliases you want to keep.
 
 ---
 
