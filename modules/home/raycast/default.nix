@@ -50,6 +50,48 @@ in
       example = { "onboarding_setupHotkey" = true; };
       description = "Additional com.raycast.macos defaults for documented Raycast keys";
     };
+
+    autoStart = mkOption {
+      type = types.submodule {
+        options = {
+          enable = mkEnableOption "Start Raycast automatically via a user-level launchd agent";
+          
+          label = mkOption {
+            type = types.str;
+            default = "org.home-manager.raycast.autostart";
+            description = "LaunchAgent label (per-user; safe default)";
+          };
+          
+          delaySeconds = mkOption {
+            type = types.int;
+            default = 3;
+            description = "Optional startup delay to avoid login race conditions (0 to disable)";
+          };
+          
+          startInBackground = mkOption {
+            type = types.bool;
+            default = true;
+            description = "Launch Raycast in background (do not activate window on login)";
+          };
+          
+          keepAlive = mkOption {
+            type = types.bool;
+            default = false;
+            description = "If true, relaunch Raycast if it exits. Usually false to respect manual quits";
+          };
+          
+          logToFile = mkOption {
+            type = types.bool;
+            default = true;
+            description = "Log LaunchAgent stdout/stderr to ~/Library/Logs/raycast-autostart.log";
+          };
+        };
+      };
+      default = {
+        enable = true;
+      };
+      description = "Declarative launchd agent to start Raycast at user login with optional delay and background start";
+    };
   };
 
   config = mkIf cfg.enable {
@@ -107,6 +149,30 @@ in
           };
         };
       };
+    };
+
+    # Declarative launchd agent for automatic startup
+    launchd.agents."raycast-autostart" = mkIf cfg.autoStart.enable {
+      enable = true;
+      config = 
+        let
+          startScript = pkgs.writeShellScript "raycast-autostart" ''
+            set -eu
+            ${lib.optionalString (cfg.autoStart.delaySeconds > 0) "sleep ${toString cfg.autoStart.delaySeconds}"}
+            exec /usr/bin/open ${lib.optionalString cfg.autoStart.startInBackground "-g"} -a Raycast
+          '';
+          logPath = "${config.home.homeDirectory}/Library/Logs/raycast-autostart.log";
+        in {
+          Label = cfg.autoStart.label;
+          ProgramArguments = [ "${startScript}" ];
+          RunAtLoad = true;
+          KeepAlive = cfg.autoStart.keepAlive;
+          ProcessType = "Interactive";
+          LimitLoadToSessionType = "Aqua";
+        } // lib.optionalAttrs cfg.autoStart.logToFile {
+          StandardOutPath = logPath;
+          StandardErrorPath = logPath;
+        };
     };
   };
 }

@@ -1,163 +1,179 @@
-# Spotlight Integration for Nix Applications
+# App Launcher Integration for Nix Applications
 
-This guide explains how to make your Nix-installed applications discoverable in macOS Spotlight.
+This guide explains how Nix-installed applications are organized and integrated with macOS app launchers (Raycast, Alfred, Spotlight).
 
-## How It Works
+## Current Architecture (Since 2025-01-04)
 
-The `home.spotlight` module creates organized application links in `~/Applications/` that Spotlight can index and discover.
+**Standard Two-Folder Model**: This configuration uses the official defaults from both nix-darwin and Home Manager for clean, predictable app organization.
 
-### What Gets Created
+### App Locations
 
-When you enable the spotlight module, it:
+1. **Home Manager Apps**: `~/Applications/Home Manager Apps/` (HM default)
+   - Contains user-level applications from Home Manager packages
+   - Examples: Alacritty, Emacs, AeroSpace, Raycast
 
-1. **Creates a clean folder**: `~/Applications/HomeManager/` (without spaces for better indexing)
-2. **Links GUI applications**: Any .app bundles from your home-manager packages
-3. **Triggers reindexing**: Attempts to refresh Spotlight's index automatically
-4. **Provides feedback**: Shows status during home-manager activation
+2. **System Apps**: `/Applications/Nix Apps/` (nix-darwin default)
+   - Contains system-level applications from nix-darwin packages
+   - Examples: Warp (from nixpkgs `warp-terminal`)
 
-## Configuration
+3. **Standard Apps**: `/Applications/` (macOS default)
+   - Regular macOS apps and Homebrew casks
 
-Add to your `home.nix`:
+## App Launcher Integration
+
+**Primary Launcher**: Raycast (configured in `home.raycast`)
 
 ```nix
-home.spotlight = {
+raycast = {
   enable = true;
-  appsFolder = "Applications/HomeManager";  # Customizable folder name
-  forceReindex = true;  # Automatic reindexing
+  followSystemAppearance = true;
+  globalHotkey = {
+    keyCode = 49;        # Space key
+    modifierFlags = 1048576;  # Command modifier (Cmd+Space)
+  };
 };
 ```
 
-## Current Status
+**How It Works**: Raycast automatically discovers applications in:
+- `~/Applications/Home Manager Apps/`
+- `/Applications/Nix Apps/`
+- `/Applications/` (regular macOS apps)
 
-After running `darwin-rebuild switch`, check your setup:
+No additional configuration required!
+
+## Verification
+
+After running `darwin-rebuild switch`, verify your setup:
 
 ```bash
-# Verify application links exist
-ls -la ~/Applications/HomeManager/
+# Check Home Manager apps
+ls -la ~/Applications/"Home Manager Apps"/
 
-# Expected output: symlinks to .app bundles
-# lrwxr-xr-x  Alacritty.app -> /nix/store/.../alacritty-.../Applications/Alacritty.app
+# Check system apps  
+ls -la "/Applications/Nix Apps/"
+
+# Expected: symlinks to .app bundles in nix store
+# lrwxr-xr-x  Alacritty.app -> /nix/store/.../Applications/Alacritty.app
 ```
 
-## Troubleshooting Spotlight Discovery
+## App Discovery Troubleshooting
 
-### 1. Manual Spotlight Reindexing
+### 1. Raycast Not Finding Apps
 
-If apps don't appear in Spotlight immediately:
+If apps don't appear in Raycast:
 
 ```bash
-# Force reindex (may show errors - this is normal)
-mdutil -E ~/Applications
+# Verify apps exist in standard locations
+ls -la ~/Applications/"Home Manager Apps"/
+ls -la "/Applications/Nix Apps/"
 
-# Alternative: Use System Preferences
-# System Preferences > Spotlight > Privacy
-# Add ~/Applications, then remove it (forces reindex)
+# Restart Raycast to refresh app index
+killall Raycast && open "/Users/jrudnik/Applications/Home Manager Apps/Raycast.app"
 ```
 
-### 2. Check Indexing Status
+### 2. Apps Not Launching
+
+If apps launch but behave oddly:
 
 ```bash
-# Check if directory is being indexed
-mdutil -s ~/Applications
-
-# Common responses:
-# - "Indexing enabled" = Good
-# - "Error: unknown indexing state" = Common with SIP, usually still works
+# Remove quarantine flags (common with downloaded apps)
+xattr -dr com.apple.quarantine ~/Applications/"Home Manager Apps"/*.app
+xattr -dr com.apple.quarantine "/Applications/Nix Apps"/*.app
 ```
 
-### 3. Verify Application Discovery
+### 3. Alternative Launchers
+
+Other launchers work with the standard folders:
+
+- **Spotlight**: Press Cmd+Space (if not replaced by Raycast)
+- **Alfred**: Automatically finds apps in `~/Applications` and `/Applications`
+- **LaunchBar**: Includes standard application directories
 
 ```bash
-# Search for your application
+# Test Spotlight discovery (if enabled)
 mdfind -name "Alacritty"
-
-# Or use Spotlight search directly:
-# Press Cmd+Space, type "Alacritty"
 ```
 
-### 4. Alternative Discovery Methods
+### 4. Manual App Launch
 
-If Spotlight still doesn't find apps:
+Apps can always be launched directly:
 
-**Option A: Finder Integration**
-- Open Finder
-- Navigate to `~/Applications/HomeManager/`
-- Drag applications to Dock for quick access
-- Applications will be indexed over time
-
-**Option B: Manual Spotlight Privacy Reset**
-1. System Preferences → Spotlight → Privacy
-2. Add `~/Applications` to the privacy list
-3. Wait 10 seconds
-4. Remove `~/Applications` from the privacy list
-5. Spotlight will reindex the folder
-
-**Option C: Launch Applications Directly**
 ```bash
-# Launch from command line to "teach" Spotlight
-open ~/Applications/HomeManager/Alacritty.app
+# Launch Home Manager apps
+open ~/Applications/"Home Manager Apps"/Alacritty.app
+open ~/Applications/"Home Manager Apps"/Emacs.app
 
-# This helps Spotlight learn about the application
+# Launch system apps
+open "/Applications/Nix Apps"/Warp.app
+
+# Or add to Dock by dragging from Finder
 ```
 
 ## Common Issues
 
-### Issue: "Error: unknown indexing state"
+### Issue: Apps installed but not visible in Raycast
 
-**Symptom**: `mdutil` commands show indexing errors
-**Cause**: macOS System Integrity Protection (SIP) restrictions
-**Solution**: This is normal and usually doesn't prevent Spotlight from working
+**Symptom**: New packages installed but apps don't appear in Raycast
+**Solution**:
+1. Verify app was installed with GUI: `ls -la ~/Applications/"Home Manager Apps"/`
+2. Restart Raycast: `killall Raycast && open "/Users/jrudnik/Applications/Home Manager Apps/Raycast.app"`
+3. Wait 30 seconds for Raycast to reindex
 
-### Issue: Applications don't appear immediately
+### Issue: Wrong app location
 
-**Symptom**: Can't find newly installed applications in Spotlight
-**Solution**: 
-- Wait 2-5 minutes for background indexing
-- Try manual reindexing with `mdutil -E ~/Applications`
-- Launch the application once manually
+**Symptom**: System app appears in Home Manager folder or vice versa
+**Solution**: Check which package list the app is in:
+- `environment.systemPackages` → `/Applications/Nix Apps/`
+- `home.packages` → `~/Applications/Home Manager Apps/`
 
-### Issue: Old "Home Manager Apps" folder
+## Architecture Details
 
-**Symptom**: Both old and new application folders exist
-**Solution**: The new `HomeManager` folder provides better indexing. The old folder can be ignored or you can disable the spotlight module temporarily to clean up.
+### How Apps Are Linked
 
-## Expected Timeline
+- **Home Manager**: Uses `buildEnv` with `pathsToLink = "/Applications"` to create proper symlinks
+- **nix-darwin**: Creates direct symlinks to system packages with GUI applications
+- **Symlink Structure**: Preserves .app bundle structure for proper macOS integration
 
-- **Immediate**: Application links appear in `~/Applications/HomeManager/`
-- **1-2 minutes**: Applications may appear in Finder searches
-- **2-5 minutes**: Applications appear in Spotlight search (Cmd+Space)
-- **5+ minutes**: Full indexing including application metadata
+### Why This Approach Works
 
-## Integration with Other Launchers
+1. **Standard Locations**: Follows macOS conventions for app discovery
+2. **Automatic Indexing**: Both folders are automatically indexed by launcher apps
+3. **Clean Separation**: User vs system apps clearly separated
+4. **Zero Maintenance**: No custom reindexing or complex configuration
 
-This integration also works with:
-- **Alfred**: Will discover applications in `~/Applications/HomeManager/`
-- **Raycast**: Automatically finds symlinked applications
-- **LaunchBar**: Includes ~/Applications in search scope
+### Launcher Compatibility
 
-## Technical Details
+All major launchers work with these standard locations:
+- **Raycast** ✅ (primary launcher)
+- **Alfred** ✅ 
+- **LaunchBar** ✅
+- **Spotlight** ✅ (if enabled)
+- **Finder** ✅
 
-The spotlight module:
-- Uses `buildEnv` with `pathsToLink = "/Applications"` for proper symlinks
-- Creates symlinks that preserve .app bundle structure
-- Triggers Spotlight indexing via `mdutil` commands
-- Provides user feedback during activation
+## Testing Your Setup
 
-The approach follows the established pattern from the Nix community for macOS application integration.
-
-## Manual Testing
-
-To test if your applications are properly linked:
+To verify everything is working:
 
 ```bash
-# Check if Alacritty is linked correctly
-ls -la ~/Applications/HomeManager/Alacritty.app
+# Check apps are properly linked
+ls -la ~/Applications/"Home Manager Apps"/
+ls -la "/Applications/Nix Apps"/
 
-# Try launching it
-open ~/Applications/HomeManager/Alacritty.app
+# Test launching apps
+open ~/Applications/"Home Manager Apps"/Raycast.app
+open "/Applications/Nix Apps"/Warp.app
 
-# Search with mdfind
-mdfind -name "Alacritty" 2>/dev/null
+# Test Raycast discovery
+# Press Cmd+Space and type app name
 ```
 
-If manual launching works, Spotlight integration is functioning correctly.
+If apps launch successfully, launcher integration is working correctly.
+
+---
+
+## Migration Notes
+
+**Previous Setup**: Custom spotlight module with multiple folders  
+**Current Setup**: Standard two-folder model with Raycast  
+**Migration Date**: 2025-01-04  
+**Decision Record**: See [ADR-001](adr-001-app-organization.md) for full rationale

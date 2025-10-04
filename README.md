@@ -28,13 +28,13 @@ A clean, modular Nix configuration for macOS using nix-darwin and Home Manager. 
 │   │   ├── window-manager/  # AeroSpace tiling window manager
 │   │   ├── theming/         # Stylix theming system
 │   │   └── fonts/           # Font configuration
-│   ├── home/                # Reusable home-manager modules (6 modules)
+│   ├── home/                # Reusable home-manager modules (5 modules)
 │   │   ├── shell/           # Zsh with oh-my-zsh & aliases
 │   │   ├── development/     # Dev tools, languages & editors
 │   │   ├── git/             # Git configuration
 │   │   ├── cli-tools/       # Modern CLI utilities
-│   │   ├── spotlight/       # macOS Spotlight integration
-│   │   └── window-manager/  # User window manager settings
+│   │   ├── window-manager/  # User window manager settings
+│   │   └── raycast/         # Raycast launcher configuration
 │   └── nixos/               # NixOS modules (future)
 ├── scripts/
 │   ├── build.sh            # Build/switch/check script
@@ -91,7 +91,7 @@ This configuration evolved from framework-dependent to advanced modular architec
 ## Features
 
 ### Modular Architecture
-- **15 reusable modules** (9 darwin + 6 home) with rich configuration options
+- **14 reusable modules** (9 darwin + 5 home) with rich configuration options
 - **NixOS module pattern** with options/config structure
 - **Type-safe configuration** with validation and documentation
 - **81-line system config** (reduced from 100+ lines)
@@ -114,7 +114,7 @@ This configuration evolved from framework-dependent to advanced modular architec
 - Development environment (Rust, Go, Python) with optional Emacs
 - Modern CLI tools (eza, bat, ripgrep, fd, fzf, starship)
 - System monitor (btop) with beautiful Stylix theming
-- macOS Spotlight integration for Nix packages
+- Raycast launcher integration (apps auto-discovered)
 - Alacritty terminal with automatic theming
 
 ## Modular Configuration Examples
@@ -172,7 +172,10 @@ home = {
     userEmail = "john.rudnik@gmail.com";
   };
   
-  spotlight.enable = true;
+  # App organization handled automatically:
+  # - Home Manager apps: ~/Applications/Home Manager Apps
+  # - System apps: /Applications/Nix Apps
+  # - Raycast discovers all apps automatically
 };
 ```
 

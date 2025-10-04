@@ -4,7 +4,7 @@
   development = import ./development/default.nix;
   git = import ./git/default.nix;
   cli-tools = import ./cli-tools/default.nix;
-  spotlight = import ./spotlight/default.nix;
+  # spotlight module removed - using Raycast for app launching
   window-manager = import ./window-manager/default.nix;
   raycast = import ./raycast/default.nix;
 }

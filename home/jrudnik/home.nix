@@ -6,7 +6,7 @@
     outputs.homeManagerModules.development
     outputs.homeManagerModules.git
     outputs.homeManagerModules.cli-tools
-    outputs.homeManagerModules.spotlight
+    # Spotlight module removed - using Raycast for app launching
     outputs.homeManagerModules.window-manager
     outputs.homeManagerModules.raycast
   ];
@@ -21,7 +21,7 @@
   # Let Home Manager install and manage itself
   programs.home-manager.enable = true;
   
-  # Additional packages (moved warp to Homebrew cask)
+  # Additional packages - most packages managed via modules
   # home.packages = with pkgs; [ ];
   
   # Note: nixpkgs config is managed globally via useGlobalPkgs in flake.nix
@@ -66,13 +66,10 @@
       systemMonitor = "btop";  # Options: "none", "htop", "btop"
     };
     
-    spotlight = {
-      enable = true;
-      appsFolder = "Applications/home-manager";  # Home Manager apps folder
-      linkSystemApps = true;  # Link system-level nix-darwin apps
-      systemAppsFolder = "Applications/nix-darwin";  # System apps folder
-      reindexInterval = "daily";  # Periodic reindexing
-    };
+    # Spotlight module removed - using Raycast for app launching
+    # Apps appear in standard locations automatically:
+    # - Home Manager apps: ~/Applications/Home Manager Apps
+    # - nix-darwin system apps: /Applications/Nix Apps
     
     window-manager.aerospace = {
       enable = true;

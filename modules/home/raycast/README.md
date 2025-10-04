@@ -45,6 +45,21 @@ A WARP.md compliant Home Manager module for installing and configuring Raycast d
 - **Description**: Additional com.raycast.macos defaults for documented Raycast keys
 - **Usage**: Escape hatch for settings not covered by typed options
 
+### `home.raycast.autoStart`
+- **Type**: `submodule`
+- **Default**: `{ enable = true; delaySeconds = 3; startInBackground = true; keepAlive = false; logToFile = true; label = "org.home-manager.raycast.autostart"; }`
+- **Description**: Creates a user LaunchAgent to start Raycast at login. Uses `/usr/bin/open -a Raycast`.
+- **Best practice**: Keep `startInBackground = true` to avoid stealing focus at login.
+- **Edge cases**: If Accessibility permission is not granted yet, macOS will prompt on first launch. This cannot be configured declaratively due to TCC restrictions.
+
+#### autoStart Submodule Options:
+- `enable` (bool): Enable automatic startup via launchd agent
+- `label` (string): LaunchAgent label (default: "org.home-manager.raycast.autostart")
+- `delaySeconds` (int): Optional startup delay to avoid login race conditions (default: 3)
+- `startInBackground` (bool): Launch Raycast in background without activating window (default: true)
+- `keepAlive` (bool): Relaunch Raycast if it exits (default: false - respects manual quits)
+- `logToFile` (bool): Log LaunchAgent output to ~/Library/Logs/raycast-autostart.log (default: true)
+
 ## Configuration Example
 
 ```nix
@@ -55,6 +70,12 @@ A WARP.md compliant Home Manager module for installing and configuring Raycast d
     globalHotkey = {
       keyCode = 49;           # Space key
       modifierFlags = 1048576; # Command modifier (Cmd+Space)
+    };
+    autoStart = {
+      enable = true;
+      delaySeconds = 3;
+      startInBackground = true;
+      keepAlive = false;      # Respect manual quits
     };
     # Add additional settings if needed
     extraDefaults = {
@@ -119,8 +140,20 @@ This module is fully compliant with all Configuration Purity Laws:
 - Verify Spotlight shortcuts are disabled in System Preferences
 - Check that `raycastGlobalHotkey` is set in com.raycast.macos defaults
 - Restart Raycast to pick up new hotkey settings
+- If hotkey fails: verify Spotlight keys are disabled and Raycast has Accessibility permission
+
+### Auto-startup not working
+- Check if LaunchAgent is loaded: `launchctl print gui/$(id -u) | grep org.home-manager.raycast.autostart`
+- View startup logs: `tail -f ~/Library/Logs/raycast-autostart.log`
+- Manually trigger startup: `launchctl kickstart -k gui/$(id -u)/org.home-manager.raycast.autostart`
+- If intermittent failures: increase `delaySeconds` to 5-8 seconds
 
 ### Settings not applying
 - Settings are applied via `targets.darwin.defaults` during Home Manager activation
 - Raycast must be restarted to pick up new preference changes
 - Check `defaults read com.raycast.macos` to verify settings were written
+
+### Accessibility Permission
+- macOS will prompt for Accessibility permission on first Raycast launch
+- This cannot be granted declaratively due to TCC (Transparency, Consent, and Control) restrictions
+- Once granted, hotkeys will work reliably across reboots
