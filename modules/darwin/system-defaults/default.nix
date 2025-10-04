@@ -58,7 +58,7 @@ in {
       separateSpaces = mkOption {
         type = types.bool;
         default = true;
-        description = "Displays have separate Spaces (required for SketchyBar)";
+        description = "Displays have separate Spaces (improves multi-monitor workflow)";
       };
     };
     
@@ -96,7 +96,7 @@ in {
       hideMenuBar = mkOption {
         type = types.bool;
         default = false;
-        description = "Hide the macOS menu bar (useful when using SketchyBar)";
+        description = "Hide the macOS menu bar";
       };
     };
   };
@@ -113,7 +113,7 @@ in {
           show-recents = cfg.dock.showRecents;
           
           # Mission Control: Displays have separate Spaces
-          # This is required for SketchyBar to work properly
+          # This improves multi-monitor workflow
           mru-spaces = !cfg.missionControl.separateSpaces;
         };
         

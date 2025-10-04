@@ -77,8 +77,7 @@
       enable = true;
       # Uses the default configuration from the module with:
       # - Alt-based keybindings
-      # - Integration with SketchyBar
-      # - Proper gaps for the status bar
+      # - Clean window gaps and layout
       # - Warp terminal integration (Alt+Enter)
     };
     
