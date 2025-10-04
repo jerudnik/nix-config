@@ -4,109 +4,75 @@ with lib;
 
 let
   cfg = config.home.cli-tools;
+  # Access Stylix colors for consistent theming
+  inherit (config.lib.stylix) colors;
 in {
   config = mkIf (cfg.enable && cfg.prompt.starship) {
     programs.starship = {
       enable = true;
       enableZshIntegration = cfg.enableShellIntegration;
       settings = {
-        # Enhanced configuration with developer-focused features
+        # Gruvbox Rainbow Preset with Stylix colors
         add_newline = false;
         
-        # Custom format with more information
+        # Rainbow format - each section has a different background color
         format = concatStrings [
+          "[](bg:#${colors.base09})"
           "$os"
           "$username"
-          "$hostname"
+          "[](bg:#${colors.base0A} fg:#${colors.base09})"
           "$directory"
+          "[](fg:#${colors.base0A} bg:#${colors.base0B})"
           "$git_branch"
-          "$git_commit"
-          "$git_state"
-          "$git_metrics"
           "$git_status"
-          "$hg_branch"
+          "[](fg:#${colors.base0B} bg:#${colors.base0D})"
+          "$nodejs"
+          "$rust"
+          "$golang"
+          "$python"
+          "$nix_shell"
+          "[](fg:#${colors.base0D} bg:#${colors.base0C})"
           "$docker_context"
           "$package"
-          "$c"
-          "$cmake"
-          "$dart"
-          "$deno"
-          "$dotnet"
-          "$elixir"
-          "$elm"
-          "$erlang"
-          "$golang"
-          "$haskell"
-          "$helm"
-          "$java"
-          "$julia"
-          "$kotlin"
-          "$lua"
-          "$nim"
-          "$nodejs"
-          "$ocaml"
-          "$perl"
-          "$php"
-          "$pulumi"
-          "$purescript"
-          "$python"
-          "$rlang"
-          "$red"
-          "$ruby"
-          "$rust"
-          "$scala"
-          "$swift"
-          "$terraform"
-          "$vlang"
-          "$vagrant"
-          "$zig"
-          "$buf"
-          "$nix_shell"
-          "$conda"
-          "$memory_usage"
-          "$aws"
-          "$gcloud"
-          "$openstack"
-          "$azure"
-          "$env_var"
-          "$crystal"
-          "$custom"
-          "$sudo"
+          "[](fg:#${colors.base0C} bg:#${colors.base08})"
+          "$time"
+          "[](fg:#${colors.base08})"
+          " "
           "$cmd_duration"
-          "$line_break"
           "$jobs"
           "$battery"
-          "$time"
           "$status"
           "$character"
         ];
         
-        # OS symbol (shows macOS icon)
+        # OS and username section (orange background)
         os = {
           disabled = false;
-          style = "bold white";
+          style = "bg:#${colors.base09} fg:#${colors.base00}";
           symbols = {
-            Macos = " ";
-            Linux = "🐧 ";
-            Windows = "🪟 ";
+            Macos = "󰀵";
+            Linux = "󰌽";
+            Windows = "󰍲";
+            Ubuntu = "󰕈";
+            Debian = "󰣚";
+            Arch = "󰣇";
+            NixOS = "󱄅";
           };
         };
         
-        # Show hostname only in SSH sessions
-        hostname = {
-          ssh_only = true;
-          format = "[@$hostname]($style) ";
-          style = "bold green";
+        username = {
+          show_always = true;
+          style_user = "bg:#${colors.base09} fg:#${colors.base00}";
+          style_root = "bg:#${colors.base09} fg:#${colors.base00}";
+          format = "[ $user ]($style)";
+          disabled = false;
         };
         
-        # Directory with better icons and colors
+        # Directory section (yellow background)
         directory = {
-          style = "bold cyan";
-          truncation_length = 4;
-          truncate_to_repo = true;
-          format = "[$path]($style)[$read_only]($read_only_style) ";
-          read_only = "🔒";
-          read_only_style = "red";
+          style = "bg:#${colors.base0A} fg:#${colors.base00}";
+          format = "[ $path ]($style)";
+          truncation_length = 3;
           truncation_symbol = "…/";
           
           substitutions = {
@@ -117,162 +83,194 @@ in {
             "Developer" = "󰲋 ";
             "Projects" = "󰲋 ";
             "Desktop" = "󰇄 ";
+            "~" = " ";
           };
         };
         
-        # Git branch with better styling
+        # Git section (green background)
         git_branch = {
-          style = "bold purple";
-          format = "[\\($symbol$branch\\)]($style) ";
           symbol = " ";
+          style = "bg:#${colors.base0B} fg:#${colors.base00}";
+          format = "[ $symbol $branch ]($style)";
         };
         
-        # Git status with detailed info
         git_status = {
-          style = "bright-red";
-          format = "([\\[$all_status$ahead_behind\\]]($style) )";
-          conflicted = "⚔️ ";
-          ahead = "🏎️ 💨×$count ";
-          behind = "🐢×$count ";
-          diverged = "🔱 🏎️ 💨×$ahead_count 🐢×$behind_count ";
-          untracked = "🛤️ ×$count ";
-          stashed = "📦 ";
-          modified = "📝×$count ";
-          staged = "🗃️ ×$count ";
-          renamed = "📛×$count ";
-          deleted = "🗑️ ×$count ";
+          style = "bg:#${colors.base0B} fg:#${colors.base00}";
+          format = "[$all_status$ahead_behind ]($style)";
+          # Use simple symbols for clean look
+          conflicted = "=";
+          ahead = "⇡";
+          behind = "⇣";
+          diverged = "⇕";
+          up_to_date = "";
+          untracked = "?";
+          stashed = "$";
+          modified = "!";
+          staged = "+";
+          renamed = "»";
+          deleted = "✘";
         };
         
-        # Show git commit when in detached HEAD
-        git_commit = {
-          commit_hash_length = 7;
-          style = "bold yellow";
-          format = "[\\($hash$tag\\)]($style) ";
-        };
-        
-        # Git metrics (lines added/removed)
-        git_metrics = {
-          disabled = false;
-          added_style = "bold green";
-          deleted_style = "bold red";
-          format = "([+$added]($added_style) )([-$deleted]($deleted_style) )";
-        };
-        
-        # Nix shell indicator
-        nix_shell = {
-          disabled = false;
-          impure_msg = "[impure shell](bold red)";
-          pure_msg = "[pure shell](bold green)";
-          format = "via [$symbol$state( \\($name\\))]($style) ";
-          symbol = "❄️ ";
-        };
-        
-        # Programming language indicators
+        # Language/Runtime section (blue background)
         nodejs = {
-          format = "via [⬢ $version](bold green) ";
+          symbol = "";
+          style = "bg:#${colors.base0D} fg:#${colors.base00}";
+          format = "[ $symbol ($version) ]($style)";
           detect_files = ["package.json" ".nvmrc"];
         };
         
-        python = {
-          format = "via [🐍 $version( \\($virtualenv\\))]($style) ";
-          style = "yellow bold";
-        };
-        
         rust = {
-          format = "via [🦀 $version](red bold) ";
+          symbol = "";
+          style = "bg:#${colors.base0D} fg:#${colors.base00}";
+          format = "[ $symbol ($version) ]($style)";
         };
         
         golang = {
-          format = "via [🐹 $version](cyan bold) ";
+          symbol = "";
+          style = "bg:#${colors.base0D} fg:#${colors.base00}";
+          format = "[ $symbol ($version) ]($style)";
         };
         
-        java = {
-          format = "via [☕ $version](red dimmed) ";
+        python = {
+          symbol = "";
+          style = "bg:#${colors.base0D} fg:#${colors.base00}";
+          format = "[ $symbol ($version) ]($style)";
         };
         
-        # Docker context
+        # Nix shell (show when in nix environment)
+        nix_shell = {
+          disabled = false;
+          symbol = "❄️ ";
+          style = "bg:#${colors.base0D} fg:#${colors.base00}";
+          format = "[ $symbol ]($style)";
+        };
+        
+        # Docker and package section (cyan background)
         docker_context = {
-          format = "via [🐳 $context](blue bold) ";
+          symbol = " ";
+          style = "bg:#${colors.base0C} fg:#${colors.base00}";
+          format = "[ $symbol $context ]($style)";
           only_with_files = true;
         };
         
-        # Package version (shows version from package.json, Cargo.toml, etc.)
         package = {
-          disabled = false;
-          format = "is [📦 $version]($style) ";
-          style = "208 bold";
+          symbol = "󰏗 ";
+          style = "bg:#${colors.base0C} fg:#${colors.base00}";
+          format = "[ $symbol $version ]($style)";
         };
         
-        # Command duration with better formatting
+        # Time section (red background)
+        time = {
+          disabled = false;
+          time_format = "%R";
+          style = "bg:#${colors.base08} fg:#${colors.base00}";
+          format = "[ 󰅐 $time ]($style)";
+        };
+        
+        # Right-side indicators (no background)
         cmd_duration = {
-          style = "bold yellow";
+          min_time = 4000;
+          style = "fg:#${colors.base04}";
           format = "took [$duration]($style) ";
-          disabled = false;
-          min_time = 2000;
-          show_milliseconds = false;
         };
         
-        # Battery indicator (useful for laptops)
+        jobs = {
+          threshold = 1;
+          symbol = "⚡";
+          style = "fg:#${colors.base08}";
+          format = "[$symbol$number]($style) ";
+        };
+        
         battery = {
-          full_symbol = "🔋";
-          charging_symbol = "🔌";
-          discharging_symbol = "⚡";
-          unknown_symbol = "🔋";
-          empty_symbol = "💀";
+          full_symbol = "󰂄";
+          charging_symbol = "󰂄";
+          discharging_symbol = "󰂃";
+          unknown_symbol = "󰁽";
+          empty_symbol = "󰂎";
           
           display = [
             {
               threshold = 15;
-              style = "bold red";
+              style = "fg:#${colors.base08}";
             }
             {
               threshold = 50;
-              style = "bold yellow";
+              style = "fg:#${colors.base0A}";
             }
             {
               threshold = 80;
-              style = "bold green";
+              style = "fg:#${colors.base0B}";
             }
           ];
-        };
-        
-        # Memory usage
-        memory_usage = {
-          disabled = false;
-          threshold = 70;
-          style = "bold dimmed red";
-          symbol = "🐏 ";
-        };
-        
-        # Jobs indicator
-        jobs = {
-          symbol = "⚡";
-          style = "bold red";
-          number_threshold = 1;
-          format = "[$symbol$number]($style) ";
-        };
-        
-        # Character (prompt symbol)
-        character = {
-          success_symbol = "[❯](bold green)";
-          error_symbol = "[❯](bold red)";
-          vicmd_symbol = "[❮](bold yellow)";
-        };
-        
-        # Time (optional, disabled by default)
-        time = {
-          disabled = true;
-          format = "🕙[\\[ $time \\]]($style) ";
-          style = "bright-white";
-          utc_time_offset = "local";
         };
         
         # Status (shows exit code on failure)
         status = {
           disabled = false;
-          style = "bold red";
-          symbol = "💥";
+          style = "fg:#${colors.base08}";
+          symbol = "✘";
           format = "[$symbol$status]($style) ";
+        };
+        
+        # Prompt character
+        character = {
+          success_symbol = "[❯](bold fg:#${colors.base0B})";
+          error_symbol = "[❯](bold fg:#${colors.base08})";
+          vicmd_symbol = "[❮](bold fg:#${colors.base0A})";
+        };
+        
+        # Additional language support (hidden by default, shows when detected)
+        c = {
+          symbol = " ";
+          style = "bg:#${colors.base0D} fg:#${colors.base00}";
+          format = "[ $symbol ($version(-$name)) ]($style)";
+        };
+        
+        java = {
+          symbol = " ";
+          style = "bg:#${colors.base0D} fg:#${colors.base00}";
+          format = "[ $symbol ($version) ]($style)";
+        };
+        
+        kotlin = {
+          symbol = "";
+          style = "bg:#${colors.base0D} fg:#${colors.base00}";
+          format = "[ $symbol ($version) ]($style)";
+        };
+        
+        haskell = {
+          symbol = "";
+          style = "bg:#${colors.base0D} fg:#${colors.base00}";
+          format = "[ $symbol ($version) ]($style)";
+        };
+        
+        lua = {
+          symbol = "";
+          style = "bg:#${colors.base0D} fg:#${colors.base00}";
+          format = "[ $symbol ($version) ]($style)";
+        };
+        
+        ruby = {
+          symbol = "";
+          style = "bg:#${colors.base0D} fg:#${colors.base00}";
+          format = "[ $symbol ($version) ]($style)";
+        };
+        
+        # SSH hostname indicator
+        hostname = {
+          ssh_only = true;
+          ssh_symbol = "🌐";
+          format = "[$ssh_symbol$hostname]($style) ";
+          style = "fg:#${colors.base0E}";
+        };
+        
+        # Memory usage (shows when high)
+        memory_usage = {
+          disabled = false;
+          threshold = 75;
+          symbol = "󰍛";
+          style = "fg:#${colors.base08}";
+          format = "$symbol [$ram( | $swap)]($style) ";
         };
       };
     };

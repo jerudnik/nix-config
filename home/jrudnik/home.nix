@@ -86,6 +86,7 @@
       enable = true;
       raycast = {
         enable = true;
+        replaceSpotlight = true;  # Disable macOS Spotlight Cmd+Space shortcut
         # Raycast will replace macOS Spotlight as your application launcher
         # It has excellent integration with nix-darwin apps
       };
