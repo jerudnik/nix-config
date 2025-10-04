@@ -53,7 +53,7 @@ in {
       
       defaultMonospace = mkOption {
         type = types.str;
-        default = "iMWritingMonoNerdFont";
+        default = "iMWritingMono Nerd Font";
         description = "Preferred monospace font for applications";
       };
     };

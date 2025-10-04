@@ -19,19 +19,19 @@ in {
           size = mkDefault 14; # Will be overridden by Stylix if theming is enabled
           # Use iM-Writing Mono Nerd Font as default (iA Writer aesthetic with Nerd Font icons)
           normal = {
-            family = mkDefault "iMWritingMonoNerdFont";
+            family = mkDefault "iMWritingMono Nerd Font";
             style = mkDefault "Regular";
           };
           bold = {
-            family = mkDefault "iMWritingMonoNerdFont";
+            family = mkDefault "iMWritingMono Nerd Font";
             style = mkDefault "Bold";
           };
           italic = {
-            family = mkDefault "iMWritingMonoNerdFont";
+            family = mkDefault "iMWritingMono Nerd Font";
             style = mkDefault "Italic";
           };
           bold_italic = {
-            family = mkDefault "iMWritingMonoNerdFont";
+            family = mkDefault "iMWritingMono Nerd Font";
             style = mkDefault "Bold Italic";
           };
         };

@@ -41,7 +41,7 @@ in {
         
         name = mkOption {
           type = types.str;
-          default = "iMWritingMonoNerdFont";
+          default = "iMWritingMono Nerd Font";
           description = "Monospace font name";
         };
       };
@@ -55,7 +55,7 @@ in {
         
         name = mkOption {
           type = types.str;
-          default = "iMWritingQuatNerdFont";
+          default = "iMWritingQuat Nerd Font";
           description = "Sans-serif font name";
         };
       };
