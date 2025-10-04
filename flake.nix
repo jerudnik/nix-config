@@ -61,8 +61,11 @@
           inherit system;
           specialArgs = self._specialArgs;
           modules = [
-            # Configure nixpkgs
-            { nixpkgs.config.allowUnfree = true; }
+            # Configure nixpkgs - allow only specific unfree packages
+            ({ lib, ... }: {
+              nixpkgs.config.allowUnfreePredicate = pkg:
+                lib.elem (lib.getName pkg) [ "raycast" ];
+            })
             
             # Import the host configuration
             ./hosts/parsley/configuration.nix

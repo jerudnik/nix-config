@@ -8,7 +8,7 @@
     outputs.homeManagerModules.cli-tools
     outputs.homeManagerModules.spotlight
     outputs.homeManagerModules.window-manager
-    outputs.homeManagerModules.launcher
+    outputs.homeManagerModules.raycast
   ];
 
   # Home Manager configuration
@@ -82,21 +82,16 @@
       # - Warp terminal integration (Alt+Enter)
     };
     
-    launcher = {
+    raycast = {
       enable = true;
-      raycast = {
-        enable = true;
-        replaceSpotlight = true;  # Disable macOS Spotlight Cmd+Space shortcut
-        hotkey = {
-          enable = true;
-          key = "space";
-          modifiers = [ "command" ];  # Cmd+Space
-        };
-        # Raycast will replace macOS Spotlight as your application launcher
-        # It has excellent integration with nix-darwin apps
+      followSystemAppearance = true;
+      globalHotkey = {
+        keyCode = 49;        # Space key
+        modifierFlags = 1048576;  # Command modifier (Cmd+Space)
       };
     };
     
+  };
   };
   
   # XDG directories
