@@ -6,6 +6,8 @@
     outputs.darwinModules.security
     outputs.darwinModules.nix-settings
     outputs.darwinModules.system-defaults
+    outputs.darwinModules.keyboard
+    outputs.darwinModules.homebrew
   ];
 
   # Host identification
@@ -33,6 +35,16 @@
     system-defaults = {
       enable = true;
       # All settings use module defaults, can override here if needed
+    };
+    
+    keyboard = {
+      enable = true;
+      # remapCapsLockToControl = true (default)
+    };
+    
+    homebrew = {
+      enable = true;
+      # Package lists can be configured here or in separate files
     };
   };
 }

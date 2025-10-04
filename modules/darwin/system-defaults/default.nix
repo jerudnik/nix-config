@@ -46,6 +46,12 @@ in {
         default = true;
         description = "Show status bar in Finder";
       };
+      
+      defaultViewStyle = mkOption {
+        type = types.enum [ "icon" "list" "column" "gallery" ];
+        default = "column";
+        description = "Default Finder view style";
+      };
     };
     
     globalDomain = {
@@ -65,6 +71,18 @@ in {
         type = types.bool;
         default = true;
         description = "Expand save panels by default";
+      };
+      
+      naturalScrolling = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Enable natural scrolling (reversed scrolling direction)";
+      };
+      
+      automaticSwitchAppearance = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Automatically switch between light and dark mode";
       };
     };
   };
@@ -86,6 +104,11 @@ in {
           AppleShowAllExtensions = cfg.finder.showAllExtensions;
           ShowPathbar = cfg.finder.showPathbar;
           ShowStatusBar = cfg.finder.showStatusBar;
+          FXPreferredViewStyle = 
+            if cfg.finder.defaultViewStyle == "icon" then "icnv"
+            else if cfg.finder.defaultViewStyle == "list" then "Nlsv"
+            else if cfg.finder.defaultViewStyle == "column" then "clmv"
+            else "Flwv";  # gallery
         };
         
         # Global domain settings
@@ -102,6 +125,10 @@ in {
           NSNavPanelExpandedStateForSaveMode2 = cfg.globalDomain.expandSavePanel;
           PMPrintingExpandedStateForPrint = cfg.globalDomain.expandSavePanel;
           PMPrintingExpandedStateForPrint2 = cfg.globalDomain.expandSavePanel;
+          
+          # Scrolling and interface settings
+          "com.apple.swipescrolldirection" = cfg.globalDomain.naturalScrolling;
+          AppleInterfaceStyleSwitchesAutomatically = cfg.globalDomain.automaticSwitchAppearance;
         };
       };
     };

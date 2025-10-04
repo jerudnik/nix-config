@@ -13,9 +13,24 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    
+    # Declarative homebrew management
+    nix-homebrew = {
+      url = "github:zhaofengli/nix-homebrew";
+    };
+    
+    # Homebrew tap sources
+    homebrew-core = {
+      url = "github:homebrew/homebrew-core";
+      flake = false;
+    };
+    homebrew-cask = {
+      url = "github:homebrew/homebrew-cask";
+      flake = false;
+    };
   };
 
-  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, ... }:
+  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, nix-homebrew, homebrew-core, homebrew-cask, ... }:
     let
       system = "aarch64-darwin";
     in {
@@ -56,6 +71,35 @@
                 users.jrudnik = import ./home/jrudnik/home.nix;
               };
             }
+            
+            # Declarative homebrew management
+            nix-homebrew.darwinModules.nix-homebrew
+            {
+              nix-homebrew = {
+                # Install Homebrew under the default prefix
+                enable = true;
+
+                # Apple Silicon: Also install Homebrew under Intel prefix for Rosetta 2
+                enableRosetta = true;
+
+                # User owning the Homebrew prefix
+                user = "jrudnik";
+
+                # Declarative tap management
+                taps = {
+                  "homebrew/homebrew-core" = homebrew-core;
+                  "homebrew/homebrew-cask" = homebrew-cask;
+                };
+
+                # Enable fully-declarative tap management
+                mutableTaps = false;
+              };
+            }
+            
+            # Align homebrew taps config with nix-homebrew
+            ({ config, ... }: {
+              homebrew.taps = builtins.attrNames config.nix-homebrew.taps;
+            })
           ];
         };
       };
