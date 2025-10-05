@@ -19,8 +19,8 @@ in
       cli = {
         enable = mkOption {
           type = types.bool;
-          default = true;
-          description = "Whether to install Bitwarden CLI for terminal access";
+          default = false;
+          description = "Whether to install Bitwarden CLI for terminal access (currently disabled due to broken package)";
         };
 
         package = mkOption {

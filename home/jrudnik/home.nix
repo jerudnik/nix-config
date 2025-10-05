@@ -163,8 +163,8 @@
       # Security settings
       lockTimeout = 15;  # Auto-lock after 15 minutes
       
-      # CLI integration enabled by default
-      cli.enable = true;
+      # CLI integration disabled by default (bitwarden-cli package is broken)
+      cli.enable = false;
     };
     
   };
