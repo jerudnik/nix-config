@@ -11,6 +11,7 @@
     outputs.homeManagerModules.raycast
     outputs.homeManagerModules.browser
     outputs.homeManagerModules.security
+    outputs.homeManagerModules.ai
   ];
 
   # Home Manager configuration
@@ -172,6 +173,25 @@
     };
     
   };
+  
+  # AI tools configuration - all disabled by default
+  programs = {
+    
+    # Code Analysis & Prompt Generation
+    code2prompt.enable = false;
+    files-to-prompt.enable = false;
+    goose-cli.enable = false;
+    
+    # Placeholder modules (no installation)
+    github-copilot-cli.enable = false;
+    claude-desktop.enable = false;
+    
+    # Diagnostics tool
+    ai.diagnostics.enable = false;
+  };
+  
+  # MCP Protocol Host service
+  services.mcphost.enable = false;
   
   # XDG directories
   xdg.enable = true;
