@@ -39,6 +39,8 @@ in {
         description = "Enable basic development utilities (tree, jq, etc.)";
       };
       
+      lazygit = mkEnableOption "Lazygit - simple terminal UI for git commands";
+      
       extraUtils = mkOption {
         type = types.listOf types.package;
         default = [];
@@ -63,6 +65,11 @@ in {
     ++ optionals cfg.utilities.enableBasicUtils [
       tree      # Directory tree viewer
       jq        # JSON processor
+    ]
+    
+    # Git utilities
+    ++ optionals cfg.utilities.lazygit [
+      lazygit   # Simple terminal UI for git commands
     ]
     
     # Language-specific tools

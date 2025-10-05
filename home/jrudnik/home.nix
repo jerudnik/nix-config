@@ -54,6 +54,9 @@
       
       # Enable GitHub CLI with shell completion
       github.enable = true;
+      
+      # Git utilities
+      utilities.lazygit = true;  # Simple terminal UI for git commands
     };
     
     git = {
