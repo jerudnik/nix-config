@@ -84,6 +84,12 @@ in {
       end tell'
       """
       
+      alt-b = """exec-and-forget osascript -e '
+      tell application "Zen Browser (Twilight)"
+          activate
+      end tell'
+      """
+      
       # Layout management
       alt-slash = 'layout tiles horizontal vertical'
       alt-comma = 'layout accordion horizontal vertical'
