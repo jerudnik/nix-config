@@ -9,6 +9,7 @@
     # Spotlight module removed - using Raycast for app launching
     outputs.homeManagerModules.window-manager
     outputs.homeManagerModules.raycast
+    outputs.homeManagerModules.browser
   ];
 
   # Home Manager configuration
@@ -117,6 +118,35 @@
       globalHotkey = {
         keyCode = 49;        # Space key
         modifierFlags = 1048576;  # Command modifier (Cmd+Space)
+      };
+    };
+    
+    browser.zen = {
+      enable = true;
+      setAsDefaultBrowser = true;
+      
+      # Privacy-focused settings
+      settings = {
+        "browser.startup.homepage" = "https://start.duckduckgo.com";
+        "browser.shell.checkDefaultBrowser" = false;
+        "privacy.donottrackheader.enabled" = true;
+        "browser.search.defaultenginename" = "DuckDuckGo";
+        
+        # Enhanced privacy settings
+        "privacy.trackingprotection.enabled" = true;
+        "privacy.trackingprotection.socialtracking.enabled" = true;
+        "network.cookie.sameSite.noneRequiresSecure" = true;
+        "network.cookie.sameSite.laxByDefault" = true;
+        
+        # Security settings
+        "security.tls.version.min" = 3;
+        "dom.security.https_only_mode" = true;
+        "dom.security.https_only_mode_ever_enabled" = true;
+        
+        # Performance tweaks
+        "browser.sessionstore.interval" = 30000;  # Save session every 30s instead of 15s
+        "browser.cache.disk.enable" = true;
+        "browser.cache.memory.enable" = true;
       };
     };
     

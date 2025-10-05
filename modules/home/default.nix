@@ -7,4 +7,5 @@
   # spotlight module removed - using Raycast for app launching
   window-manager = import ./window-manager/default.nix;
   raycast = import ./raycast/default.nix;
+  browser = import ./browser/default.nix;
 }
