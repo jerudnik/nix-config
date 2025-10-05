@@ -36,7 +36,8 @@
       hostName = "parsley";
       # Can add custom aliases here if needed
       aliases = {
-        # Example: deploy = "cd ~/projects && ./deploy.sh";
+        # Git utilities
+        lg = "lazygit";  # Simple terminal UI for git commands
       };
     };
     
