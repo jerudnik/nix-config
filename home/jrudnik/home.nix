@@ -154,4 +154,9 @@
   
   # XDG directories
   xdg.enable = true;
+  
+  # Stylix theming configuration
+  stylix.targets.zen-browser = {
+    profileNames = [ "default" ];  # Tell Stylix to theme the default profile
+  };
 }
