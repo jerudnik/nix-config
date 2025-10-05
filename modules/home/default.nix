@@ -8,4 +8,5 @@
   window-manager = import ./window-manager/default.nix;
   raycast = import ./raycast/default.nix;
   browser = import ./browser/default.nix;
+  security = import ./security/default.nix;
 }

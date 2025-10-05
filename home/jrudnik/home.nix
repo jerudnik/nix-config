@@ -10,6 +10,7 @@
     outputs.homeManagerModules.window-manager
     outputs.homeManagerModules.raycast
     outputs.homeManagerModules.browser
+    outputs.homeManagerModules.security
   ];
 
   # Home Manager configuration
@@ -148,6 +149,22 @@
         "browser.cache.disk.enable" = true;
         "browser.cache.memory.enable" = true;
       };
+    };
+    
+    security.bitwarden = {
+      enable = true;
+      
+      # macOS-specific settings
+      enableTouchID = true;
+      minimizeToTray = true;
+      startMinimized = false;
+      autoStart = false;  # Set to true if you want it to start at login
+      
+      # Security settings
+      lockTimeout = 15;  # Auto-lock after 15 minutes
+      
+      # CLI integration enabled by default
+      cli.enable = true;
     };
     
   };

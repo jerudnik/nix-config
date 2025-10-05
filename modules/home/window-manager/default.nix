@@ -90,6 +90,12 @@ in {
       end tell'
       """
       
+      alt-p = """exec-and-forget osascript -e '
+      tell application "Bitwarden"
+          activate
+      end tell'
+      """
+      
       # Layout management
       alt-slash = 'layout tiles horizontal vertical'
       alt-comma = 'layout accordion horizontal vertical'
