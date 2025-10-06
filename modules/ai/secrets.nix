@@ -117,7 +117,7 @@ ${lib.concatMapStringsSep "\n" (key: ''export ${key}="$(/usr/bin/security find-g
 # Optional: Print loaded keys (for debugging, values hidden)
 if [[ "$1" == "--debug" ]]; then
   echo "AI Secrets loaded from keychain:"
-  ${lib.concatMapStringsSep "\n" (key: ''if [[ -n "$${key}" ]]; then
+${lib.concatMapStringsSep "\n" (key: ''  if [[ -n "$${key}" ]]; then
     echo "  ✓ ${key} (''${#${key}} chars)"
   else
     echo "  ✗ ${key} (not found in keychain)"
