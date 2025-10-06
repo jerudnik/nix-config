@@ -1,5 +1,7 @@
 { config, lib }:
 
+with lib;
+
 let
   # Access Stylix colors for consistent theming
   inherit (config.lib.stylix) colors;
@@ -25,13 +27,13 @@ in {
     };
   };
   
-  # Username section
+  # Username section (themes can override with higher priority)
   username = {
-    show_always = false;  # Only show when SSH or root
-    style_user = "bg:#${colors.base09} fg:#${colors.base00}";
-    style_root = "bg:#${colors.base08} fg:#${colors.base00}";  # Red for root
-    format = "[ $user ]($style)";
-    disabled = false;
+    show_always = mkDefault false;  # Only show when SSH or root
+    style_user = mkDefault "bg:#${colors.base09} fg:#${colors.base00}";
+    style_root = mkDefault "bg:#${colors.base08} fg:#${colors.base00}";  # Red for root
+    format = mkDefault "[ $user ]($style)";
+    disabled = mkDefault false;
   };
   
   # SSH hostname indicator

@@ -37,7 +37,35 @@
     
     system-defaults = {
       enable = true;
-      # All settings use module defaults, can override here if needed
+      
+      # Enhanced dock configuration with snappy behavior
+      dock = {
+        autohide = true;
+        autohideDelay = 0.0;  # Instant response
+        autohideTime = 0.15;  # Quick animation
+        orientation = "left";  # Left-side dock for better screen usage
+        showRecents = false;  # Clean dock without recent apps
+        
+        # Icon appearance
+        magnification = true;
+        tileSize = 45;  # Medium-sized icons
+        largeSize = 70;  # Nice magnification size
+        mineffect = "scale";  # Clean minimize effect
+        minimizeToApp = true;  # Minimize to app icon
+        
+        # Hot corners for productivity
+        hotCorners = {
+          topLeft = 1;      # Disabled
+          topRight = 11;    # Launchpad
+          bottomLeft = 1;   # Disabled
+          bottomRight = 2;  # Mission Control
+        };
+        
+        # Performance optimizations
+        exposeAnimation = 0.15;  # Fast Mission Control
+        launchanim = true;  # Keep app launch animation
+        showProcessIndicators = true;  # Show running app indicators
+      };
     };
     
     keyboard = {

@@ -13,6 +13,10 @@
     outputs.homeManagerModules.security
     outputs.homeManagerModules.ai
     outputs.homeManagerModules.mcp
+    
+    # macOS-specific modules
+    outputs.homeManagerModules.macos.launchservices
+    outputs.homeManagerModules.macos.keybindings
   ];
 
   # Home Manager configuration
@@ -256,5 +260,46 @@
   # Stylix theming configuration
   stylix.targets.zen-browser = {
     profileNames = [ "default" ];  # Tell Stylix to theme the default profile
+  };
+  
+  # macOS-specific configuration
+  home.macos = {
+    # Centralized Launch Services (default applications)
+    launchservices = {
+      enable = true;
+      
+      # Additional manual LSHandlers (Zen Browser handlers are added automatically)
+      handlers = [
+        # Set text files to open with micro via terminal
+        {
+          LSHandlerContentType = "public.plain-text";
+          LSHandlerRoleAll = "com.apple.Terminal";  # Opens in terminal, where micro is available
+        }
+        {
+          LSHandlerContentTag = "nix";
+          LSHandlerContentTagClass = "public.filename-extension";
+          LSHandlerRoleAll = "com.apple.Terminal";
+        }
+        {
+          LSHandlerContentTag = "md";
+          LSHandlerContentTagClass = "public.filename-extension";
+          LSHandlerRoleAll = "com.apple.Terminal";
+        }
+        # Python files
+        {
+          LSHandlerContentTag = "py";
+          LSHandlerContentTagClass = "public.filename-extension";
+          LSHandlerRoleAll = "com.apple.Terminal";
+        }
+      ];
+    };
+    
+    # macOS keyboard and hotkey configuration
+    keybindings = {
+      enable = true;
+      keyRepeat = 2;  # Fast key repeat
+      initialKeyRepeat = 15;  # Short initial delay
+      disableSpotlightHotkeys = true;  # Free Cmd+Space for Raycast
+    };
   };
 }

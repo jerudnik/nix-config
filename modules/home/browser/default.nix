@@ -87,27 +87,24 @@ in
         };
     };
 
-    # Optional: Set as default browser using macOS defaults
-    targets.darwin.defaults = mkIf cfg.setAsDefaultBrowser {
-      "com.apple.LaunchServices/com.apple.launchservices.secure" = {
-        LSHandlers = [
-          {
-            LSHandlerContentTag = "http";
-            LSHandlerContentTagClass = "public.url-scheme";
-            LSHandlerRoleAll = "zen.browser";
-          }
-          {
-            LSHandlerContentTag = "https";
-            LSHandlerContentTagClass = "public.url-scheme";
-            LSHandlerRoleAll = "zen.browser";
-          }
-          {
-            LSHandlerContentTag = "public.html";
-            LSHandlerContentTagClass = "public.mime-type";
-            LSHandlerRoleAll = "zen.browser";
-          }
-        ];
-      };
-    };
+    # Contribute LSHandlers to the centralized Launch Services system
+    home.macos.launchservices.handlers = mkIf cfg.setAsDefaultBrowser [
+      {
+        LSHandlerURLScheme = "http";
+        LSHandlerRoleAll = "zen.browser";
+      }
+      {
+        LSHandlerURLScheme = "https";
+        LSHandlerRoleAll = "zen.browser";
+      }
+      {
+        LSHandlerContentType = "public.html";
+        LSHandlerRoleAll = "zen.browser";
+      }
+      {
+        LSHandlerContentType = "public.xhtml";
+        LSHandlerRoleAll = "zen.browser";
+      }
+    ];
   };
 }

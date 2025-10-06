@@ -1,5 +1,7 @@
 { config, lib }:
 
+with lib;
+
 {
   # Global starship settings
   add_newline = true;
@@ -48,10 +50,10 @@
     deleted = "✘";
   };
   
-  # Base character configuration
+  # Base character configuration (themes can override with higher priority)
   character = {
-    success_symbol = "[❯](bold green)";
-    error_symbol = "[❯](bold red)";
-    vicmd_symbol = "[❮](bold yellow)";
+    success_symbol = mkDefault "[❯](bold green)";
+    error_symbol = mkDefault "[❯](bold red)";
+    vicmd_symbol = mkDefault "[❮](bold yellow)";
   };
 }

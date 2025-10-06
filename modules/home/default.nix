@@ -11,4 +11,7 @@
   security = import ./security/default.nix;
   ai = import ./ai/default.nix;
   mcp = import ./mcp/default.nix;
+  
+  # macOS-specific modules
+  macos = import ./macos/default.nix;
 }
