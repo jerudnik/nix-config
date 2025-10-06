@@ -224,12 +224,12 @@
     };
     
     # Code Analysis & Prompt Generation
-    code2prompt.enable = false;
-    files-to-prompt.enable = false;
-    goose-cli.enable = false;
+    code2prompt.enable = true;        # ✅ Enable for testing
+    files-to-prompt.enable = true;    # ✅ Enable for testing
+    goose-cli.enable = false;         # Keep disabled (requires API keys)
     
-    # Placeholder modules (no installation)
-    github-copilot-cli.enable = false;
+    # LLM Interfaces
+    github-copilot-cli.enable = true; # ✅ Enable for testing
     claude-desktop.enable = false;
     
     # Diagnostics tool
