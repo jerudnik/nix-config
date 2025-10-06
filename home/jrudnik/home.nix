@@ -176,6 +176,11 @@
   
   # AI tools configuration - all disabled by default
   programs = {
+    # Secret management (macOS Keychain integration)
+    ai.secrets = {
+      enable = false;  # Enable to use keychain for API keys
+      shellIntegration = true;  # Auto-source secrets in shell
+    };
     
     # Code Analysis & Prompt Generation
     code2prompt.enable = false;

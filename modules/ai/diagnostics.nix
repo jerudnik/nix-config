@@ -4,12 +4,24 @@ with lib;
 
 let
   cfg = config.programs.ai.diagnostics;
-  
   aiDoctorScript = pkgs.writeShellScriptBin "ai-doctor" ''
     #!/bin/bash
     
     echo "🔍 AI Tools Diagnostics Report"
-    echo "==============================="
+    echo "===============================" 
+    echo ""
+    
+    # Check secret management first
+    echo "🔐 Secret Management:"
+    echo "--------------------"
+    if command -v ai-list-secrets &> /dev/null; then
+        echo "✅ AI secret management enabled"
+        echo "   Loading secrets from keychain..."
+        eval "$(ai-source-secrets 2>/dev/null)" || echo "   ⚠️  Failed to load some secrets"
+    else
+        echo "❌ AI secret management not configured"
+        echo "   Enable with: programs.ai.secrets.enable = true;"
+    fi
     echo ""
     
     # Check environment variables
@@ -19,16 +31,19 @@ let
     check_env_var() {
         local var_name=$1
         if [ -n "''${!var_name:-}" ]; then
-            echo "✅ $var_name: Set"
+            local value="''${!var_name}"
+            echo "✅ $var_name: Set (''${#value} chars)"
         else
             echo "❌ $var_name: Not set"
         fi
     }
     
     check_env_var "ANTHROPIC_API_KEY"
-    check_env_var "GOOGLE_API_KEY"
-    check_env_var "GEMINI_API_KEY"
     check_env_var "OPENAI_API_KEY"
+    check_env_var "GEMINI_API_KEY"
+    check_env_var "GROQ_API_KEY"
+    check_env_var "GITHUB_TOKEN"
+    echo ""
     echo ""
     
     # Check installed tools

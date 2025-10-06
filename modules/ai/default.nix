@@ -2,6 +2,7 @@
 
 {
   imports = [
+    ./secrets.nix
     ./mcphost.nix
     ./code2prompt.nix
     ./files-to-prompt.nix

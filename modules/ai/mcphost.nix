@@ -34,8 +34,15 @@ in {
   config = mkIf cfg.enable {
     home.packages = [ cfg.package ];
     
-    # Create default configuration
+    # Create default configuration with secret management info
     xdg.configFile."mcp/hosts/default.yaml".text = ''
+      # MCP Host Configuration
+      # 
+      # For API keys, use the AI secret management system:
+      #   1. Enable: programs.ai.secrets.enable = true;
+      #   2. Add keys: ai-add-secret ANTHROPIC_API_KEY "your-key"
+      #   3. Keys will be automatically sourced as environment variables
+      
       servers:
         - name: local
           command: ["${cfg.package}/bin/mcp", "host", "--stdio"]
