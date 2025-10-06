@@ -13,7 +13,7 @@ in {
       enableZshIntegration = cfg.enableShellIntegration;
       settings = {
         # Gruvbox Rainbow Preset with Stylix colors
-        add_newline = false;
+        add_newline = true;
         
         # Rainbow format - each section has a different background color
         format = concatStrings [
