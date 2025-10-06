@@ -135,13 +135,6 @@
   - **integration approach**: System-level installation via nix-homebrew + user-level MCP configuration via Home Manager
   - **reproducibility maintained**: MCP servers use nixpkgs/mcp-servers-nix, only the GUI client uses Homebrew
   - **review schedule**: Re-evaluate when/if nixpkgs gains claude-desktop package
-- **GitHub Copilot CLI**: Placeholder module for future integration. Alternative analysis:
-  - **nixpkgs status**: Available as `gh-copilot` and `github-copilot-cli` in nixpkgs
-  - **implementation status**: Placeholder module provides no installation (following constraints)
-  - **technical justification**: Module exists for configuration structure but respects nixpkgs-first principle
-  - **integration approach**: When enabled, would use nixpkgs packages exclusively
-  - **current state**: Intentionally disabled by default, no packages installed
-  - **review schedule**: Enable installation when user explicitly approves AI tool usage
 - Future exceptions require similar detailed justification
 
 ---
