@@ -107,6 +107,7 @@ The following environment variables are preconfigured:
 | `PERPLEXITY_API_KEY` | Perplexity | Search-enhanced AI |
 | `MISTRAL_API_KEY` | Mistral AI | European AI provider |
 | `COHERE_API_KEY` | Cohere | NLP and embeddings |
+| `HUGGINGFACE_API_KEY` | Hugging Face | Open source models, datasets |
 | `GITHUB_TOKEN` | GitHub | For Copilot, repo access |
 
 ### Adding Custom Keys

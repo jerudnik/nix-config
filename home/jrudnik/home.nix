@@ -178,7 +178,7 @@
   programs = {
     # Secret management (macOS Keychain integration)
     ai.secrets = {
-      enable = false;  # Enable to use keychain for API keys
+      enable = true;  # Enable to use keychain for API keys
       shellIntegration = true;  # Auto-source secrets in shell
     };
     
@@ -192,7 +192,7 @@
     claude-desktop.enable = false;
     
     # Diagnostics tool
-    ai.diagnostics.enable = false;
+    ai.diagnostics.enable = true;
   };
   
   # MCP Protocol Host service

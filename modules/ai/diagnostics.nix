@@ -42,6 +42,7 @@ let
     check_env_var "OPENAI_API_KEY"
     check_env_var "GEMINI_API_KEY"
     check_env_var "GROQ_API_KEY"
+    check_env_var "HUGGINGFACE_API_KEY"
     check_env_var "GITHUB_TOKEN"
     echo ""
     echo ""

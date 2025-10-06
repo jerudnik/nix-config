@@ -20,6 +20,7 @@ in {
         "PERPLEXITY_API_KEY"
         "MISTRAL_API_KEY"
         "COHERE_API_KEY"
+        "HUGGINGFACE_API_KEY"
         "GITHUB_TOKEN"
       ];
       description = "List of environment variable names to source from keychain";
