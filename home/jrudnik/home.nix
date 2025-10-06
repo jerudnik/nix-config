@@ -11,6 +11,8 @@
     outputs.homeManagerModules.raycast
     outputs.homeManagerModules.browser
     outputs.homeManagerModules.security
+    outputs.homeManagerModules.ai
+    outputs.homeManagerModules.mcp
   ];
 
   # Home Manager configuration
@@ -155,6 +157,46 @@
       };
     };
     
+    # MCP (Model Context Protocol) servers for Claude Desktop
+    mcp = {
+      enable = true;
+      servers = {
+        # Filesystem access - custom Python implementation
+        filesystem = {
+          command = "${pkgs.python3}/bin/python3";
+          args = [ "${config.home.homeDirectory}/nix-config/modules/home/mcp/filesystem-server.py" "${config.home.homeDirectory}" ];
+        };
+        
+        # GitHub integration - official server (requires GITHUB_TOKEN for full functionality)
+        # Will work in read-only mode without token for public repos
+        github = {
+          command = "${pkgs.github-mcp-server}/bin/server";
+          args = [];
+          env = {
+            # GITHUB_TOKEN = "placeholder";  # Uncomment and set when adding secrets
+          };
+        };
+        
+        # Git operations - safe, no secrets required
+        git = {
+          command = "${pkgs.mcp-servers.mcp-server-git}/bin/mcp-server-git";
+          args = [];  # Works with any git repository
+        };
+        
+        # Time utilities - safe, no secrets required
+        time = {
+          command = "${pkgs.mcp-servers.mcp-server-time}/bin/mcp-server-time";
+          args = [];
+        };
+        
+        # Web fetch capability - safe, no secrets required
+        fetch = {
+          command = "${pkgs.mcp-servers.mcp-server-fetch}/bin/mcp-server-fetch";
+          args = [];
+        };
+      };
+    };
+    
     security.bitwarden = {
       enable = true;
       
@@ -172,6 +214,30 @@
     };
     
   };
+  
+  # AI tools configuration - all disabled by default
+  programs = {
+    # Secret management (macOS Keychain integration)
+    ai.secrets = {
+      enable = true;  # Enable to use keychain for API keys
+      shellIntegration = true;  # Auto-source secrets in shell
+    };
+    
+    # Code Analysis & Prompt Generation
+    code2prompt.enable = false;
+    files-to-prompt.enable = false;
+    goose-cli.enable = false;
+    
+    # Placeholder modules (no installation)
+    github-copilot-cli.enable = false;
+    claude-desktop.enable = false;
+    
+    # Diagnostics tool
+    ai.diagnostics.enable = true;
+  };
+  
+  # MCP Protocol Host service
+  services.mcphost.enable = false;
   
   # XDG directories
   xdg.enable = true;

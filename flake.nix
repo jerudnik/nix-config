@@ -40,9 +40,15 @@
       url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    
+    # MCP servers - Nix-based configuration framework for MCP servers
+    mcp-servers-nix = {
+      url = "github:natsukium/mcp-servers-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, nix-homebrew, homebrew-core, homebrew-cask, stylix, zen-browser, ... }:
+  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, nix-homebrew, homebrew-core, homebrew-cask, stylix, zen-browser, mcp-servers-nix, ... }:
     let
       system = "aarch64-darwin";
     in {
@@ -67,13 +73,17 @@
           inherit system;
           specialArgs = self._specialArgs;
           modules = [
-            # Configure nixpkgs - allow only specific unfree packages
+            # Configure nixpkgs - overlays and unfree packages
             ({ lib, ... }: {
-              nixpkgs.config.allowUnfreePredicate = pkg:
-                lib.elem (lib.getName pkg) [ 
-                  "raycast" 
-                  "warp-terminal"
-                ];
+              nixpkgs = {
+                overlays = [ self.overlays.mcp-servers ];
+                config.allowUnfreePredicate = pkg:
+                  lib.elem (lib.getName pkg) [ 
+                    "raycast" 
+                    "warp-terminal"
+                    "claude"
+                  ];
+              };
             })
             
             # Import the host configuration

@@ -151,6 +151,68 @@ programs.zsh = {
 };
 ```
 
+### Configure MCP for Claude Desktop
+
+Model Context Protocol (MCP) enables Claude Desktop to connect to external tools:
+
+1. **Enable MCP module** in `home/jrudnik/home.nix`:
+```nix
+home.mcp = {
+  enable = true;
+  servers = {
+    # Safe filesystem access (home directory only)
+    filesystem = {
+      command = "${pkgs.python3}/bin/python3";
+      args = [ "${config.home.homeDirectory}/nix-config/modules/home/mcp/filesystem-server.py" "${config.home.homeDirectory}" ];
+    };
+    
+    # Git operations
+    git = {
+      command = "${pkgs.mcp-servers.mcp-server-git}/bin/mcp-server-git";
+    };
+    
+    # Time utilities
+    time = {
+      command = "${pkgs.mcp-servers.mcp-server-time}/bin/mcp-server-time";
+    };
+    
+    # Web fetch capability
+    fetch = {
+      command = "${pkgs.mcp-servers.mcp-server-fetch}/bin/mcp-server-fetch";
+    };
+    
+    # GitHub integration (optional - requires GITHUB_TOKEN)
+    github = {
+      command = "${pkgs.github-mcp-server}/bin/server";
+      env = {
+        # GITHUB_TOKEN = "your-token";  # Add for private repos
+      };
+    };
+  };
+};
+```
+
+2. **Install Claude Desktop** (already configured in system):
+Claude Desktop will be installed via Homebrew when you apply the configuration.
+
+3. **Test MCP servers** (after building):
+```bash
+# Verify MCP configuration file exists
+cat ~/Library/Application\ Support/Claude/claude_desktop_config.json
+
+# Test filesystem server manually
+echo '{"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2024-11-05", "capabilities": {"roots": {"listChanged": true}}, "clientInfo": {"name": "test", "version": "1.0.0"}}}' | python3 ~/nix-config/modules/home/mcp/filesystem-server.py ~
+```
+
+4. **Use in Claude Desktop**:
+- Launch Claude Desktop
+- Ask Claude to read files: "What files are in my Documents folder?"
+- Request git information: "Show me recent commits in this repository"
+- Get time information: "What time is it in Tokyo?"
+- Fetch web content: "Get the content from https://example.com"
+
+See **[MCP Integration Guide](mcp-integration.md)** for complete documentation.
+
 ### Apply Changes
 
 After making modifications:
@@ -296,8 +358,9 @@ ls -la ~/nix-config/
 
 - **[Workflow Guide](workflow.md)** - Learn the development workflow
 - **[Architecture Guide](architecture.md)** - Understand the system design
-- **[Module Development](modules.md)** - Create custom modules
-- **[Troubleshooting](troubleshooting.md)** - Common issues and solutions
+- **[MCP Integration Guide](mcp-integration.md)** - Configure Claude Desktop with MCP servers
+- **[Module Options Reference](module-options.md)** - Complete module configuration reference
+- **[Troubleshooting](troubleshooting-app-availability.md)** - Common issues and solutions
 
 ## Migration from Other Systems
 
