@@ -690,6 +690,114 @@ home.raycast = {
 
 ---
 
+### `home.mcp`
+
+Model Context Protocol (MCP) servers for Claude Desktop.
+
+```nix
+home.mcp = {
+  enable = true;                    # Enable MCP server configuration
+  servers = {
+    filesystem = {
+      command = "${pkgs.python3}/bin/python3";
+      args = [ "./filesystem-server.py" "/Users/username" ];
+      env = {};
+    };
+    git = {
+      command = "${pkgs.mcp-servers.mcp-server-git}/bin/mcp-server-git";
+      args = [];
+      env = {};
+    };
+  };
+  configPath = "Library/Application Support/Claude/claude_desktop_config.json";
+  additionalConfig = {};           # Additional Claude Desktop config
+};
+```
+
+**Options:**
+- `enable` (bool, default: `false`) - Enable MCP servers for Claude Desktop
+- `servers` (attrsOf submodule, default: `{}`) - Attribute set of MCP server configurations
+- `configPath` (string, default: `"Library/Application Support/Claude/claude_desktop_config.json"`) - Relative path from home directory to Claude Desktop MCP config
+- `additionalConfig` (attrs, default: `{}`) - Additional configuration to merge into Claude Desktop config
+
+**Server Submodule Options:**
+- `command` (string, **required**) - Absolute path to server binary (prefer Nix store path)
+- `args` (listOf string, default: `[]`) - Arguments to pass to the MCP server
+- `env` (attrsOf string, default: `{}`) - Environment variables for the server
+
+**Provides:**
+- Declarative MCP server configuration for Claude Desktop
+- Automatic generation of Claude Desktop configuration JSON
+- Integration with `mcp-servers-nix` package overlay
+- Support for custom servers and environment variables
+
+**Default Servers:**
+- **filesystem**: Custom Python-based file operations (home directory access only)
+- **github**: GitHub API integration (requires GITHUB_TOKEN for private repos)
+- **git**: Local git repository operations
+- **time**: Date, time, and timezone utilities
+- **fetch**: HTTP/HTTPS web requests
+
+**Security Features:**
+- Path restrictions for filesystem server (home directory only)
+- Safe server selection (no secrets required by default)
+- Optional environment variable support for API keys
+- All server binaries use Nix store paths for reproducibility
+
+**Example:**
+```nix
+home.mcp = {
+  enable = true;
+  servers = {
+    # Safe filesystem access
+    filesystem = {
+      command = "${pkgs.python3}/bin/python3";
+      args = [ "${config.home.homeDirectory}/nix-config/modules/home/mcp/filesystem-server.py" "${config.home.homeDirectory}" ];
+    };
+    
+    # GitHub integration with API token
+    github = {
+      command = "${pkgs.github-mcp-server}/bin/server";
+      env = {
+        GITHUB_TOKEN = "ghp_your_token_here";  # In practice, use secrets
+      };
+    };
+    
+    # Git operations (no configuration needed)
+    git = {
+      command = "${pkgs.mcp-servers.mcp-server-git}/bin/mcp-server-git";
+    };
+    
+    # Custom server example
+    custom = {
+      command = "${pkgs.my-custom-server}/bin/server";
+      args = [ "--config" "/path/to/config.json" ];
+      env = {
+        DEBUG = "1";
+        API_ENDPOINT = "https://api.example.com";
+      };
+    };
+  };
+  
+  # Additional Claude Desktop configuration
+  additionalConfig = {
+    # Future: other Claude Desktop settings
+  };
+};
+```
+
+**Testing Servers:**
+```bash
+# Test any MCP server manually
+echo '{"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2024-11-05", "capabilities": {"roots": {"listChanged": true}}, "clientInfo": {"name": "test", "version": "1.0.0"}}}' | /path/to/mcp-server
+```
+
+**Related Documentation:**
+- [MCP Integration Guide](./mcp-integration.md) - Complete setup and usage documentation
+- [AI Tools Inventory](./ai/INVENTORY.md) - Available MCP tools in nixpkgs
+
+---
+
 ## Configuration Examples
 
 ### Minimal Configuration

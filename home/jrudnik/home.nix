@@ -161,10 +161,20 @@
     mcp = {
       enable = true;
       servers = {
-        # File system access - safe, no secrets required
+        # Filesystem access - custom Python implementation
         filesystem = {
-          command = "${pkgs.mcp-servers.mcp-server-filesystem}/bin/mcp-server-filesystem";
-          args = [ "${config.home.homeDirectory}" ];  # Allow access to home directory
+          command = "${pkgs.python3}/bin/python3";
+          args = [ "${config.home.homeDirectory}/nix-config/modules/home/mcp/filesystem-server.py" "${config.home.homeDirectory}" ];
+        };
+        
+        # GitHub integration - official server (requires GITHUB_TOKEN for full functionality)
+        # Will work in read-only mode without token for public repos
+        github = {
+          command = "${pkgs.github-mcp-server}/bin/server";
+          args = [];
+          env = {
+            # GITHUB_TOKEN = "placeholder";  # Uncomment and set when adding secrets
+          };
         };
         
         # Git operations - safe, no secrets required

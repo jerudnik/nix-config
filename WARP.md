@@ -127,6 +127,14 @@
 
 **Current Documented Exceptions:**
 - **Warp Terminal**: nixpkgs installation failed due to [specific technical issues - requires documentation]
+- **Claude Desktop**: Not available in nixpkgs as of 2025-10-06. Alternative analysis:
+  - **nixpkgs status**: No claude-desktop package exists in nixpkgs
+  - **upstream availability**: Official Anthropic releases via direct download and Homebrew cask only
+  - **packaging complexity**: Electron app with frequent updates, no community packaging effort
+  - **technical justification**: Homebrew cask `claude` provides official, maintained distribution
+  - **integration approach**: System-level installation via nix-homebrew + user-level MCP configuration via Home Manager
+  - **reproducibility maintained**: MCP servers use nixpkgs/mcp-servers-nix, only the GUI client uses Homebrew
+  - **review schedule**: Re-evaluate when/if nixpkgs gains claude-desktop package
 - Future exceptions require similar detailed justification
 
 ---
@@ -269,8 +277,9 @@ This is a **modular Nix configuration** for macOS using nix-darwin and Home Mana
 ├── hosts/parsley/          # System configuration (65 lines)
 ├── home/jrudnik/           # User configuration (61 lines) 
 ├── modules/
-│   ├── darwin/            # System modules (8 modules)
-│   ├── home/              # User modules (4 modules)
+│   ├── darwin/            # System modules (10 modules)
+│   ├── home/              # User modules (9 modules)
+│   ├── ai/                # AI tools modules
 │   └── nixos/             # Linux modules (future)
 ├── overlays/              # Package overlays and modifications
 ├── scripts/               # Build and cleanup scripts
@@ -280,7 +289,7 @@ This is a **modular Nix configuration** for macOS using nix-darwin and Home Mana
 
 ### Configuration Philosophy
 - **No external frameworks** - Direct nix-darwin + home-manager usage
-- **Modular design** - 8 reusable Darwin modules, 4 Home Manager modules
+- **Modular design** - 10 reusable Darwin modules, 9 Home Manager modules
 - **Minimal complexity** - 65-line system config, 61-line user config
 - **Type-safe options** - All modules use proper NixOS module pattern with options/config
 - **Easy scaling** - Add hosts/users without duplication
@@ -293,15 +302,21 @@ This is a **modular Nix configuration** for macOS using nix-darwin and Home Mana
 - `system-defaults` - macOS system preferences
 - `keyboard` - Keyboard and input configuration
 - `homebrew` - Homebrew casks and Mac App Store apps
-- `window-manager` - AeroSpace window management
+- `window-manager` - AeroSpace window management (deprecated)
 - `theming` - System-wide theming with Stylix
+- `fonts` - Font management and Nerd Font installation
+- `browser` - Browser configuration and management
 
 **Home modules** (user-level):
 - `shell` - Zsh with oh-my-zsh, aliases, configuration
 - `development` - Programming languages (Rust, Go, Python), editors
 - `git` - Git configuration and settings
 - `cli-tools` - Modern CLI tools (eza, bat, ripgrep, fd, zoxide, etc.)
-- `spotlight` - Enhanced Spotlight integration for Nix applications
+- `window-manager` - AeroSpace window management configuration
+- `raycast` - Raycast launcher configuration
+- `browser` - Browser configuration (Zen Browser)
+- `security` - Security tools (Bitwarden) configuration
+- `mcp` - Model Context Protocol servers for Claude Desktop
 
 ### Integration Pattern
 System and user configurations are **integrated** - nix-darwin manages the Home Manager configuration:
