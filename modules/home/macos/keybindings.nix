@@ -40,19 +40,6 @@ in {
       '';
     };
     
-    disableSpotlightHotkeys = mkOption {
-      type = types.bool;
-      default = true;
-      description = ''
-        Disable Spotlight search hotkeys (Cmd+Space, Cmd+Option+Space).
-        This frees these hotkeys for use by other applications like Raycast.
-        
-        Disabled hotkeys:
-        - Cmd+Space (Show Spotlight search)
-        - Cmd+Option+Space (Show Finder search window)
-      '';
-    };
-    
     customSymbolicHotkeys = mkOption {
       type = types.attrsOf types.attrs;
       default = {};
@@ -120,27 +107,8 @@ in {
       # Symbolic hotkeys configuration
       "com.apple.symbolichotkeys" = {
         AppleSymbolicHotKeys = mkMerge [
-          # Disable Spotlight hotkeys if requested
-          (mkIf cfg.disableSpotlightHotkeys {
-            # Cmd+Space - Show Spotlight search
-            "64" = {
-              enabled = false;
-              value = {
-                parameters = [ 65535 49 1048576 ];
-                type = "standard";
-              };
-            };
-            # Cmd+Option+Space - Show Finder search window  
-            "65" = {
-              enabled = false;
-              value = {
-                parameters = [ 65535 49 1572864 ];
-                type = "standard";
-              };
-            };
-          })
-          
-          # Apply any custom symbolic hotkeys
+          # Note: Spotlight hotkeys are disabled by the Raycast module to avoid conflicts
+          # Only apply custom symbolic hotkeys here
           cfg.customSymbolicHotkeys
         ];
       };

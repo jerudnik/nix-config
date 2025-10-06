@@ -299,7 +299,7 @@
       enable = true;
       keyRepeat = 2;  # Fast key repeat
       initialKeyRepeat = 15;  # Short initial delay
-      disableSpotlightHotkeys = true;  # Free Cmd+Space for Raycast
+      # Note: Spotlight hotkeys are already disabled by Raycast module
     };
   };
 }
