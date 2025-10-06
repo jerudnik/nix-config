@@ -48,7 +48,7 @@
     homebrew = {
       enable = true;
       # Homebrew casks
-      casks = [  ];
+      casks = [ "claude" ];
     };
     
     window-manager = {

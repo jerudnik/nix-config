@@ -12,6 +12,7 @@
     outputs.homeManagerModules.browser
     outputs.homeManagerModules.security
     outputs.homeManagerModules.ai
+    outputs.homeManagerModules.mcp
   ];
 
   # Home Manager configuration
@@ -153,6 +154,36 @@
         "browser.sessionstore.interval" = 30000;  # Save session every 30s instead of 15s
         "browser.cache.disk.enable" = true;
         "browser.cache.memory.enable" = true;
+      };
+    };
+    
+    # MCP (Model Context Protocol) servers for Claude Desktop
+    mcp = {
+      enable = true;
+      servers = {
+        # File system access - safe, no secrets required
+        filesystem = {
+          command = "${pkgs.mcp-servers.mcp-server-filesystem}/bin/mcp-server-filesystem";
+          args = [ "${config.home.homeDirectory}" ];  # Allow access to home directory
+        };
+        
+        # Git operations - safe, no secrets required
+        git = {
+          command = "${pkgs.mcp-servers.mcp-server-git}/bin/mcp-server-git";
+          args = [];  # Works with any git repository
+        };
+        
+        # Time utilities - safe, no secrets required
+        time = {
+          command = "${pkgs.mcp-servers.mcp-server-time}/bin/mcp-server-time";
+          args = [];
+        };
+        
+        # Web fetch capability - safe, no secrets required
+        fetch = {
+          command = "${pkgs.mcp-servers.mcp-server-fetch}/bin/mcp-server-fetch";
+          args = [];
+        };
       };
     };
     
