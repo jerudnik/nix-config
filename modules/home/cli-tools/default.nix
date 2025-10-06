@@ -6,7 +6,7 @@ let
   cfg = config.home.cli-tools;
 in {
   imports = [
-    ./starship.nix
+    ../starship  # Use the new modular starship configuration
     ./alacritty.nix
   ];
   options.home.cli-tools = {
@@ -24,9 +24,8 @@ in {
       fd = mkEnableOption "Fast find alternative (fd)" // { default = true; };
     };
     
-    prompt = {
-      starship = mkEnableOption "Cross-shell prompt (starship)" // { default = true; };
-    };
+    # Note: Starship configuration is now in ../starship module
+    # Use home.starship.enable to configure starship
     
     terminals = {
       alacritty = mkEnableOption "GPU-accelerated terminal (alacritty)" // { default = true; };
@@ -61,7 +60,6 @@ in {
     # Git enhancements
     gitTools = {
       delta = mkEnableOption "Better git diff viewer (delta)" // { default = true; };
-      lazygit = mkEnableOption "Terminal UI for git (lazygit)" // { default = true; };
       gitui = mkEnableOption "Blazing fast terminal UI for git (alternative to lazygit)" // { default = false; };
     };
   };
@@ -80,7 +78,6 @@ in {
       ++ optional cfg.shellEnhancements.payRespects pay-respects
       # Git tools
       ++ optional cfg.gitTools.delta delta
-      ++ optional cfg.gitTools.lazygit lazygit
       ++ optional cfg.gitTools.gitui gitui
       # warp-terminal is installed system-wide via darwin.core module
       ;
@@ -156,10 +153,11 @@ in {
         fuzzySearchFactor = 2;
       };
       
-      # Note: Starship configuration is handled in ./starship.nix
+      # Note: Starship configuration is now handled in ../starship module
       # Note: Alacritty configuration is handled in ./alacritty.nix
       # Note: System monitor (htop/btop) gets automatic Stylix theming when installed
-      # Note: pay-respects, delta, lazygit, gitui are installed as packages (no special config needed)
+      # Note: pay-respects, delta, gitui are installed as packages (no special config needed)
+      # Note: lazygit is available via development module utilities.lazygit option
     };
     
     # Note: Shell aliases are managed by the shell module

@@ -213,16 +213,80 @@ modules/
 - ✅ **ALWAYS** ensure configurations work on fresh installations
 - ✅ **ALWAYS** test reproducibility across different machines when possible
 
-## Tool Utilization
+## AGENT TOOL UTILIZATION AND MCP GUIDANCE
 
-Unless certain about how to do something, it's best practice to leverage MCP servers to better formulate an approach.
+**For AI Agents (Claude, GitHub Copilot, etc.) working with this repository:**
 
-**📚 Essential Reading Before Making Changes:**
+### MCP (Model Context Protocol) Tools Available
+This repository is equipped with comprehensive MCP servers that provide deep integration:
+
+**🔧 Core MCP Servers:**
+- **GitHub Integration**: Repository access, issues, PRs, workflows, code search
+- **Filesystem Access**: Safe file operations within repository boundaries  
+- **Git Operations**: Local repository history, branches, commits, diffs
+- **Time Utilities**: Date/time operations for scheduling and timestamps
+- **Web Fetch**: HTTP requests and web scraping capabilities
+- **Darwin/Home-Manager Search**: Nix configuration option discovery
+- **NixOS Search**: Package and configuration search
+- **Library Documentation**: Up-to-date documentation for popular libraries
+
+### Agent Workflow Guidelines
+
+**RULE A.1: Always Use MCP Tools for Context**
+- ❌ **NEVER** guess about repository structure without checking
+- ❌ **NEVER** assume configuration patterns without MCP exploration
+- ✅ **ALWAYS** use MCP filesystem tools to understand current state
+- ✅ **ALWAYS** use GitHub MCP to check issues, PRs, and repository history
+- ✅ **ALWAYS** use darwin/home-manager search for available options
+
+**RULE A.2: Documentation-First Approach**  
+- ❌ **NEVER** make changes without reading relevant documentation
+- ✅ **ALWAYS** start by checking documentation modules via MCP
+- ✅ **ALWAYS** reference `docs/` directory for architectural guidance
+- ✅ **ALWAYS** verify current module options before suggesting changes
+
+**RULE A.3: MCP-Assisted Validation**
+- ❌ **NEVER** suggest configurations without checking current implementation
+- ✅ **ALWAYS** use MCP tools to validate proposed changes against existing code
+- ✅ **ALWAYS** check for similar implementations in the repository
+- ✅ **ALWAYS** verify that suggested packages exist in nixpkgs
+
+### Recommended MCP Tool Usage Patterns
+
+**For New Feature Requests:**
+1. Use GitHub MCP to check for related issues/PRs
+2. Use filesystem MCP to explore current module structure
+3. Use darwin/home-manager search for available options
+4. Use documentation tools to understand architectural patterns
+
+**For Debugging/Issues:**
+1. Use git MCP to check recent changes and history
+2. Use filesystem MCP to examine current configuration state
+3. Use GitHub MCP to check for known issues or solutions
+4. Use web fetch MCP for external documentation if needed
+
+**For Configuration Changes:**
+1. Use MCP to validate current state matches expectations
+2. Check documentation via MCP before implementing
+3. Use nixos search MCP to verify package availability
+4. Test approach with MCP filesystem operations before suggesting
+
+### Essential Documentation for Agents
+
+**📋 Priority Documents (agents should read these first):**
 - **[`docs/architecture.md`](docs/architecture.md)** - System architecture and design philosophy
 - **[`docs/modular-architecture.md`](docs/modular-architecture.md)** - Advanced module patterns and examples  
 - **[`docs/workflow.md`](docs/workflow.md)** - Complete development workflow guide
 - **[`docs/module-options.md`](docs/module-options.md)** - All available module options reference
 - **[`docs/getting-started.md`](docs/getting-started.md)** - Setup and configuration guide
+- **[`docs/exceptions.md`](docs/exceptions.md)** - Current exceptions to WARP laws with justifications
+- **[`docs/secrets.md`](docs/secrets.md)** - Secure secret management patterns
+
+**🔌 MCP-Specific Documentation:**
+- **[`modules/home/mcp/README.md`](modules/home/mcp/README.md)** - MCP server configuration guide
+- **[`docs/auth-architecture-analysis.md`](docs/auth-architecture-analysis.md)** - Authentication patterns and security
+
+**🏷️ Agent Usage Tip**: Use MCP filesystem tools to access these documents directly for the most current information
 
 ## Development Commands
 
