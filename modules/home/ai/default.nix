@@ -2,13 +2,10 @@
 
 {
   imports = [
-    ./secrets.nix
-    ./mcphost.nix
-    ./code2prompt.nix
-    ./files-to-prompt.nix
-    ./goose-cli.nix
-    ./copilot-cli.nix
-    ./claude-desktop.nix
-    ./diagnostics.nix
+    # Functional organization of AI tools
+    ./code-analysis      # Tools for converting code to prompts
+    ./interfaces         # Direct LLM interaction tools  
+    ./infrastructure     # Supporting systems and services
+    ./utilities          # Management and diagnostics
   ];
 }
