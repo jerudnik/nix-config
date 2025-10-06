@@ -54,12 +54,32 @@ in {
   };
 
   config = mkIf cfg.enable {
+    # Configuration validations
+    assertions = [
+      {
+        assertion = !(cfg.emacs && cfg.neovim);
+        message = "Cannot enable both Emacs and Neovim. Choose one editor to avoid conflicts.";
+      }
+      {
+        assertion = (cfg.editor == "emacs") -> cfg.emacs;
+        message = "If editor is set to 'emacs', you must also enable 'development.emacs = true'.";
+      }
+      {
+        assertion = (cfg.editor == "vim") -> cfg.neovim;
+        message = "If editor is set to 'vim', you should enable 'development.neovim = true' for better experience.";
+      }
+      {
+        assertion = (lib.length cfg.extraPackages) <= 50;
+        message = "Too many extra packages (max 50). Consider organizing packages into separate modules.";
+      }
+      {
+        assertion = !(cfg.languages.node && cfg.languages.python && cfg.languages.rust && cfg.languages.go) || (cfg.utilities.enableBasicUtils);
+        message = "When enabling multiple languages, basic utilities (jq, tree) are strongly recommended for development workflows.";
+      }
+    ];
     home.packages = with pkgs; [
-      # Always include git and basic tools
-      git curl wget
-    ] 
-    # Editor
-    ++ [ pkgs.${cfg.editor} ]
+      # Editor (git, curl, wget are provided by darwin.core system module)
+    ] ++ [ pkgs.${cfg.editor} ]
     
     # Basic utilities
     ++ optionals cfg.utilities.enableBasicUtils [

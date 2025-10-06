@@ -100,10 +100,21 @@
     cli-tools = {
       enable = true;
       # All modern CLI tools with sensible defaults
-      # Includes: eza, bat, ripgrep, fd, zoxide, fzf, starship, alacritty
+      # Includes: eza, bat, ripgrep, fd, zoxide, fzf, alacritty (starship now separate)
       
       # Optional: Modern system monitor (btop has beautiful Stylix theming)
       systemMonitor = "btop";  # Options: "none", "htop", "btop"
+    };
+    
+    # Starship cross-shell prompt configuration
+    starship = {
+      enable = true;
+      theme = "gruvbox-rainbow";  # Options: gruvbox-rainbow, minimal, nerd-font-symbols
+      showLanguages = [ "nodejs" "rust" "golang" "python" "nix_shell" ];
+      showSystemInfo = true;
+      showTime = true;
+      showBattery = true;
+      cmdDurationThreshold = 4000;
     };
     
     # Spotlight module removed - using Raycast for app launching
@@ -224,12 +235,12 @@
     };
     
     # Code Analysis & Prompt Generation
-    code2prompt.enable = false;
-    files-to-prompt.enable = false;
-    goose-cli.enable = false;
+    code2prompt.enable = true;        # ✅ Enable for testing
+    files-to-prompt.enable = true;    # ✅ Enable for testing
+    goose-cli.enable = false;         # Keep disabled (requires API keys)
     
-    # Placeholder modules (no installation)
-    github-copilot-cli.enable = false;
+    # LLM Interfaces
+    github-copilot-cli.enable = true; # ✅ Enable for testing
     claude-desktop.enable = false;
     
     # Diagnostics tool

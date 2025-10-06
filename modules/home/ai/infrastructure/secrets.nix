@@ -127,7 +127,7 @@ fi
     ];
 
     # Shell integration - automatically source secrets
-    programs.zsh.initExtra = mkIf cfg.shellIntegration ''
+    programs.zsh.initContent = mkIf cfg.shellIntegration ''
       # AI Tools - Source secrets from keychain
       eval "$(ai-source-secrets)"
     '';

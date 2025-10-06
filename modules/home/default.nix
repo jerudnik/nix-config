@@ -9,6 +9,6 @@
   raycast = import ./raycast/default.nix;
   browser = import ./browser/default.nix;
   security = import ./security/default.nix;
-  ai = import ./../ai/default.nix;
+  ai = import ./ai/default.nix;
   mcp = import ./mcp/default.nix;
 }
