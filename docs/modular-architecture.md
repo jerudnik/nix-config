@@ -104,21 +104,38 @@ darwin.nix-settings = {
 - Store optimization
 - Trusted users management
 
-#### `system-defaults` - macOS Preferences
+#### `system-defaults` - macOS Preferences (Enhanced)
 ```nix
 darwin.system-defaults = {
   enable = true;
-  dock.autohide = true;
+  
+  # Enhanced dock with 17+ options for productivity
+  dock = {
+    autohide = true;
+    autohideDelay = 0.0;      # Instant response
+    autohideTime = 0.15;      # Fast animation
+    orientation = "left";     # Better screen usage
+    magnification = true;     # Hover effects
+    tileSize = 45;            # Icon size
+    largeSize = 70;           # Magnified size
+    showRecents = false;      # Clean appearance
+    hotCorners = {
+      topRight = 11;          # Launchpad
+      bottomRight = 2;        # Mission Control
+    };
+  };
+  
   finder.showAllExtensions = true;
   globalDomain.disableAutomaticSpellingCorrection = true;
 };
 ```
 
 **Provides:**
-- Dock configuration
-- Finder settings
-- Global domain preferences
-- System UI behavior
+- **Advanced dock configuration** with animation timing, hot corners, magnification
+- **Productivity-focused defaults** with snappy response and strategic shortcuts
+- Finder settings and file management preferences
+- Global domain text input and interface preferences
+- **Automatic restart scripts** for immediate setting application
 
 #### `keyboard` - Keyboard & Input Settings
 ```nix
@@ -273,22 +290,48 @@ home.cli-tools = {
 - System monitor (htop/btop with beautiful theming)
 - Automatic shell integration
 
-#### `spotlight` - macOS Integration
+#### `macos` - macOS-Specific Modules
+
+Comprehensive macOS system integration with specialized modules for native functionality:
+
+##### `home.macos.launchservices` - Default Applications
 ```nix
-home.spotlight = {
+home.macos.launchservices = {
   enable = true;
-  appsFolder = "Applications/home-manager";
-  linkSystemApps = true;
-  reindexInterval = "daily";
+  handlers = [
+    { LSHandlerURLScheme = "http"; LSHandlerRoleAll = "zen.browser"; }
+    { LSHandlerContentTag = "nix"; LSHandlerContentTagClass = "public.filename-extension"; LSHandlerRoleAll = "com.apple.Terminal"; }
+  ];
 };
 ```
 
 **Provides:**
-- macOS Spotlight integration for Nix packages
-- Application folder organization
-- System app linking
-- Automatic reindexing
-- Command-line app availability
+- Centralized default application management
+- Conflict-free LSHandlers aggregation from multiple modules
+- Automatic Launch Services database refresh
+- Support for URL schemes, MIME types, and file extensions
+- Integration with browser and other modules
+
+##### `home.macos.keybindings` - Keyboard & Hotkeys
+```nix
+home.macos.keybindings = {
+  enable = true;
+  keyRepeat = 2;              # Fast key repeat
+  initialKeyRepeat = 15;      # Short initial delay
+  pressAndHoldEnabled = false; # Disable accent menu
+  
+  customSymbolicHotkeys = {
+    "26" = { enabled = false; }; # Disable Mission Control
+  };
+};
+```
+
+**Provides:**
+- Fast, responsive keyboard behavior optimized for development
+- Automatic disabling of smart text features that interfere with coding
+- System-wide hotkey management and customization
+- Integration with Raycast (Spotlight hotkeys managed there)
+- Immediate preference application via cache refresh
 
 ## Configuration Examples
 
@@ -326,7 +369,35 @@ home.spotlight = {
       trustedUsers = [ "jrudnik" ];
     };
     
-    system-defaults.enable = true;
+    system-defaults = {
+      enable = true;
+      # Enhanced dock with productivity hot corners
+      dock = {
+        autohide = true;
+        autohideDelay = 0.0;
+        autohideTime = 0.15;
+        orientation = "left";
+        magnification = true;
+        showRecents = false;
+        hotCorners = {
+          topRight = 11;    # Launchpad
+          bottomRight = 2;  # Mission Control
+        };
+        
+        # Dock applications
+        persistentApps = [
+          "/Applications/Warp.app"
+          "/Applications/Zen.app"
+          "/System/Applications/Messages.app"
+        ];
+        
+        # Dock folders
+        persistentOthers = [
+          "/Users/jrudnik/Downloads"
+          "/Applications"
+        ];
+      };
+    };
   };
 }
 ```
@@ -334,14 +405,17 @@ home.spotlight = {
 ### Complete Home Configuration
 
 ```nix
-# home/jrudnik/home.nix (78 lines)
+# home/jrudnik/home.nix (enhanced with macOS modules)
 { inputs, outputs, ... }: {
   imports = [
     outputs.homeManagerModules.shell
     outputs.homeManagerModules.development
     outputs.homeManagerModules.git
     outputs.homeManagerModules.cli-tools
-    outputs.homeManagerModules.spotlight
+    
+    # macOS-specific modules
+    outputs.homeManagerModules.macos.launchservices
+    outputs.homeManagerModules.macos.keybindings
   ];
 
   # Home Manager basics
@@ -385,7 +459,21 @@ home.spotlight = {
       userEmail = "john.rudnik@gmail.com";
     };
     
-    spotlight.enable = true;
+    # macOS UI enhancements
+    macos.launchservices = {
+      enable = true;
+      defaultBrowser = "com.zen.browser";
+      handlers = [
+        { LSHandlerContentTag = "nix"; LSHandlerContentTagClass = "public.filename-extension"; LSHandlerRoleAll = "com.apple.Terminal"; }
+      ];
+    };
+    
+    macos.keybindings = {
+      enable = true;
+      keyRepeatRate = 2;
+      initialKeyRepeatDelay = 15;
+      disableAccentMenu = true;
+    };
   };
   
   xdg.enable = true;

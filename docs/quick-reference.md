@@ -21,6 +21,9 @@ Essential commands and patterns for daily use of this Nix configuration.
 
 # Clean up old generations
 ./scripts/build.sh clean
+
+# Check theme switching status (when autoSwitch enabled)
+nix-theme-switch
 ```
 
 ### Manual Commands
@@ -155,16 +158,48 @@ programs.git = {
 ```
 
 ### System Defaults
-
-**Dock settings:**
+### Dock settings with applications:**
 ```nix
 # In hosts/parsley/configuration.nix
-system.defaults.dock = {
-  autohide = true;
-  orientation = "bottom";
-  show-recents = false;
-  minimize-to-application = true;
+darwin.system-defaults = {
+  enable = true;
+  dock = {
+    autohide = true;
+    orientation = "bottom";
+    showRecents = false;
+    minimizeToApp = true;
+    
+    # Dock applications
+    persistentApps = [
+      "/Applications/Warp.app"
+      "/Applications/Zen.app" 
+      "/System/Applications/Messages.app"
+    ];
+    
+    # Dock folders
+    persistentOthers = [
+      "/Users/jrudnik/Downloads"
+      "/Applications"
+    ];
+  };
 };
+```
+
+### Theme switching:**
+```nix
+# Automatic light/dark theme switching
+darwin.theming = {
+  enable = true;
+  colorScheme = "gruvbox-material-dark-medium";
+  polarity = "either";
+  
+  autoSwitch = {
+    enable = true;
+    lightScheme = "gruvbox-material-light-medium";
+    darkScheme = "gruvbox-material-dark-medium";
+  };
+};
+```
 ```
 
 **Finder settings:**

@@ -43,7 +43,7 @@
         autohide = true;
         autohideDelay = 0.0;  # Instant response
         autohideTime = 0.15;  # Quick animation
-        orientation = "left";  # Left-side dock for better screen usage
+        orientation = "bottom";  # Bottom dock (change to "left" for left-side)
         showRecents = false;  # Clean dock without recent apps
         
         # Icon appearance
@@ -56,15 +56,31 @@
         # Hot corners for productivity
         hotCorners = {
           topLeft = 1;      # Disabled
-          topRight = 11;    # Launchpad
+          topRight = 1;    # Disabled
           bottomLeft = 1;   # Disabled
-          bottomRight = 2;  # Mission Control
+          bottomRight = 1;  # Disabled
         };
         
         # Performance optimizations
         exposeAnimation = 0.15;  # Fast Mission Control
         launchanim = true;  # Keep app launch animation
         showProcessIndicators = true;  # Show running app indicators
+        
+        # Dock applications (customize these to your preferences)
+        persistentApps = [
+          "/Applications/Warp.app"              # Terminal
+          "/Applications/Zen.app"               # Browser
+          "/Applications/Claude.app"            # AI Assistant
+          "/System/Applications/Messages.app"   # Messages
+          "/System/Applications/Mail.app"       # Mail
+          "/Applications/VS Code.app"           # Code Editor (if installed)
+        ];
+        
+        # Dock folders (customize these to your preferences)
+        persistentOthers = [
+          "/Users/jrudnik/Downloads"            # Downloads folder
+          "/Applications"                       # Applications folder
+        ];
       };
     };
     
@@ -85,18 +101,24 @@
     
     theming = {
       enable = true;
-      # Uses Gruvbox Material with auto light/dark switching
+      # Start with dark theme - Stylix will auto-adapt to system appearance
       colorScheme = "gruvbox-material-dark-medium";
-      polarity = "either"; # Allows automatic light/dark switching
+      polarity = "either"; # Essential: Enables automatic light/dark switching
+      
+      # Enable automatic light/dark theme switching
+      autoSwitch = {
+        enable = true;
+        lightScheme = "gruvbox-material-light-medium";
+        darkScheme = "gruvbox-material-dark-medium";
+      };
       
       # Optional: Set a wallpaper to generate colors from
       # wallpaper = ./wallpapers/your-wallpaper.jpg;
       
       # Easy color scheme alternatives to try:
-      # colorScheme = "gruvbox-material-light-medium";  # Light version
-      # colorScheme = "catppuccin-mocha";               # Purple theme
-      # colorScheme = "tokyo-night-dark";               # Blue theme  
-      # colorScheme = "nord";                           # Cool gray theme
+      # For catppuccin: lightScheme = "catppuccin-latte", darkScheme = "catppuccin-mocha"
+      # For tokyo-night: lightScheme = "tokyo-night-light", darkScheme = "tokyo-night-dark"
+      # For github: lightScheme = "github", darkScheme = "github-dark"
     };
     
     fonts = {

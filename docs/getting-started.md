@@ -8,6 +8,7 @@ This guide will help you get up and running with this clean Nix configuration sy
 > - **[`architecture.md`](architecture.md)** - System architecture overview
 > - **[`exceptions.md`](exceptions.md)** - Exception handling framework 🛡️
 > - **[`quick-reference.md`](quick-reference.md)** - Quick commands and patterns
+> - **[`dock-and-theming-troubleshooting.md`](dock-and-theming-troubleshooting.md)** - Dock & theming troubleshooting 🎨
 
 ## Prerequisites
 
@@ -89,18 +90,39 @@ Controls **user-specific settings**:
 
 Edit `hosts/parsley/configuration.nix`:
 ```nix
-system.defaults = {
+# Enhanced dock configuration with apps and behavior
+darwin.system-defaults = {
+  enable = true;
   dock = {
     autohide = true;
     orientation = "bottom";
-    show-recents = false;
-    # Add more dock settings
+    showRecents = false;
+    
+    # Dock applications (customize to your preferences)
+    persistentApps = [
+      "/Applications/Warp.app"
+      "/Applications/Zen.app"
+      "/System/Applications/Messages.app"
+    ];
+    
+    # Dock folders
+    persistentOthers = [
+      "/Users/jrudnik/Downloads"
+      "/Applications"
+    ];
   };
+};
+
+# Automatic light/dark theme switching
+darwin.theming = {
+  enable = true;
+  colorScheme = "gruvbox-material-dark-medium";
+  polarity = "either";  # Essential for auto-switching
   
-  finder = {
-    AppleShowAllExtensions = true;
-    ShowPathbar = true;
-    ShowStatusBar = true;
+  autoSwitch = {
+    enable = true;
+    lightScheme = "gruvbox-material-light-medium";
+    darkScheme = "gruvbox-material-dark-medium";
   };
 };
 ```

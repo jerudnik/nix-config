@@ -189,6 +189,106 @@ system.defaults = {
 };
 ```
 
+### Dock Configuration
+
+**Managing dock applications:**
+```nix
+# In hosts/parsley/configuration.nix
+darwin.system-defaults = {
+  enable = true;
+  dock = {
+    # Dock behavior
+    autohide = true;
+    autohideDelay = 0.0;  # Instant response
+    orientation = "left";  # or "bottom", "right"
+    
+    # Applications in dock
+    persistentApps = [
+      "/Applications/Warp.app"              # Your terminal
+      "/Applications/Zen.app"               # Your browser  
+      "/Applications/VS Code.app"           # Your editor
+      "/System/Applications/Messages.app"   # System app
+    ];
+    
+    # Folders in dock
+    persistentOthers = [
+      "/Users/jrudnik/Downloads"
+      "/Applications"
+      "/Users/jrudnik/Documents"
+    ];
+  };
+};
+```
+
+**Finding application paths:**
+```bash
+# List all applications
+ls -la /Applications/
+ls -la /System/Applications/
+
+# Find specific apps
+find /Applications -name "*.app" -maxdepth 1
+```
+
+### Theme Management
+
+**Setting up automatic theme switching:**
+```nix
+# In hosts/parsley/configuration.nix
+darwin.theming = {
+  enable = true;
+  
+  # Base theme (provides colors for polarity adaptation)
+  colorScheme = "gruvbox-material-dark-medium";
+  
+  # Essential: enables automatic light/dark adaptation
+  polarity = "either";
+  
+  # Optional: Configure theme preferences
+  autoSwitch = {
+    enable = true;
+    lightScheme = "gruvbox-material-light-medium";
+    darkScheme = "gruvbox-material-dark-medium";
+  };
+};
+```
+
+**Testing theme switching:**
+```bash
+# Check current theme status
+nix-theme-switch
+
+# Test switching (change in System Preferences)
+# macOS > System Preferences > General > Appearance
+# Switch between "Light" and "Dark"
+
+# Applications will automatically adapt!
+```
+
+**Popular theme combinations:**
+```nix
+# Catppuccin (very popular)
+autoSwitch = {
+  enable = true;
+  lightScheme = "catppuccin-latte";
+  darkScheme = "catppuccin-mocha";
+};
+
+# Tokyo Night (developer favorite)
+autoSwitch = {
+  enable = true;
+  lightScheme = "tokyo-night-light";
+  darkScheme = "tokyo-night-dark";
+};
+
+# GitHub (clean and professional)
+autoSwitch = {
+  enable = true;
+  lightScheme = "github";
+  darkScheme = "github-dark";
+};
+```
+
 ## Version Management
 
 ### Flake Updates

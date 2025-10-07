@@ -133,6 +133,27 @@ in {
             11=Launchpad, 12=Notification Center, 13=Lock Screen'';
         };
       };
+      
+      persistentApps = mkOption {
+        type = types.listOf types.str;
+        default = [];
+        example = [
+          "/Applications/Zen.app"
+          "/System/Applications/Messages.app"
+          "/Applications/VS Code.app"
+        ];
+        description = "List of application paths to keep in dock";
+      };
+      
+      persistentOthers = mkOption {
+        type = types.listOf types.str;
+        default = [];
+        example = [
+          "/Users/jrudnik/Downloads"
+          "/Users/jrudnik/Documents"
+        ];
+        description = "List of folder paths to keep in dock";
+      };
     };
     
     finder = {
@@ -247,6 +268,10 @@ in {
           wvous-tr-corner = cfg.dock.hotCorners.topRight;
           wvous-bl-corner = cfg.dock.hotCorners.bottomLeft;
           wvous-br-corner = cfg.dock.hotCorners.bottomRight;
+          
+          # Persistent applications and folders
+          persistent-apps = cfg.dock.persistentApps;
+          persistent-others = cfg.dock.persistentOthers;
         };
         
         # Finder configuration

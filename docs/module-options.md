@@ -125,9 +125,32 @@ macOS system preferences and defaults.
 darwin.system-defaults = {
   enable = true;                    # Enable system defaults
   dock = {
+    # Basic behavior
     autohide = true;                # Auto-hide dock
-    orientation = "bottom";         # Dock position
-    showRecents = false;            # Show recent apps
+    autohideDelay = 0.0;            # Instant autohide (seconds)
+    autohideTime = 0.15;            # Fast animation (seconds)
+    orientation = "left";           # Dock position
+    showRecents = false;            # Hide recent apps
+    
+    # Icon appearance
+    magnification = true;           # Enable hover magnification
+    tileSize = 45;                  # Normal icon size (pixels)
+    largeSize = 70;                 # Magnified icon size (pixels)
+    mineffect = "scale";            # Minimize effect
+    minimizeToApp = true;           # Minimize to app icon
+    showProcessIndicators = true;   # Show running app dots
+    launchanim = true;              # Animate app launches
+    
+    # Performance and Mission Control
+    exposeAnimation = 0.15;         # Mission Control animation speed
+    
+    # Hot corners (productivity setup)
+    hotCorners = {
+      topLeft = 1;                  # Disabled
+      topRight = 11;                # Launchpad
+      bottomLeft = 1;               # Disabled  
+      bottomRight = 2;              # Mission Control
+    };
   };
   finder = {
     showAllExtensions = true;       # Show file extensions
@@ -144,10 +167,39 @@ darwin.system-defaults = {
 
 **Options:**
 
-**`dock`:**
+**`dock` (Enhanced with 17 configuration options):**
 - `autohide` (bool, default: `true`) - Automatically hide the dock
+- `autohideDelay` (float, default: `0.0`) - Delay before dock autohide starts (seconds). 0.0 = instant
+- `autohideTime` (float, default: `0.15`) - Duration of dock autohide animation (seconds). Lower = faster
 - `orientation` (enum: "bottom"|"left"|"right", default: `"bottom"`) - Dock position
 - `showRecents` (bool, default: `false`) - Show recent applications in dock
+- `magnification` (bool, default: `true`) - Enable dock icon magnification on hover
+- `tileSize` (int, default: `45`) - Size of dock icons in pixels
+- `largeSize` (int, default: `70`) - Size of magnified dock icons in pixels  
+- `mineffect` (enum: "genie"|"scale"|"suck", default: `"scale"`) - Minimize window effect
+- `minimizeToApp` (bool, default: `true`) - Minimize windows into their application icon
+- `showProcessIndicators` (bool, default: `true`) - Show indicator lights for open applications
+- `launchanim` (bool, default: `true`) - Animate opening applications from dock
+- `exposeAnimation` (float, default: `0.15`) - Duration of Mission Control animation (seconds)
+- `hotCorners.topLeft` (int, default: `1`) - Top-left hot corner action
+- `hotCorners.topRight` (int, default: `11`) - Top-right hot corner action (Launchpad)
+- `hotCorners.bottomLeft` (int, default: `1`) - Bottom-left hot corner action
+- `hotCorners.bottomRight` (int, default: `2`) - Bottom-right hot corner action (Mission Control)
+- `persistentApps` (list of strings, default: `[]`) - List of application paths to keep in dock
+- `persistentOthers` (list of strings, default: `[]`) - List of folder paths to keep in dock
+
+**Hot Corner Actions:**
+- `0` = No-op, `1` = Disabled, `2` = Mission Control, `3` = Application Windows
+- `4` = Desktop, `5` = Start Screen Saver, `6` = Disable Screen Saver
+- `10` = Put Display to Sleep, `11` = Launchpad, `12` = Notification Center, `13` = Lock Screen
+
+**Dock Applications & Folders:**
+- `persistentApps`: Absolute paths to application bundles (.app files)
+  - System apps: `/System/Applications/AppName.app`
+  - Third-party apps: `/Applications/AppName.app`
+  - Example: `["/Applications/Zen.app", "/System/Applications/Messages.app"]`
+- `persistentOthers`: Absolute paths to folders to display in dock
+  - Example: `["/Users/username/Downloads", "/Applications"]`
 
 **`finder`:**
 - `showAllExtensions` (bool, default: `true`) - Show all file extensions
@@ -172,6 +224,15 @@ darwin.system-defaults = {
   dock = {
     autohide = false;               # Keep dock visible
     orientation = "left";           # Left-side dock
+    persistentApps = [
+      "/Applications/Warp.app"
+      "/Applications/Zen.app"
+      "/System/Applications/Messages.app"
+    ];
+    persistentOthers = [
+      "/Users/jrudnik/Downloads"
+      "/Applications"
+    ];
   };
   finder.showPathbar = false;       # Hide path bar
 };
@@ -196,6 +257,85 @@ darwin.homebrew = {
   };
 };
 ```
+
+---
+
+### `darwin.theming`
+
+System-wide theming with Stylix and automatic light/dark switching.
+
+```nix
+darwin.theming = {
+  enable = true;                    # Enable Stylix theming
+  colorScheme = "gruvbox-material-dark-medium"; # Base color scheme
+  polarity = "either";              # Enable auto light/dark adaptation
+  
+  # Automatic light/dark theme switching
+  autoSwitch = {
+    enable = true;
+    lightScheme = "gruvbox-material-light-medium";
+    darkScheme = "gruvbox-material-dark-medium";
+  };
+  
+  # Optional wallpaper-based theming
+  wallpaper = ./wallpapers/nature.jpg;
+};
+```
+
+**Options:**
+- `enable` (bool, default: `false`) - Enable Stylix system-wide theming
+- `colorScheme` (enum, default: `"gruvbox-material-dark-medium"`) - Base16 color scheme
+- `polarity` (enum: "light"|"dark"|"either", default: `"either"`) - Theme polarity
+- `wallpaper` (path, default: `null`) - Optional wallpaper for color extraction
+- `autoSwitch.enable` (bool, default: `false`) - Enable automatic light/dark switching
+- `autoSwitch.lightScheme` (string, default: `"gruvbox-material-light-medium"`) - Light mode theme
+- `autoSwitch.darkScheme` (string, default: `"gruvbox-material-dark-medium"`) - Dark mode theme
+
+**Color Scheme Options:**
+- **Gruvbox**: `gruvbox-material-light-medium`, `gruvbox-material-dark-medium`
+- **Catppuccin**: `catppuccin-latte` (light), `catppuccin-mocha` (dark)
+- **Tokyo Night**: `tokyo-night-light`, `tokyo-night-dark`
+- **GitHub**: `github`, `github-dark`
+- **Nord**: `nord` (works well with polarity = "either")
+
+**Provides:**
+- Automatic theming for terminals, editors, and GUI applications
+- System-wide font configuration with Nerd Font support
+- Integration with macOS system appearance
+- Theme switching utility (`nix-theme-switch` command)
+
+**Example Configurations:**
+```nix
+# Gruvbox with auto-switching
+darwin.theming = {
+  enable = true;
+  colorScheme = "gruvbox-material-dark-medium";
+  polarity = "either";
+  autoSwitch = {
+    enable = true;
+    lightScheme = "gruvbox-material-light-medium";
+    darkScheme = "gruvbox-material-dark-medium";
+  };
+};
+
+# Catppuccin with auto-switching
+darwin.theming = {
+  enable = true;
+  colorScheme = "catppuccin-mocha";
+  polarity = "either";
+  autoSwitch = {
+    enable = true;
+    lightScheme = "catppuccin-latte";
+    darkScheme = "catppuccin-mocha";
+  };
+};
+```
+
+---
+
+### `darwin.homebrew`
+
+Homebrew package management via nix-homebrew.
 
 **Options:**
 - `enable` (bool, default: `false`) - Enable Homebrew package management
@@ -795,6 +935,138 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVe
 **Related Documentation:**
 - [MCP Integration Guide](./mcp-integration.md) - Complete setup and usage documentation
 - [AI Tools Inventory](./ai/INVENTORY.md) - Available MCP tools in nixpkgs
+
+---
+
+## macOS-Specific Modules
+
+### `home.macos.launchservices`
+
+Centralized Launch Services configuration for managing default applications on macOS.
+
+```nix
+home.macos.launchservices = {
+  enable = true;                    # Enable Launch Services configuration
+  handlers = [
+    # Browser for web content
+    {
+      LSHandlerURLScheme = "http";
+      LSHandlerRoleAll = "zen.browser";
+    }
+    {
+      LSHandlerURLScheme = "https";
+      LSHandlerRoleAll = "zen.browser";
+    }
+    {
+      LSHandlerContentType = "public.html";
+      LSHandlerRoleAll = "zen.browser";
+    }
+    
+    # Development files to terminal (where editors are available)
+    {
+      LSHandlerContentType = "public.plain-text";
+      LSHandlerRoleAll = "com.apple.Terminal";
+    }
+    {
+      LSHandlerContentTag = "nix";
+      LSHandlerContentTagClass = "public.filename-extension";
+      LSHandlerRoleAll = "com.apple.Terminal";
+    }
+    {
+      LSHandlerContentTag = "py";
+      LSHandlerContentTagClass = "public.filename-extension"; 
+      LSHandlerRoleAll = "com.apple.Terminal";
+    }
+  ];
+};
+```
+
+**Options:**
+- `enable` (bool, default: `false`) - Enable macOS Launch Services configuration for default applications
+- `handlers` (list of attrs, default: `[]`) - List of LSHandlers for configuring default applications
+
+**Handler Attributes:**
+- **For URL schemes**: `LSHandlerURLScheme` + `LSHandlerRoleAll`
+- **For MIME types**: `LSHandlerContentType` + `LSHandlerRoleAll`
+- **For file extensions**: `LSHandlerContentTag` + `LSHandlerContentTagClass` + `LSHandlerRoleAll`
+
+**Provides:**
+- Centralized default application management
+- Conflict-free LSHandlers aggregation from multiple modules
+- Automatic Launch Services database refresh
+- Integration with browser and other modules
+
+**Key Features:**
+- **Aggregation**: Collects handlers from all modules to avoid conflicts
+- **Automatic refresh**: Updates Launch Services database after configuration changes
+- **Type safety**: Validates handler configurations
+- **macOS-only**: Includes platform assertion for Darwin systems
+
+**Bundle ID Discovery:**
+```bash
+# Find bundle IDs for applications
+osascript -e 'id of app "Zen Browser"'  # → zen.browser
+osascript -e 'id of app "Terminal"'     # → com.apple.Terminal
+mdls -name kMDItemCFBundleIdentifier -r /Applications/AppName.app
+```
+
+---
+
+### `home.macos.keybindings`
+
+macOS keyboard and hotkey configuration for system-wide behavior.
+
+```nix
+home.macos.keybindings = {
+  enable = true;                    # Enable keyboard configuration
+  keyRepeat = 2;                    # Fast key repeat (lower = faster)
+  initialKeyRepeat = 15;            # Short initial delay
+  pressAndHoldEnabled = false;      # Disable accent menu, enable repeat
+  
+  # Custom symbolic hotkeys (advanced)
+  customSymbolicHotkeys = {
+    # Disable Mission Control (if desired)
+    "26" = {
+      enabled = false;
+    };
+    # Custom hotkey example
+    "27" = {
+      enabled = true;
+      value = {
+        parameters = [ 65535 10 1048576 ]; # Custom key combination
+        type = "standard";
+      };
+    };
+  };
+};
+```
+
+**Options:**
+- `enable` (bool, default: `false`) - Enable macOS keyboard and hotkey configuration
+- `keyRepeat` (int, default: `2`) - Key repeat speed when holding down a key (1=fastest, 120=slowest)
+- `initialKeyRepeat` (int, default: `15`) - Delay before key repeat starts (1=shortest, 120=longest)
+- `pressAndHoldEnabled` (bool, default: `false`) - Show accent character selector vs. key repeat
+- `customSymbolicHotkeys` (attrs, default: `{}`) - Advanced symbolic hotkey configuration
+
+**Provides:**
+- Fast, responsive keyboard behavior optimized for development
+- Automatic disabling of text substitutions (smart quotes, auto-correct, etc.)
+- Full keyboard access for all controls
+- Integration with system symbolic hotkeys
+- Automatic preferences cache refresh
+
+**Key Features:**
+- **Performance focused**: Fast key repeat for efficient typing
+- **Developer friendly**: Disables smart text features that interfere with coding
+- **Hotkey management**: Works with Raycast (Spotlight hotkeys disabled there)
+- **Immediate effect**: Restarts preference daemon for instant application
+
+**Common Symbolic Hotkey IDs:**
+- `26` = Mission Control, `27` = Move focus to menu bar
+- `64` = Show Spotlight search (disabled by Raycast)
+- `65` = Show Finder search window (disabled by Raycast)
+
+**Note**: Spotlight hotkeys (Cmd+Space) are automatically disabled by the Raycast module to prevent conflicts.
 
 ---
 

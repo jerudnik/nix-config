@@ -28,13 +28,16 @@ A clean, modular Nix configuration for macOS using nix-darwin and Home Manager. 
 │   │   ├── window-manager/  # AeroSpace tiling window manager
 │   │   ├── theming/         # Stylix theming system
 │   │   └── fonts/           # Font configuration
-│   ├── home/                # Reusable home-manager modules (5 modules)
+│   ├── home/                # Reusable home-manager modules (7 modules)
 │   │   ├── shell/           # Zsh with oh-my-zsh & aliases
 │   │   ├── development/     # Dev tools, languages & editors
 │   │   ├── git/             # Git configuration
 │   │   ├── cli-tools/       # Modern CLI utilities
 │   │   ├── window-manager/  # User window manager settings
-│   │   └── raycast/         # Raycast launcher configuration
+│   │   ├── raycast/         # Raycast launcher configuration
+│   │   └── macos/           # Native macOS UI integration
+│   │       ├── launchservices/ # Default applications
+│   │       └── keybindings/    # Keyboard & hotkeys
 │   └── nixos/               # NixOS modules (future)
 ├── scripts/
 │   ├── build.sh            # Build/switch/check script
@@ -91,20 +94,20 @@ This configuration evolved from framework-dependent to advanced modular architec
 ## Features
 
 ### Modular Architecture
-- **14 reusable modules** (9 darwin + 5 home) with rich configuration options
+- **16 reusable modules** (9 darwin + 7 home) with rich configuration options
 - **NixOS module pattern** with options/config structure
 - **Type-safe configuration** with validation and documentation
 - **81-line system config** (reduced from 100+ lines)
-- **78-line home config** (reduced from 100+ lines)
+- **78-line home config** (reduced from 100+ lines) 
 - **Easy to extend** - add hosts/users without duplication
 
 ### System (nix-darwin)
 - Touch ID for sudo authentication
-- Sensible macOS defaults (Dock, Finder, Global)
+- **Enhanced macOS defaults** with advanced dock configuration (hot corners, animation timing, magnification)
 - Nix daemon optimization and binary caches
 - Automatic garbage collection and store optimization
 - AeroSpace tiling window manager with Alt-based keybindings
-- Stylix theming system with Gruvbox Material theme
+- **Stylix theming system** with automatic light/dark switching and Gruvbox Material themes
 - Homebrew cask integration for GUI applications
 - Font management with iA Writer and Charter fonts
 
@@ -114,6 +117,7 @@ This configuration evolved from framework-dependent to advanced modular architec
 - Development environment (Rust, Go, Python) with optional Emacs
 - Modern CLI tools (eza, bat, ripgrep, fd, fzf, starship)
 - System monitor (btop) with beautiful Stylix theming
+- **macOS native integration** with centralized default apps and optimized keyboard behavior
 - Raycast launcher integration (apps auto-discovered)
 - Alacritty terminal with automatic theming
 
@@ -131,7 +135,19 @@ darwin = {
   };
   
   nix-settings.enable = true;
-  system-defaults.enable = true;
+  
+  # Enhanced dock with productivity features
+  system-defaults = {
+    enable = true;
+    dock = {
+      autohide = true;
+      autohideDelay = 0.0;  # Instant response
+      orientation = "left"; # Better screen usage
+      magnification = true; # Hover effects
+      hotCorners.topRight = 11;  # Launchpad
+    };
+  };
+  
   keyboard.enable = true;
   homebrew.casks = [ "warp" ];
   window-manager.enable = true;
@@ -139,6 +155,12 @@ darwin = {
   theming = {
     enable = true;
     colorScheme = "gruvbox-material-dark-medium";
+    polarity = "either";  # Auto light/dark switching
+    autoSwitch = {
+      enable = true;
+      lightScheme = "gruvbox-material-light-medium";
+      darkScheme = "gruvbox-material-dark-medium";
+    };
   };
   
   fonts.enable = true;
@@ -172,6 +194,17 @@ home = {
     userEmail = "john.rudnik@gmail.com";
   };
   
+  # macOS native integration
+  macos.launchservices = {
+    enable = true;
+    defaultBrowser = "com.zen.browser";
+  };
+  
+  macos.keybindings = {
+    enable = true;
+    keyRepeatRate = 2;  # Fast, responsive typing
+  };
+  
   # App organization handled automatically:
   # - Home Manager apps: ~/Applications/Home Manager Apps
   # - System apps: /Applications/Nix Apps
@@ -198,3 +231,8 @@ home = {
 ### New User
 1. Create `home/new-user/home.nix`
 2. Add to system config's home-manager.users
+
+## Troubleshooting
+
+- **[Dock & Theming Issues](docs/dock-and-theming-troubleshooting.md)** - Solutions for dock applications and automatic theme switching
+- **General Issues** - See [docs/workflow.md](docs/workflow.md#troubleshooting) for build and configuration problems
