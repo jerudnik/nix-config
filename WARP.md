@@ -53,6 +53,15 @@
 - ✅ **ONLY** home modules may use platform detection when necessary
 - ✅ **ALWAYS** create separate implementations for different platforms
 
+**RULE 2.4: Module Creation Guidelines (Nixpkgs-First)**
+- ❌ **NEVER** create custom modules when nixpkgs provides adequate built-in modules
+- ❌ **NEVER** create wrapper modules that only add aliases or simple options
+- ❌ **NEVER** duplicate functionality already provided by nixpkgs modules
+- ✅ **ONLY** create custom modules when adding significant configuration/integration value
+- ✅ **ALWAYS** use nixpkgs built-in program modules directly in home.nix when available
+- ✅ **ALWAYS** check if `programs.<name>.enable` exists in nixpkgs before creating custom modules
+- ✅ **PRINCIPLE**: Direct usage beats wrapper modules; wrapper modules beat code duplication
+
 ---
 
 ## LAW 3: TYPE SAFETY AND VALIDATION
@@ -126,7 +135,19 @@
 - ✅ **PRINCIPLE**: Single source of truth enables reproducible deployments
 
 **Current Documented Exceptions:**
-- **Warp Terminal**: nixpkgs installation failed due to [specific technical issues - requires documentation]
+
+#### **Unfree Packages (allowUnfreePredicate)**
+- **Warp Terminal**: Successfully installed from nixpkgs via Home Manager (unfree)
+  - **Status**: ✅ Working via nixpkgs `warp-terminal` package
+  - **Location**: Home Manager user packages (WARP-compliant per RULE 4.3)
+  - **Version strategy**: nixpkgs may lag ~1 week; acceptable due to built-in auto-update
+  - **Detail**: See `docs/exceptions.md` for complete technical justification
+- **Raycast**: Essential productivity launcher, no suitable FOSS alternative
+  - **Detail**: See `docs/exceptions.md`
+- **gh-copilot**: GitHub Copilot CLI, official GitHub tool
+  - **Detail**: See `docs/exceptions.md`
+
+#### **Homebrew Casks**
 - **Claude Desktop**: Not available in nixpkgs as of 2025-10-06. Alternative analysis:
   - **nixpkgs status**: No claude-desktop package exists in nixpkgs
   - **upstream availability**: Official Anthropic releases via direct download and Homebrew cask only
@@ -280,11 +301,12 @@ This repository is equipped with comprehensive MCP servers that provide deep int
 - **[`docs/module-options.md`](docs/module-options.md)** - All available module options reference
 - **[`docs/getting-started.md`](docs/getting-started.md)** - Setup and configuration guide
 - **[`docs/exceptions.md`](docs/exceptions.md)** - Current exceptions to WARP laws with justifications
-- **[`docs/secrets.md`](docs/secrets.md)** - Secure secret management patterns
 
-**🔌 MCP-Specific Documentation:**
-- **[`modules/home/mcp/README.md`](modules/home/mcp/README.md)** - MCP server configuration guide
-- **[`docs/auth-architecture-analysis.md`](docs/auth-architecture-analysis.md)** - Authentication patterns and security
+**🤖 AI Tools Documentation:**
+- **[`docs/ai-tools.md`](docs/ai-tools.md)** - Complete AI tools integration guide (Claude, Gemini, Copilot, Fabric)
+- **[`docs/mcp.md`](docs/mcp.md)** - MCP (Model Context Protocol) server configuration
+- **[`docs/fabric-ai-integration.md`](docs/fabric-ai-integration.md)** - Fabric AI patterns and workflows
+- **[`modules/home/ai/patterns/fabric/README.md`](modules/home/ai/patterns/fabric/README.md)** - Custom Fabric patterns reference
 
 **🏷️ Agent Usage Tip**: Use MCP filesystem tools to access these documents directly for the most current information
 

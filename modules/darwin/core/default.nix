@@ -22,7 +22,6 @@ in {
       git     # Essential for system operations and nix
       curl    # Required for downloads and scripts  
       wget    # Basic network utility
-      warp-terminal  # Modern terminal with AI features (unfree)
     ] ++ cfg.extraPackages;
 
     # System architecture

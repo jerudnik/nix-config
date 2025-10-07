@@ -18,8 +18,11 @@ Packages that require unfree licensing exceptions with technical justification:
 
 #### ✅ **Warp Terminal** - `allowUnfreePredicate` 
 - **Package:** `warp-terminal`
+- **Source:** nixpkgs (installed via Home Manager)
 - **Reason:** Modern terminal with AI features available in nixpkgs
 - **Technical Limitation:** Requires unfree license for AI features
+- **Installation:** Home Manager user packages (WARP-compliant: user application, not system-level)
+- **Version Strategy:** nixpkgs version may lag ~1 week behind upstream; acceptable due to Warp's built-in auto-update capability
 - **Justification:** Enhanced development experience, available in nixpkgs maintains declarative approach
 - **Review Date:** Next: 2025-04-04  
 - **Status:** ✅ Approved
@@ -103,8 +106,16 @@ Document previously resolved exceptions to prevent regression:
 - **Technical Solution:** Unfree package management in flake configuration
 - **Lesson Learned:** Always verify nixpkgs availability before assuming Homebrew necessity
 
+#### **Warp Terminal System-Level Installation** - ✅ RESOLVED (2025-10-07)
+- **Previous Status:** Installed via darwin.core (nix-darwin system packages)
+- **Issue:** Violated WARP.md RULE 4.3 (non-essential package in system packages)
+- **Resolution:** Moved to Home Manager user packages
+- **Cleanup:** Removed redundant Homebrew cask installation
+- **Technical Solution:** User-level installation via home.packages in home-manager
+- **Lesson Learned:** GUI applications belong in Home Manager, not system packages, even when using nixpkgs
+
 ---
 
-**Last Updated:** 2025-01-04  
+**Last Updated:** 2025-10-07  
 **Next Review Due:** 2025-04-04  
 **Maintained By:** Configuration Management

@@ -12,7 +12,7 @@
     outputs.homeManagerModules.browser
     outputs.homeManagerModules.security
     outputs.homeManagerModules.ai
-    outputs.homeManagerModules.mcp
+    # MCP module removed - using mcp-servers-nix directly
     
     # macOS-specific modules
     outputs.homeManagerModules.macos.launchservices
@@ -30,7 +30,9 @@
   programs.home-manager.enable = true;
   
   # Additional packages - most packages managed via modules
-  # home.packages = with pkgs; [ ];
+  home.packages = with pkgs; [
+    warp-terminal  # Modern terminal with AI features (unfree, managed via Home Manager)
+  ];
   
   # Note: nixpkgs config is managed globally via useGlobalPkgs in flake.nix
 
@@ -171,48 +173,38 @@
         "browser.cache.memory.enable" = true;
       };
     };
-    
-    # MCP (Model Context Protocol) servers for Claude Desktop
-    mcp = {
-      enable = true;
-      servers = {
-        # Filesystem access - custom Python implementation
+  };
+  
+  # MCP (Model Context Protocol) servers configuration using mcp-servers-nix
+  # This generates the configuration file for Claude Desktop (and claude-code automatically)
+  home.file."Library/Application Support/Claude/claude_desktop_config.json".source =
+    inputs.mcp-servers-nix.lib.mkConfig pkgs {
+      # Uses "claude" flavor by default - generates standard Claude Desktop format
+      programs = {
+        # Filesystem access - official MCP server from mcp-servers-nix
         filesystem = {
-          command = "${pkgs.python3}/bin/python3";
-          args = [ "${config.home.homeDirectory}/nix-config/modules/home/mcp/filesystem-server.py" "${config.home.homeDirectory}" ];
+          enable = true;
+          args = [ config.home.homeDirectory ];  # Allow access to home directory
         };
         
-        # GitHub integration - official server (requires GITHUB_TOKEN for full functionality)
-        # Will work in read-only mode without token for public repos
-        github = {
-          command = "${pkgs.github-mcp-server}/bin/server";
-          args = [];
-          env = {
-            # GITHUB_TOKEN = "placeholder";  # Uncomment and set when adding secrets
-          };
-        };
+        # GitHub integration - official server (works read-only without token)
+        github.enable = true;
+        # To add GitHub token securely:
+        # github.passwordCommand.GITHUB_TOKEN = [ "gh" "auth" "token" ];
         
         # Git operations - safe, no secrets required
-        git = {
-          command = "${pkgs.mcp-servers.mcp-server-git}/bin/mcp-server-git";
-          args = [];  # Works with any git repository
-        };
+        git.enable = true;
         
         # Time utilities - safe, no secrets required
-        time = {
-          command = "${pkgs.mcp-servers.mcp-server-time}/bin/mcp-server-time";
-          args = [];
-        };
+        time.enable = true;
         
         # Web fetch capability - safe, no secrets required
-        fetch = {
-          command = "${pkgs.mcp-servers.mcp-server-fetch}/bin/mcp-server-fetch";
-          args = [];
-        };
+        fetch.enable = true;
       };
     };
-    
-    security.bitwarden = {
+  
+  # Security configuration
+  home.security.bitwarden = {
       enable = true;
       
       # macOS-specific settings
@@ -226,11 +218,9 @@
       
       # CLI integration disabled by default (bitwarden-cli package is broken)
       cli.enable = false;
-    };
-    
   };
   
-  # AI tools configuration - all disabled by default
+  # AI tools configuration
   programs = {
     # Secret management (macOS Keychain integration)
     ai.secrets = {
@@ -239,23 +229,39 @@
     };
     
     # Code Analysis & Prompt Generation
-    code2prompt.enable = true;        # ✅ Enable for testing
-    files-to-prompt.enable = true;    # ✅ Enable for testing
-    goose-cli.enable = false;         # Keep disabled (requires API keys)
+    code2prompt.enable = true;        # ✅ Code → prompt converter
+    files-to-prompt.enable = true;    # ✅ Files → prompt converter
+    goose-cli.enable = false;         # Disabled (requires API keys)
     
-    # LLM Interfaces
-    github-copilot-cli.enable = true; # ✅ Enable for testing
-    claude-desktop.enable = false;
+    # AI Productivity Patterns - using nixpkgs module
+    fabric-ai = {                     # ✅ Fabric AI productivity patterns
+      enable = true;
+      enablePatternsAliases = true;   # Create shell aliases for all patterns
+      enableYtAlias = true;           # Enable YouTube transcript helper
+    };
+    
+    # LLM Interfaces - using nixpkgs built-in modules
+    github-copilot-cli.enable = true; # ✅ GitHub Copilot CLI
+    claude-desktop.enable = false;    # Claude Desktop (Homebrew cask)
+    
+    # AI CLI tools - direct nixpkgs modules (no custom wrappers needed)
+    claude-code.enable = true;        # ✅ Claude Code terminal (from nixpkgs)
+    gemini-cli.enable = true;         # ✅ Gemini CLI (from nixpkgs)
     
     # Diagnostics tool
     ai.diagnostics.enable = true;
   };
   
-  # MCP Protocol Host service
-  services.mcphost.enable = false;
+  # Note: MCP servers configured via mcp-servers-nix (see lines 178-204)
   
   # XDG directories
   xdg.enable = true;
+  
+  # Link custom Fabric AI patterns (task definitions)
+  xdg.configFile."fabric/patterns" = {
+    source = ./../../modules/home/ai/patterns/fabric/tasks;
+    recursive = true;
+  };
   
   # Stylix theming configuration
   stylix.targets.zen-browser = {

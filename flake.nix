@@ -82,6 +82,7 @@
                     "raycast" 
                     "warp-terminal"
                     "claude"
+                    "claude-code"  # Claude Code CLI
                     "gh-copilot"  # GitHub Copilot CLI
                   ];
               };

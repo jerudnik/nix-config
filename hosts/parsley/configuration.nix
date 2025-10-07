@@ -68,18 +68,19 @@
         
         # Dock applications (customize these to your preferences)
         persistentApps = [
-          "/Applications/Warp.app"              # Terminal
-          "/Applications/Zen.app"               # Browser
-          "/Applications/Claude.app"            # AI Assistant
-          "/System/Applications/Messages.app"   # Messages
-          "/System/Applications/Mail.app"       # Mail
-          "/Applications/VS Code.app"           # Code Editor (if installed)
+          "/nix/store/3wfmrb4s1m0wqy2gqildmfi5a7ddcxm9-home-manager-applications/Applications/Emacs.app" # Emacs
+          "/nix/store/3wfmrb4s1m0wqy2gqildmfi5a7ddcxm9-home-manager-applications/Applications/Alacritty.app" # Terminal
+          "/nix/store/3wfmrb4s1m0wqy2gqildmfi5a7ddcxm9-home-manager-applications/Applications/Zen Browser (Twilight).app" # Browser
+          "/System/Applications/Calendar.app" # Calendar
+          "/nix/store/3wfmrb4s1m0wqy2gqildmfi5a7ddcxm9-home-manager-applications/Applications/Bitwarden.app" # Bitwarden
+          "/System/Applications/System Settings.app" # System Settings
         ];
         
         # Dock folders (customize these to your preferences)
         persistentOthers = [
           "/Users/jrudnik/Downloads"            # Downloads folder
-          "/Applications"                       # Applications folder
+          "/Users/jrudnik/Documents"			# Documents folder
+          "/Users/jrudnik/Projects"				# Projects Folder
         ];
       };
     };

@@ -61,19 +61,19 @@ let
         fi
     }
     
-    check_tool "fabric" "Fabric AI"
     check_tool "gemini" "Gemini CLI"
     check_tool "claude-code" "Claude Code"
-    check_tool "mcphost" "MCP Host"
     check_tool "code2prompt" "Code2Prompt"
     check_tool "files-to-prompt" "Files to Prompt"
     check_tool "goose" "Goose CLI"
+    check_tool "gh" "GitHub CLI (copilot)"
     echo ""
     
-    echo "📝 Quick Usage Examples:"
+    echo "📜Quick Usage Examples:"
     echo "------------------------"
-    echo "• fabric --list                    # List available patterns"
     echo "• gemini 'Explain quantum computing'  # Ask Gemini"
+    echo "• claude-code 'write a nix module'  # Ask Claude Code"
+    echo "• gh copilot suggest 'find files'   # Get command suggestions"
     echo "• code2prompt .                    # Convert current dir to prompt"
     echo "• files-to-prompt *.nix            # Combine Nix files for LLM"
     echo "• goose --help                     # Get help with Goose"

@@ -1,8 +1,8 @@
 # AI Infrastructure
-# Supporting systems, services, and secret management
+# Supporting systems and secret management
+# Note: MCP server configuration now handled by mcp-servers-nix (see home.nix)
 {
   imports = [
-    ./mcphost.nix
     ./secrets.nix
   ];
 }
