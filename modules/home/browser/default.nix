@@ -19,7 +19,7 @@ in
       default = {};
       example = lib.literalExpression ''
         {
-          "browser.startup.homepage" = "https://start.duckduckgo.com";
+          "browser.startup.homepage" = "https://start.duckduckgo.com"\;
           "browser.shell.checkDefaultBrowser" = false;
           "privacy.donottrackheader.enabled" = true;
           "browser.search.defaultenginename" = "DuckDuckGo";
@@ -38,7 +38,7 @@ in
             id = 1;
             isDefault = false;
             settings = {
-              "browser.startup.homepage" = "https://company.com";
+              "browser.startup.homepage" = "https://company.com"\;
             };
           };
         }
@@ -54,11 +54,12 @@ in
       description = "Zen Browser package to use (twilight recommended for reproducibility)";
     };
 
-    # Default browser setting
+    # Default browser setting - now just a placeholder/documentation
+    # Note: Setting default browser on macOS should be done manually or via system preferences
     setAsDefaultBrowser = mkOption {
       type = types.bool;
       default = false;
-      description = "Whether to set Zen Browser as the default browser";
+      description = "Whether to set Zen Browser as the default browser (currently informational only - set manually via System Settings)";
     };
   };
 
@@ -87,24 +88,10 @@ in
         };
     };
 
-    # Contribute LSHandlers to the centralized Launch Services system
-    home.macos.launchservices.handlers = mkIf cfg.setAsDefaultBrowser [
-      {
-        LSHandlerURLScheme = "http";
-        LSHandlerRoleAll = "zen.browser";
-      }
-      {
-        LSHandlerURLScheme = "https";
-        LSHandlerRoleAll = "zen.browser";
-      }
-      {
-        LSHandlerContentType = "public.html";
-        LSHandlerRoleAll = "zen.browser";
-      }
-      {
-        LSHandlerContentType = "public.xhtml";
-        LSHandlerRoleAll = "zen.browser";
-      }
-    ];
+    # Note: The setAsDefaultBrowser option is retained for configuration compatibility
+    # but no longer attempts to set Launch Services handlers.
+    # To set Zen as your default browser:
+    # 1. Open System Settings > Desktop & Dock > Default web browser
+    # 2. Select Zen Browser from the dropdown
   };
 }

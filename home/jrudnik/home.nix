@@ -253,8 +253,4 @@
   stylix.targets.zen-browser = {
     profileNames = [ "default" ];  # Tell Stylix to theme the default profile
   };
-  
-    
-    };
-  };
 }
