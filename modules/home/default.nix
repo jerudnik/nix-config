@@ -10,6 +10,5 @@
   ai = import ./ai/default.nix;
   # mcp module removed - using mcp-servers-nix directly
   
-  # macOS-specific modules
-  macos = import ./macos/default.nix;
+
 }

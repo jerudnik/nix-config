@@ -12,9 +12,7 @@
     outputs.homeManagerModules.ai
     # MCP module removed - using mcp-servers-nix directly
     
-    # macOS-specific modules
-    outputs.homeManagerModules.macos.launchservices
-    outputs.homeManagerModules.macos.keybindings
+
   ];
 
   # Home Manager configuration
@@ -256,46 +254,7 @@
     profileNames = [ "default" ];  # Tell Stylix to theme the default profile
   };
   
-  # macOS-specific configuration
-  home.macos = {
-    # Centralized Launch Services (default applications)
-    launchservices = {
-      enable = true;
-      
-      # Additional manual LSHandlers (Zen Browser handlers are added automatically)
-      handlers = [
-        # Set text files to open with micro via terminal
-        {
-          LSHandlerContentType = "public.plain-text";
-          LSHandlerRoleAll = "com.apple.Terminal";  # Opens in terminal, where micro is available
-        }
-        {
-          LSHandlerContentTag = "nix";
-          LSHandlerContentTagClass = "public.filename-extension";
-          LSHandlerRoleAll = "com.apple.Terminal";
-        }
-        {
-          LSHandlerContentTag = "md";
-          LSHandlerContentTagClass = "public.filename-extension";
-          LSHandlerRoleAll = "com.apple.Terminal";
-        }
-        # Python files
-        {
-          LSHandlerContentTag = "py";
-          LSHandlerContentTagClass = "public.filename-extension";
-          LSHandlerRoleAll = "com.apple.Terminal";
-        }
-      ];
-    };
     
-    # macOS keyboard and hotkey configuration
-    # NOTE: Keyboard repeat settings (keyRepeat, initialKeyRepeat) have been
-    # moved to nix-darwin system-defaults to prevent NSGlobalDomain conflicts.
-    # This module now only manages symbolic hotkeys (system keyboard shortcuts).
-    keybindings = {
-      enable = true;
-      # Symbolic hotkeys can be configured here if needed
-      # customSymbolicHotkeys = { ... };
     };
   };
 }
