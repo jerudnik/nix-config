@@ -85,45 +85,25 @@ in {
       }
     ];
 
+    # IMPORTANT: NSGlobalDomain settings removed to prevent conflicts.
+    # ALL keyboard settings (KeyRepeat, InitialKeyRepeat, etc.) are now
+    # managed exclusively by nix-darwin in modules/darwin/system-defaults
+    # to prevent cfprefsd cache corruption that causes System Settings blank panes.
+    #
+    # This module now only manages symbolic hotkeys (com.apple.symbolichotkeys),
+    # which is application-level configuration, not system-wide NSGlobalDomain.
+    
     targets.darwin.defaults = {
-      # Global keyboard behavior
-      NSGlobalDomain = {
-        # Key repeat settings
-        ApplePressAndHoldEnabled = cfg.pressAndHoldEnabled;
-        InitialKeyRepeat = cfg.initialKeyRepeat;
-        KeyRepeat = cfg.keyRepeat;
-        
-        # Keyboard navigation improvements
-        AppleKeyboardUIMode = 3; # Enable full keyboard access for all controls
-        
-        # Smart text substitutions (generally disable for better typing experience)
-        NSAutomaticCapitalizationEnabled = false;
-        NSAutomaticDashSubstitutionEnabled = false;
-        NSAutomaticPeriodSubstitutionEnabled = false;
-        NSAutomaticQuoteSubstitutionEnabled = false;
-        NSAutomaticSpellingCorrectionEnabled = false;
-      };
-      
       # Symbolic hotkeys configuration
       "com.apple.symbolichotkeys" = {
         AppleSymbolicHotKeys = mkMerge [
-          # Note: Spotlight hotkeys are disabled by the Raycast module to avoid conflicts
-          # Only apply custom symbolic hotkeys here
+          # Apply custom symbolic hotkeys
           cfg.customSymbolicHotkeys
         ];
       };
     };
     
-    # Optional: Restart affected services to apply keyboard changes immediately
-    home.activation.refreshKeyboardSettings = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      if [[ -n "''${VERBOSE:-}" ]]; then
-        echo "Refreshing macOS keyboard settings..."
-      fi
-      
-      # Restart the preferences cache daemon to ensure changes take effect
-      killall cfprefsd 2>/dev/null || true
-      
-      # Note: Some keyboard changes may require logout/login to take full effect
-    '';
+    # NOTE: cfprefsd management removed - now handled by nix-darwin's
+    # postUserActivation script to ensure proper coordination.
   };
 }

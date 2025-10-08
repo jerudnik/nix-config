@@ -38,6 +38,14 @@
     system-defaults = {
       enable = true;
       
+      # Keyboard settings (moved from home-manager to prevent NSGlobalDomain conflicts)
+      globalDomain = {
+        keyRepeat = 2;              # Fast key repeat
+        initialKeyRepeat = 15;      # Short initial delay
+        pressAndHoldEnabled = false; # Disable accent menu, enable key repeat
+        keyboardUIMode = 3;         # Full keyboard access
+      };
+      
       # Enhanced dock configuration with snappy behavior
       dock = {
         autohide = true;

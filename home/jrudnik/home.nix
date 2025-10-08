@@ -6,9 +6,7 @@
     outputs.homeManagerModules.development
     outputs.homeManagerModules.git
     outputs.homeManagerModules.cli-tools
-    # Spotlight module removed - using Raycast for app launching
     outputs.homeManagerModules.window-manager
-    outputs.homeManagerModules.raycast
     outputs.homeManagerModules.browser
     outputs.homeManagerModules.security
     outputs.homeManagerModules.ai
@@ -123,7 +121,6 @@
       cmdDurationThreshold = 4000;
     };
     
-    # Spotlight module removed - using Raycast for app launching
     # Apps appear in standard locations automatically:
     # - Home Manager apps: ~/Applications/Home Manager Apps
     # - nix-darwin system apps: /Applications/Nix Apps
@@ -134,15 +131,6 @@
       # - Alt-based keybindings
       # - Clean window gaps and layout
       # - Warp terminal integration (Alt+Enter)
-    };
-    
-    raycast = {
-      enable = true;
-      followSystemAppearance = true;
-      globalHotkey = {
-        keyCode = 49;        # Space key
-        modifierFlags = 1048576;  # Command modifier (Cmd+Space)
-      };
     };
     
     browser.zen = {
@@ -301,11 +289,13 @@
     };
     
     # macOS keyboard and hotkey configuration
+    # NOTE: Keyboard repeat settings (keyRepeat, initialKeyRepeat) have been
+    # moved to nix-darwin system-defaults to prevent NSGlobalDomain conflicts.
+    # This module now only manages symbolic hotkeys (system keyboard shortcuts).
     keybindings = {
       enable = true;
-      keyRepeat = 2;  # Fast key repeat
-      initialKeyRepeat = 15;  # Short initial delay
-      # Note: Spotlight hotkeys are already disabled by Raycast module
+      # Symbolic hotkeys can be configured here if needed
+      # customSymbolicHotkeys = { ... };
     };
   };
 }
