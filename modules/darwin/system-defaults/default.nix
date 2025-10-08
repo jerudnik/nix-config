@@ -267,7 +267,7 @@ in {
     # Critical: Synchronize preferences and manage cfprefsd cache
     # This runs AFTER all preference writes (both nix-darwin and home-manager)
     # to prevent cache corruption that causes System Settings blank panes.
-    system.activationScripts.postUserActivation.text = ''
+    system.activationScripts.postActivation.text = ''
       echo "Synchronizing macOS preferences..."
       
       # Kill cfprefsd to force cache flush after all writes complete
