@@ -226,6 +226,33 @@ in {
         default = false;
         description = "Hide the macOS menu bar";
       };
+      
+      # Keyboard settings - moved from home-manager to ensure single source of truth
+      keyRepeat = mkOption {
+        type = types.int;
+        default = 2;
+        example = 1;
+        description = ''Key repeat speed (1-120, lower = faster)'';
+      };
+      
+      initialKeyRepeat = mkOption {
+        type = types.int;
+        default = 15;
+        example = 10;
+        description = ''Delay before key repeat starts (1-120, lower = shorter)'';
+      };
+      
+      pressAndHoldEnabled = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''Show accent character selector when holding keys (false = repeat character)'';
+      };
+      
+      keyboardUIMode = mkOption {
+        type = types.int;
+        default = 3;
+        description = ''Keyboard navigation mode (3 = full keyboard access for all controls)'';
+      };
     };
   };
 
@@ -235,6 +262,40 @@ in {
       echo "Restarting Dock and Finder to apply system defaults..."
       killall Dock 2>/dev/null || true
       killall Finder 2>/dev/null || true
+    '';
+    
+    # Critical: Synchronize preferences and manage cfprefsd cache
+    # This runs AFTER all preference writes (both nix-darwin and home-manager)
+    # to prevent cache corruption that causes System Settings blank panes.
+    system.activationScripts.postUserActivation.text = ''
+      echo "Synchronizing macOS preferences..."
+      
+      # Kill cfprefsd to force cache flush after all writes complete
+      echo "Flushing preference cache (cfprefsd)..."
+      /usr/bin/killall cfprefsd 2>/dev/null || true
+      
+      # Wait for cfprefsd to auto-restart
+      sleep 2
+      
+      # Force macOS to reload all preferences without logout
+      # This makes changes take effect immediately
+      echo "Activating preference changes..."
+      /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u 2>/dev/null || true
+      
+      echo "Preferences synchronized successfully"
+    '';
+    
+    # Validate preference file integrity after activation
+    system.activationScripts.validatePreferences.text = ''
+      echo "Validating preference file integrity..."
+      
+      # Check GlobalPreferences.plist for corruption
+      if ! /usr/bin/plutil -lint ~/.GlobalPreferences.plist > /dev/null 2>&1; then
+        echo "WARNING: GlobalPreferences.plist is corrupted!" >&2
+        echo "You may need to run: rm ~/.GlobalPreferences.plist and rebuild" >&2
+      else
+        echo "✓ Preference validation passed"
+      fi
     '';
     
     system = {
@@ -287,6 +348,9 @@ in {
         };
         
         # Global domain settings
+        # NOTE: ALL NSGlobalDomain settings managed here in nix-darwin ONLY.
+        # This is the single source of truth to prevent cache corruption from
+        # conflicting writes between nix-darwin and home-manager.
         NSGlobalDomain = {
           # Text input settings
           NSAutomaticCapitalizationEnabled = !cfg.globalDomain.disableAutomaticCapitalization;
@@ -294,6 +358,12 @@ in {
           NSAutomaticPeriodSubstitutionEnabled = false;
           NSAutomaticQuoteSubstitutionEnabled = false;
           NSAutomaticSpellingCorrectionEnabled = !cfg.globalDomain.disableAutomaticSpellingCorrection;
+          
+          # Keyboard settings (moved from home-manager)
+          KeyRepeat = cfg.globalDomain.keyRepeat;
+          InitialKeyRepeat = cfg.globalDomain.initialKeyRepeat;
+          ApplePressAndHoldEnabled = cfg.globalDomain.pressAndHoldEnabled;
+          AppleKeyboardUIMode = cfg.globalDomain.keyboardUIMode;
           
           # Panel settings
           NSNavPanelExpandedStateForSaveMode = cfg.globalDomain.expandSavePanel;

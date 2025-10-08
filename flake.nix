@@ -79,7 +79,6 @@
                 overlays = [ self.overlays.mcp-servers ];
                 config.allowUnfreePredicate = pkg:
                   lib.elem (lib.getName pkg) [ 
-                    "raycast" 
                     "warp-terminal"
                     "claude"
                     "claude-code"  # Claude Code CLI
