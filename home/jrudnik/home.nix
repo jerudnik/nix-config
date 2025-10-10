@@ -32,13 +32,30 @@
   home = {
     shell = {
       enable = true;
-      configPath = "~/nix-config";
-      hostName = "parsley";
-      # Can add custom aliases here if needed
+      
+      # Nix operation shortcuts (nrs, nrb, nfu, etc.)
+      nixShortcuts = {
+        enable = true;
+        configPath = "~/nix-config";
+        hostName = "parsley";
+      };
+      
+      # Modern CLI tools (eza, bat, ripgrep, fd, zoxide)
+      modernTools = {
+        enable = true;
+        replaceLegacy = true;  # ls→eza, cat→bat, grep→rg, etc.
+      };
+      
+      # Custom aliases (highest priority)
       aliases = {
         # Git utilities
         lg = "lazygit";  # Simple terminal UI for git commands
       };
+      
+      # Backend: Zsh with Oh-My-Zsh (default implementation)
+      # To use Zsh-specific features, configure:
+      # implementation.zsh.theme = "robbyrussell";  # Default theme
+      # implementation.zsh.plugins = [ "git" "macos" ];  # Default plugins
     };
     
     development = {

@@ -1,34 +1,35 @@
-# Shell configuration module
+# Shell Configuration Aggregator Module
+# This module provides an abstract interface for shell configuration.
+# It defines "what" shell configuration does without specifying "how" it's implemented.
+# Implementation is delegated to backend modules (e.g., zsh.nix).
 #
-# This module is the SINGLE SOURCE OF TRUTH for all shell aliases.
-# 
-# Alias Management Strategy:
-# - All aliases are defined here to avoid conflicts
-# - Modern tool aliases are conditional based on tool availability
+# SINGLE SOURCE OF TRUTH for shell aliases:
+# - All aliases defined through this interface
+# - Modern tool aliases conditional on availability
 # - User aliases take highest priority
 # - Other modules should NOT define shell aliases
-#
-# Alias Categories:
-# - Navigation: .., ..., cd → z
-# - File operations: ls → eza, cat → bat
-# - Text search: grep → rg, find → fd  
-# - Nix operations: nrs, nrb, nfu, etc.
-# - User custom: defined in configuration
 
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 
 with lib;
 
 let
   cfg = config.home.shell;
 in {
+  imports = [
+    ./zsh.nix  # Zsh/Oh-My-Zsh implementation backend
+  ];
+
   options.home.shell = {
-    enable = mkEnableOption "Shell configuration with Zsh and oh-my-zsh";
+    enable = mkEnableOption "Shell configuration and environment";
     
     aliases = mkOption {
       type = types.attrsOf types.str;
       default = {};
-      description = "Custom shell aliases";
+      description = ''
+        Custom shell aliases.
+        These take highest priority and will override any other aliases.
+      '';
       example = literalExpression ''
         {
           deploy = "cd ~/projects && ./deploy.sh";
@@ -41,196 +42,52 @@ in {
       enable = mkOption {
         type = types.bool;
         default = true;
-        description = "Enable aliases for modern CLI tools (requires tools to be installed)";
+        description = ''
+          Enable aliases for modern CLI tools.
+          Requires tools to be installed (eza, bat, ripgrep, fd, etc.).
+        '';
       };
       
       replaceLegacy = mkOption {
         type = types.bool;
         default = true;
-        description = "Replace legacy commands (ls, cat, grep, find) with modern alternatives";
+        description = ''
+          Replace legacy commands with modern alternatives.
+          ls→eza, cat→bat, grep→rg, find→fd, cd→z
+        '';
       };
     };
     
-    ohMyZsh = {
-      theme = mkOption {
-        type = types.enum [ 
-          "robbyrussell" "agnoster" "powerlevel10k" "spaceship"
-          "pure" "minimal" "refined" "gallois" "bira" "clean"
-          "daveverwer" "dieter" "dogenpunk" "dpoggi" "dst"
-          "duellj" "eastwood" "essembeh" "evan" "fishy"
-          "flazz" "fox" "frisk" "fwalch" "gallifrey"
-          "garyblessington" "gentoo" "geoffgarside" "gianu"
-          "gnzh" "gozilla" "half-life" "humza" "imajes"
-          "intheloop" "itchy" "jaischeema" "jbergantine"
-          "jispwoso" "jnrowe" "jonathan" "josh" "jreese"
-          "jtriley" "juanghurtado" "junkfood" "kafeitu"
-          "kardan" "kennethreitz" "kiwi" "kolo" "kphoen"
-          "lambda" "linuxonly" "lukerandall" "macovsky"
-          "maran" "mh" "michelebologna" "miloshadzic"
-          "mortalscumbag" "mrtazz" "murilasso" "muse"
-          "nanotech" "nebirhos" "nicoulaj" "norm"
-          "obraun" "peepcode" "philips" "pmcgee"
-          "re5et" "rgm" "risto" "rkj" "rkj-repos"
-          "sammy" "simple" "simonoff" "sonicradish"
-          "sorin" "sporty_256" "steeef" "strug"
-          "sunaku" "sunrise" "superjarin" "suvash"
-          "takashiyoshida" "terminalparty" "theunraveler"
-          "tjkirch" "tonotdo" "trapd00r" "wedisagree"
-          "wezm" "wezm+" "xiong-chiamiov" "xiong-chiamiov-plus"
-          "ys" "zhann" 
-        ];
-        default = "robbyrussell";
-        description = "Oh My Zsh theme to use from available themes";
+    nixShortcuts = {
+      enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = ''Enable convenient Nix operation shortcuts (nrs, nrb, nfu, etc.)'';
       };
       
-      plugins = mkOption {
-        type = types.listOf types.str;
-        default = [ "git" "macos" ];
-        description = "Oh My Zsh plugins to enable";
+      configPath = mkOption {
+        type = types.str;
+        default = "$HOME/nix-config";
+        description = ''Path to nix configuration for shortcuts'';
       };
-    };
-    
-    enableNixShortcuts = mkOption {
-      type = types.bool;
-      default = true;
-      description = "Enable convenient Nix operation shortcuts";
-    };
-    
-    configPath = mkOption {
-      type = types.str;  # Use str since we need to interpolate in shell aliases
-      default = "$HOME/nix-config";
-      description = "Path to nix configuration for shortcuts";
-    };
-    
-    hostName = mkOption {
-      type = types.str;
-      default = "parsley";
-      description = "Host name for nix shortcuts";
+      
+      hostName = mkOption {
+        type = types.str;
+        default = "parsley";
+        description = ''Host name for nix rebuild shortcuts'';
+      };
     };
     
     debugEnvironment = mkOption {
       type = types.bool;
       default = false;
-      description = "Enable debugging output for environment loading (helpful for troubleshooting PATH issues)";
+      description = ''
+        Enable debugging output for environment loading.
+        Helpful for troubleshooting PATH and application availability issues.
+      '';
     };
   };
 
-  config = mkIf cfg.enable {
-    programs.zsh = {
-      enable = true;
-      enableCompletion = true;
-      
-      shellAliases = {
-        # Navigation shortcuts
-        ".." = "cd ..";
-        "..." = "cd ../..";
-        "...." = "cd ../../..";
-        
-        # Basic file operations (will be overridden by modern tools if enabled)
-        ll = "ls -alF";
-        la = "ls -A";
-        l = "ls -CF";
-      } // (optionalAttrs cfg.enableNixShortcuts {
-        # Nix shortcuts
-        nrs = "sudo darwin-rebuild switch --flake ${cfg.configPath}#${cfg.hostName}";
-        nrb = "darwin-rebuild build --flake ${cfg.configPath}#${cfg.hostName}";
-        nfu = "nix flake update";
-        nfc = "nix flake check";
-        ngc = "nix-collect-garbage -d && sudo nix-collect-garbage -d";
-        # Environment refresh utilities
-        refresh-env = "exec zsh";  # Restart shell to reload environment
-        reload-path = "source ~/.zshrc";  # Reload shell configuration
-      }) // (optionalAttrs (cfg.modernTools.enable && cfg.modernTools.replaceLegacy) {
-        # Modern CLI tool replacements
-        ls = "eza";
-        ll = "eza -la";
-        la = "eza -A";
-        tree = "eza --tree";
-        cat = "bat";
-        grep = "rg";
-        find = "fd";
-        # cd = "z" is handled by zoxide shell integration below
-      }) // (optionalAttrs cfg.modernTools.enable {
-        # Modern CLI tool shortcuts (non-conflicting)
-        exa = "eza";  # Legacy eza name
-        rg = "rg";
-        fd = "fd";
-        # z is handled by zoxide shell integration, don't override it
-        zi = "zoxide query -i";  # Interactive zoxide
-        zb = "zoxide query -l";  # List zoxide database
-        
-        # Git enhancements
-        lg = "lazygit";  # Quick lazygit access
-        tig = "gitui";   # Alternative TUI for git
-        gdiff = "delta";  # Better diff viewer
-        
-        # System monitoring shortcuts
-        top = "btop";     # Modern system monitor
-        htop = "btop";    # Redirect htop to btop
-        
-        # Useful development shortcuts  
-        serve = "python3 -m http.server 8000";  # Quick HTTP server
-        myip = "curl -s https://httpbin.org/ip | jq -r .origin";  # Get external IP
-        ports = "sudo lsof -iTCP -sTCP:LISTEN -n -P";  # Show listening ports
-        
-        # Command correction
-        fuck = "pay-respects";  # Modern thefuck replacement
-        
-        # Quick editing
-        edit = "$EDITOR";
-        e = "$EDITOR";
-      }) // cfg.aliases;
-      
-      oh-my-zsh = {
-        enable = true;
-        plugins = cfg.ohMyZsh.plugins;
-        theme = cfg.ohMyZsh.theme;
-      };
-      
-      # Initialize zoxide and environment after all other configuration
-      initContent = mkIf cfg.modernTools.enable ''
-        ${optionalString cfg.debugEnvironment "echo \"[DEBUG] Loading Nix environment profiles...\""}
-        # Ensure all Nix profiles are properly sourced
-        # This fixes common application availability issues
-        for profile in /nix/var/nix/profiles/default ~/.nix-profile /etc/profiles/per-user/$USER; do
-          if [ -f "$profile/etc/profile.d/nix.sh" ]; then
-            ${optionalString cfg.debugEnvironment "echo \"[DEBUG] Sourcing $profile/etc/profile.d/nix.sh\""}
-            source "$profile/etc/profile.d/nix.sh"
-          fi
-        done
-        
-        # Source home-manager session variables if they exist
-        if [ -f "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]; then
-          ${optionalString cfg.debugEnvironment "echo \"[DEBUG] Sourcing home-manager session variables\""}
-          source "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
-        fi
-        
-        ${optionalString cfg.debugEnvironment "echo \"[DEBUG] PATH: $PATH\""}
-        
-        # Ensure zoxide creates its functions properly, then alias cd to z
-        if command -v zoxide >/dev/null 2>&1; then
-          eval "$(zoxide init zsh)"
-          alias cd="z"
-        fi
-      '';
-    };
-    
-    # Direnv for per-directory environments (essential for Nix development)
-    programs.direnv = {
-      enable = true;
-      nix-direnv.enable = true;
-    };
-    
-    # Session variables to ensure proper PATH and environment
-    home.sessionVariables = {
-      # Ensure user profile is prioritized in PATH
-      NIX_PATH = mkDefault "nixpkgs=$HOME/.nix-defexpr/channels/nixpkgs:$NIX_PATH";
-    };
-    
-    # Additional session paths that commonly get missed
-    home.sessionPath = [
-      "$HOME/.nix-profile/bin"
-      "/etc/profiles/per-user/$USER/bin"
-    ];
-  };
+  # No config section here - all implementation is delegated to backend modules
+  # Backend modules (like zsh.nix) will implement the actual shell configuration logic
 }

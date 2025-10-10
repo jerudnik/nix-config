@@ -150,13 +150,13 @@ in {
 
 ### Current Implementations
 
-This pattern is used in:
+✅ **All Phase 2 Refactorings Complete!**
+
+This pattern is successfully used in:
 - `darwin/theming/` - Stylix backend for theming
 - `home/window-manager/` - AeroSpace backend for window management
 - `home/security/` - Bitwarden backend for password management (WARP LAW 4.3 compliant)
-
-Planned for:
-- `home/shell/` - Zsh/Oh-My-Zsh backend
+- `home/shell/` - Zsh/Oh-My-Zsh backend for shell configuration (most complex refactoring)
 
 ## Module Architecture
 
@@ -469,6 +469,51 @@ home.security = {
   - Configuration: Managed via home-manager (user-level)
   - CLI tool: Optional, installed via home-manager (user-level)
   - Clear separation between "install" and "configure"
+
+#### `shell` - Shell Configuration (Aggregator/Implementor)
+```nix
+home.shell = {
+  enable = true;
+  
+  # Nix operation shortcuts
+  nixShortcuts = {
+    enable = true;
+    configPath = "~/nix-config";
+    hostName = "parsley";
+  };
+  
+  # Modern CLI tools (eza, bat, ripgrep, fd, zoxide)
+  modernTools = {
+    enable = true;
+    replaceLegacy = true;  # ls→eza, cat→bat, grep→rg, etc.
+  };
+  
+  # Custom aliases (highest priority)
+  aliases = {
+    deploy = "cd ~/projects && ./deploy.sh";
+  };
+  
+  # Backend: Zsh with Oh-My-Zsh (default implementation)
+  implementation.zsh.theme = "robbyrussell";
+  implementation.zsh.plugins = [ "git" "macos" ];
+};
+```
+
+**Provides:**
+- Abstract shell configuration interface (tool-agnostic)
+- Zsh/Oh-My-Zsh implementation backend (default)
+- Unified alias management (single source of truth)
+- Modern CLI tool replacements (eza, bat, rg, fd, z)
+- Nix operation shortcuts (nrs, nrb, nfu, ngc)
+- Environment PATH configuration
+- Direnv integration for per-directory environments
+
+**Architecture:**
+- Uses **Aggregator/Implementor Pattern**
+- `default.nix` - Abstract interface ("what")
+- `zsh.nix` - Zsh/Oh-My-Zsh backend ("how")
+- Easy to swap shells (Fish, Nushell, Bash, etc.)
+- **Most Complex Refactoring**: Extensive alias management, environment setup
 
 #### `macos` - macOS-Specific Modules
 
