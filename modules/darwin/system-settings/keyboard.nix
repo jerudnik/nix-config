@@ -8,7 +8,7 @@
 with lib;
 
 {
-  options.darwin.system-defaults.keyboard = {
+  options.darwin.system-settings.keyboard = {
     keyRepeat = mkOption {
       type = types.int;
       default = 2;

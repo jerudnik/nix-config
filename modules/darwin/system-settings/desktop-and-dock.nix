@@ -7,7 +7,7 @@
 with lib;
 
 {
-  options.darwin.system-defaults.desktopAndDock = {
+  options.darwin.system-settings.desktopAndDock = {
     # Dock behavior
     dock = {
       autohide = mkOption {

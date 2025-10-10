@@ -1,5 +1,5 @@
-# System Defaults Aggregator Module
-# This module provides a unified interface for macOS system defaults and preferences.
+# System Settings Aggregator Module
+# This module provides a unified interface for macOS System Settings configuration.
 # It's organized by System Settings panes for intuitive configuration.
 #
 # CRITICAL: This module implements a SINGLE, UNIFIED config block to prevent
@@ -11,18 +11,18 @@
 with lib;
 
 let
-  cfg = config.darwin.system-defaults;
+  cfg = config.darwin.system-settings;
 in {
   imports = [
-    ./panes/desktop-and-dock.nix
-    ./panes/keyboard.nix
-    ./panes/appearance.nix
-    ./panes/trackpad.nix
-    ./panes/general.nix
+    ./desktop-and-dock.nix
+    ./keyboard.nix
+    ./appearance.nix
+    ./trackpad.nix
+    ./general.nix
   ];
 
-  options.darwin.system-defaults = {
-    enable = mkEnableOption "macOS system defaults and preferences";
+  options.darwin.system-settings = {
+    enable = mkEnableOption "macOS System Settings configuration";
   };
 
   config = mkIf cfg.enable {

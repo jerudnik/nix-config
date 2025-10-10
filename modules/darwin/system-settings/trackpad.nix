@@ -8,7 +8,7 @@
 with lib;
 
 {
-  options.darwin.system-defaults.trackpad = {
+  options.darwin.system-settings.trackpad = {
     naturalScrolling = mkOption {
       type = types.bool;
       default = false;

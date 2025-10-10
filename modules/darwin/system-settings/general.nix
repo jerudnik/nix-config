@@ -9,7 +9,7 @@
 with lib;
 
 {
-  options.darwin.system-defaults.general = {
+  options.darwin.system-settings.general = {
     # Text input settings
     textInput = {
       disableAutomaticCapitalization = mkOption {

@@ -8,7 +8,7 @@
 with lib;
 
 {
-  options.darwin.system-defaults.appearance = {
+  options.darwin.system-settings.appearance = {
     automaticSwitchAppearance = mkOption {
       type = types.bool;
       default = true;

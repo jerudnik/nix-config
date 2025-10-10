@@ -5,7 +5,7 @@
     outputs.darwinModules.core
     outputs.darwinModules.security
     outputs.darwinModules.nix-settings
-    outputs.darwinModules.system-defaults
+    outputs.darwinModules.system-settings
     outputs.darwinModules.keyboard
     outputs.darwinModules.homebrew
     outputs.darwinModules.window-manager
@@ -43,7 +43,7 @@
       trustedUsers = [ "jrudnik" ];
     };
     
-    system-defaults = {
+    system-settings = {
       enable = true;
       
       # Keyboard Pane - Settings that appear in System Settings > Keyboard
