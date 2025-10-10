@@ -54,6 +54,110 @@ in {
 3. **`config`**: Defines what actually happens when options are set (the implementation)
 4. **`mkIf cfg.enable`**: Conditionally applies config only when enabled
 
+## Advanced Pattern: Aggregator/Implementor
+
+### Purpose
+
+Some modules benefit from separating **what** they do (the interface) from **how** they do it (the implementation). This is the **Aggregator/Implementor Pattern**.
+
+**Benefits:**
+- 🔄 **Swappable Implementations**: Change backend tools without affecting user configuration
+- 🎯 **Clear Separation**: "What" vs "how" are in separate files
+- 🛡️ **Isolation**: Tool-specific logic isolated from abstract interface
+- 🧪 **Testability**: Easy to test different implementations
+- 📈 **Maintainability**: Simpler to update or replace backend tools
+
+### Structure
+
+```
+modules/darwin/theming/
+├── default.nix    # Aggregator: Abstract interface ("what")
+└── stylix.nix     # Implementor: Stylix-specific ("how")
+```
+
+### Example: Theming Module
+
+#### Aggregator (`default.nix`)
+Defines the abstract theming interface:
+
+```nix
+{ config, lib, ... }:
+
+let
+  cfg = config.darwin.theming;
+in {
+  imports = [
+    ./stylix.nix  # Import implementor
+  ];
+
+  options.darwin.theming = {
+    enable = mkEnableOption "System-wide theming";
+    
+    colorScheme = mkOption {
+      type = types.enum [ "gruvbox-material-dark-medium" /* ... */ ];
+      default = "gruvbox-material-dark-medium";
+      description = ''Abstract color scheme option'';
+    };
+    
+    polarity = mkOption {
+      type = types.enum [ "light" "dark" "either" ];
+      description = ''Theme polarity preference'';
+    };
+    
+    # More abstract options...
+  };
+  
+  # No config section - implementation delegated to backend
+}
+```
+
+#### Implementor (`stylix.nix`)
+Translates abstract options into Stylix-specific configuration:
+
+```nix
+{ config, lib, pkgs, ... }:
+
+let
+  cfg = config.darwin.theming;
+in {
+  options.darwin.theming.implementation = {
+    stylix.enable = mkEnableOption "Use Stylix" // { default = true; };
+  };
+
+  config = mkIf (cfg.enable && cfg.implementation.stylix.enable) {
+    stylix = {
+      enable = true;
+      base16Scheme = "${pkgs.base16-schemes}/share/themes/${cfg.colorScheme}.yaml";
+      polarity = cfg.polarity;
+      # Stylix-specific configuration
+    };
+  };
+}
+```
+
+### When to Use This Pattern
+
+✅ **Use when:**
+- Module wraps a specific tool (Stylix, AeroSpace, Bitwarden)
+- Tool might be replaced in the future
+- Tool has complex, tool-specific options
+- Separation improves clarity
+
+❌ **Don't use when:**
+- Module is simple and direct
+- No tool swapping is likely
+- Adding complexity without benefit
+
+### Current Implementations
+
+This pattern is used in:
+- `darwin/theming/` - Stylix backend for theming
+
+Planned for:
+- `home/window-manager/` - AeroSpace backend
+- `home/security/` - Bitwarden backend
+- `home/shell/` - Zsh/Oh-My-Zsh backend
+
 ## Module Architecture
 
 ### Darwin Modules (`modules/darwin/`)
@@ -177,20 +281,31 @@ darwin.window-manager = {
 - Auto-startup configuration
 - Applications folder symlink
 
-#### `theming` - Stylix Theme System
+#### `theming` - System-Wide Theming (Aggregator/Implementor)
 ```nix
 darwin.theming = {
   enable = true;
   colorScheme = "gruvbox-material-dark-medium";
   polarity = "either";  # Auto light/dark switching
+  
+  # Backend selection (optional, Stylix is default)
+  implementation.stylix.enable = true;
 };
 ```
 
 **Provides:**
-- System-wide color theming via Stylix
+- Abstract theming interface (tool-agnostic)
+- Stylix implementation backend (default)
+- System-wide color theming
 - Automatic light/dark mode switching
 - Multiple color scheme options
 - Application theme consistency
+
+**Architecture:**
+- Uses **Aggregator/Implementor Pattern**
+- `default.nix` - Abstract interface ("what")
+- `stylix.nix` - Stylix backend ("how")
+- Easy to swap implementations in the future
 
 #### `fonts` - Font Management
 ```nix
