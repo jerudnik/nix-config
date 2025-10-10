@@ -152,9 +152,9 @@ in {
 
 This pattern is used in:
 - `darwin/theming/` - Stylix backend for theming
+- `home/window-manager/` - AeroSpace backend for window management
 
 Planned for:
-- `home/window-manager/` - AeroSpace backend
 - `home/security/` - Bitwarden backend
 - `home/shell/` - Zsh/Oh-My-Zsh backend
 
@@ -267,19 +267,6 @@ darwin.homebrew = {
 - GUI application installation
 - Declarative cask configuration
 
-#### `window-manager` - AeroSpace Configuration
-```nix
-darwin.window-manager = {
-  enable = true;
-  # Uses sensible Alt-based defaults
-};
-```
-
-**Provides:**
-- AeroSpace tiling window manager
-- Alt-based keyboard shortcuts
-- Auto-startup configuration
-- Applications folder symlink
 
 #### `theming` - System-Wide Theming (Aggregator/Implementor)
 ```nix
@@ -404,6 +391,49 @@ home.cli-tools = {
 - GPU-accelerated terminal (alacritty)
 - System monitor (htop/btop with beautiful theming)
 - Automatic shell integration
+
+#### `window-manager` - Tiling Window Management (Aggregator/Implementor)
+```nix
+home.window-manager = {
+  enable = true;
+  
+  # Abstract window management options
+  startAtLogin = true;
+  defaultLayout = "tiles";  # or "accordion"
+  
+  gaps = {
+    inner = 8;  # Gap between windows
+    outer = 8;  # Gap from screen edges
+  };
+  
+  keybindings = {
+    modifier = "alt";              # Primary modifier key
+    terminal = "Warp";             # Alt+Enter launches terminal
+    browser = "Zen Browser (Twilight)";
+    passwordManager = "Bitwarden";
+  };
+  
+  # Backend selection (optional, AeroSpace is default)
+  implementation.aerospace.enable = true;
+  implementation.aerospace.extraConfig = ''...'';  # TOML config
+};
+```
+
+**Provides:**
+- Abstract window management interface (tool-agnostic)
+- AeroSpace implementation backend (default)
+- Tiling window manager with vim-style keybindings
+- Alt-based keyboard shortcuts (customizable)
+- Auto-startup configuration
+- Application launcher integration
+- 10 workspace support with seamless switching
+- Service mode for advanced operations
+
+**Architecture:**
+- Uses **Aggregator/Implementor Pattern**
+- `default.nix` - Abstract interface ("what")
+- `aerospace.nix` - AeroSpace backend ("how")
+- Easy to swap implementations in the future
 
 #### `macos` - macOS-Specific Modules
 

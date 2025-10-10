@@ -7,7 +7,6 @@
     outputs.homeManagerModules.git
     outputs.homeManagerModules.cli-tools
     outputs.homeManagerModules.window-manager
-    outputs.homeManagerModules.browser
     outputs.homeManagerModules.security
     outputs.homeManagerModules.ai
     # MCP module removed - using mcp-servers-nix directly
@@ -26,9 +25,6 @@
   programs.home-manager.enable = true;
   
   # Additional packages - most packages managed via modules
-  home.packages = with pkgs; [
-    warp-terminal  # Modern terminal with AI features (unfree, managed via Home Manager)
-  ];
   
   # Note: nixpkgs config is managed globally via useGlobalPkgs in flake.nix
 
@@ -53,8 +49,6 @@
         python = true;
       };
       editor = "micro";
-      # Optional: Enable Emacs - it has excellent Stylix theming support!
-      emacs = true;    # Emacs with automatic Stylix theming enabled!
       neovim = false;  # Alternative: Neovim with automatic theming
       
       # Enable GitHub CLI with shell completion
@@ -101,8 +95,6 @@
     
     cli-tools = {
       enable = true;
-      # All modern CLI tools with sensible defaults
-      # Includes: eza, bat, ripgrep, fd, zoxide, fzf, alacritty (starship now separate)
       
       # Optional: Modern system monitor (btop has beautiful Stylix theming)
       systemMonitor = "btop";  # Options: "none", "htop", "btop"
@@ -123,42 +115,19 @@
     # - Home Manager apps: ~/Applications/Home Manager Apps
     # - nix-darwin system apps: /Applications/Nix Apps
     
-    window-manager.aerospace = {
+    window-manager = {
       enable = true;
-      # Uses the default configuration from the module with:
-      # - Alt-based keybindings
-      # - Clean window gaps and layout
+      # Abstract window manager configuration:
+      # - Alt-based keybindings (default)
+      # - Clean window gaps and layout (8px)
       # - Warp terminal integration (Alt+Enter)
+      # - Zen Browser integration (Alt+B)
+      # - Bitwarden integration (Alt+P)
+      # Backend: AeroSpace (default implementation)
+      # To use AeroSpace-specific features, configure:
+      # implementation.aerospace.extraConfig = ''...''
     };
     
-    browser.zen = {
-      enable = true;
-      setAsDefaultBrowser = true;
-      
-      # Privacy-focused settings
-      settings = {
-        "browser.startup.homepage" = "https://start.duckduckgo.com";
-        "browser.shell.checkDefaultBrowser" = false;
-        "privacy.donottrackheader.enabled" = true;
-        "browser.search.defaultenginename" = "DuckDuckGo";
-        
-        # Enhanced privacy settings
-        "privacy.trackingprotection.enabled" = true;
-        "privacy.trackingprotection.socialtracking.enabled" = true;
-        "network.cookie.sameSite.noneRequiresSecure" = true;
-        "network.cookie.sameSite.laxByDefault" = true;
-        
-        # Security settings
-        "security.tls.version.min" = 3;
-        "dom.security.https_only_mode" = true;
-        "dom.security.https_only_mode_ever_enabled" = true;
-        
-        # Performance tweaks
-        "browser.sessionstore.interval" = 30000;  # Save session every 30s instead of 15s
-        "browser.cache.disk.enable" = true;
-        "browser.cache.memory.enable" = true;
-      };
-    };
   };
   
   # MCP (Model Context Protocol) servers configuration using mcp-servers-nix
@@ -249,8 +218,4 @@
     recursive = true;
   };
   
-  # Stylix theming configuration
-  stylix.targets.zen-browser = {
-    profileNames = [ "default" ];  # Tell Stylix to theme the default profile
-  };
 }
