@@ -1,12 +1,21 @@
-{ config, lib, pkgs, ... }:
+# Theming Aggregator Module
+# This module provides an abstract interface for system-wide theming.
+# It defines "what" theming does without specifying "how" it's implemented.
+# Implementation is delegated to backend modules (e.g., stylix.nix).
+
+{ config, lib, ... }:
 
 with lib;
 
 let
   cfg = config.darwin.theming;
 in {
+  imports = [
+    ./stylix.nix  # Stylix implementation backend
+  ];
+
   options.darwin.theming = {
-    enable = mkEnableOption "System-wide theming with Stylix";
+    enable = mkEnableOption "System-wide theming";
     
     colorScheme = mkOption {
       type = types.enum [
@@ -27,13 +36,19 @@ in {
         "black-metal" "white" "grayscale-dark" "grayscale-light"
       ];
       default = "gruvbox-material-dark-medium";
-      description = "Base16 color scheme to use from popular themes";
+      description = ''
+        Base16 color scheme to use for system-wide theming.
+        This is an abstract option - the implementation backend will apply it.
+      '';
       example = "catppuccin-mocha";
     };
     
     # Automatic light/dark switching with theme pairs
     autoSwitch = {
-      enable = mkEnableOption "Enable automatic light/dark theme switching based on macOS system appearance";
+      enable = mkEnableOption ''
+        Automatic light/dark theme switching based on system appearance.
+        Implementation may vary by backend.
+      '';
       
       lightScheme = mkOption {
         type = types.str;
@@ -53,17 +68,22 @@ in {
     wallpaper = mkOption {
       type = types.nullOr types.path;
       default = null;
-      description = "Wallpaper image to use for theming";
+      description = ''
+        Wallpaper image to use for theming.
+        Backend will extract colors and apply theme accordingly.
+      '';
       example = literalExpression "./wallpapers/gruvbox-landscape.jpg";
     };
-    
-    # Note: Stylix automatically detects and themes installed applications
-    # No manual target configuration needed!
     
     polarity = mkOption {
       type = types.enum [ "light" "dark" "either" ];
       default = "either";
-      description = "Theme polarity - either allows automatic light/dark switching";
+      description = ''
+        Theme polarity preference:
+        - "light": Force light theme
+        - "dark": Force dark theme
+        - "either": Allow automatic light/dark switching
+      '';
     };
     
     fonts = {
@@ -71,13 +91,16 @@ in {
         package = mkOption {
           type = types.nullOr types.package;
           default = null;
-          description = "Monospace font package (iM-Writing Nerd Font provides iA Writer aesthetic with icons)";
+          description = ''
+            Monospace font package.
+            If null, implementation will use its default.
+          '';
         };
         
         name = mkOption {
           type = types.str;
           default = "iMWritingMono Nerd Font";
-          description = "Monospace font name";
+          description = "Monospace font name to use";
         };
       };
       
@@ -85,13 +108,16 @@ in {
         package = mkOption {
           type = types.nullOr types.package;
           default = null;
-          description = "Sans-serif font package (iM-Writing Quat provides proportional iA Writer aesthetic)";
+          description = ''
+            Sans-serif font package.
+            If null, implementation will use its default.
+          '';
         };
         
         name = mkOption {
           type = types.str;
           default = "iMWritingQuat Nerd Font";
-          description = "Sans-serif font name";
+          description = "Sans-serif font name to use";
         };
       };
       
@@ -99,13 +125,16 @@ in {
         package = mkOption {
           type = types.nullOr types.package;
           default = null;
-          description = "Serif font package";
+          description = ''
+            Serif font package.
+            If null, implementation will use its default.
+          '';
         };
         
         name = mkOption {
           type = types.str;
           default = "Charter";
-          description = "Serif font name";
+          description = "Serif font name to use";
         };
       };
       
@@ -113,102 +142,24 @@ in {
         terminal = mkOption {
           type = types.int;
           default = 14;
-          description = "Terminal font size";
+          description = "Font size for terminal applications";
         };
         
         applications = mkOption {
           type = types.int;
           default = 12;
-          description = "Application font size";
+          description = "Font size for GUI applications";
         };
         
         desktop = mkOption {
           type = types.int;
           default = 11;
-          description = "Desktop/UI font size";
+          description = "Font size for desktop/UI elements";
         };
       };
     };
-    
-    # Note: Stylix automatically detects and themes available programs
-    # No need to explicitly configure targets in most cases
   };
 
-  config = mkIf cfg.enable {
-    # Install base16-schemes for color scheme selection
-    environment.systemPackages = with pkgs; [
-      base16-schemes
-    ] ++ lib.optionals cfg.autoSwitch.enable [
-      # Theme switching utility
-      (pkgs.writeShellScriptBin "nix-theme-switch" ''
-        #!/usr/bin/env bash
-        set -euo pipefail
-        
-        LIGHT_THEME="${cfg.autoSwitch.lightScheme}"
-        DARK_THEME="${cfg.autoSwitch.darkScheme}"
-        CONFIG_DIR="$(dirname "$0")/../.."
-        CONFIG_FILE="$CONFIG_DIR/hosts/parsley/configuration.nix"
-        
-        # Get current macOS appearance
-        APPEARANCE=$(defaults read -g AppleInterfaceStyle 2>/dev/null || echo "Light")
-        
-        if [[ "$APPEARANCE" == "Dark" ]]; then
-          TARGET_THEME="$DARK_THEME"
-          echo "🌙 macOS is in Dark Mode - switching to: $TARGET_THEME"
-        else
-          TARGET_THEME="$LIGHT_THEME"
-          echo "☀️  macOS is in Light Mode - switching to: $TARGET_THEME"
-        fi
-        
-        echo "Current theme will be: $TARGET_THEME"
-        echo ""
-        echo "To apply automatic theme switching:"
-        echo "1. Your config already has autoSwitch enabled"
-        echo "2. Stylix will use polarity = 'either' to automatically adapt"
-        echo "3. The base theme ($TARGET_THEME) provides the foundation"
-        echo ""
-        echo "💡 Tip: Change System Preferences > General > Appearance to test!"
-      '')
-    ];
-    
-    stylix = {
-      enable = true;
-      
-      # Use configured color scheme
-      base16Scheme = "${pkgs.base16-schemes}/share/themes/${cfg.colorScheme}.yaml";
-      
-      # Wallpaper (optional)
-      image = cfg.wallpaper;
-      
-      # Enable automatic light/dark switching within the theme
-      polarity = cfg.polarity;
-      
-      # Font configuration
-      fonts = {
-        monospace = {
-          package = pkgs.nerd-fonts.im-writing;
-          name = cfg.fonts.monospace.name;
-        };
-        sansSerif = {
-          package = pkgs.nerd-fonts.im-writing;
-          name = cfg.fonts.sansSerif.name;
-        };
-        serif = {
-          package = pkgs.texlivePackages.charter;
-          name = cfg.fonts.serif.name;
-        };
-        sizes = {
-          terminal = cfg.fonts.sizes.terminal;
-          applications = cfg.fonts.sizes.applications;
-          desktop = cfg.fonts.sizes.desktop;
-        };
-      };
-      
-      # Stylix will automatically theme detected programs
-      # Let Stylix auto-detect and theme everything - no manual overrides needed
-      # targets = {
-      #   # Stylix auto-detects applications, so we don't need to configure this
-      # };
-    };
-  };
+  # No config section here - all implementation is delegated to backend modules
+  # Backend modules (like stylix.nix) will implement the actual theming logic
 }
