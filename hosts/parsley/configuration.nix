@@ -46,28 +46,55 @@
     system-defaults = {
       enable = true;
       
-      # Keyboard settings (moved from home-manager to prevent NSGlobalDomain conflicts)
-      globalDomain = {
+      # Keyboard Pane - Settings that appear in System Settings > Keyboard
+      keyboard = {
         keyRepeat = 2;              # Fast key repeat
         initialKeyRepeat = 15;      # Short initial delay
         pressAndHoldEnabled = false; # Disable accent menu, enable key repeat
         keyboardUIMode = 3;         # Full keyboard access
       };
       
-      # Enhanced dock configuration with snappy behavior
-      dock = {
-        autohide = true;
-        autohideDelay = 0.0;  # Instant response
-        autohideTime = 0.15;  # Quick animation
-        orientation = "bottom";  # Bottom dock (change to "left" for left-side)
-        showRecents = false;  # Clean dock without recent apps
+      # Desktop & Dock Pane - Settings that appear in System Settings > Desktop & Dock
+      desktopAndDock = {
+        # Dock behavior
+        dock = {
+          autohide = true;
+          autohideDelay = 0.0;  # Instant response
+          autohideTime = 0.15;  # Quick animation
+          orientation = "bottom";  # Bottom dock (change to "left" for left-side)
+          showRecents = false;  # Clean dock without recent apps
+          
+          # Icon appearance
+          magnification = true;
+          tileSize = 45;  # Medium-sized icons
+          largeSize = 70;  # Nice magnification size
+          mineffect = "scale";  # Clean minimize effect
+          minimizeToApp = true;  # Minimize to app icon
+          launchanim = true;  # Keep app launch animation
+          showProcessIndicators = true;  # Show running app indicators
+          
+          # Dock applications (customize these to your preferences)
+          persistentApps = [
+            "/Applications/Nix Apps/Emacs.app"
+            "/Applications/Nix Apps/Alacritty.app"
+            "/Applications/Nix Apps/Zen Browser (Twilight).app"
+            "/System/Applications/Calendar.app"
+            "/Applications/Nix Apps/Bitwarden.app"
+            "/System/Applications/System Settings.app"
+          ];
+          
+          # Dock folders (customize these to your preferences)
+          persistentOthers = [
+            "/Users/jrudnik/Downloads"            # Downloads folder
+            "/Users/jrudnik/Documents"			# Documents folder
+            "/Users/jrudnik/Projects"				# Projects Folder
+          ];
+        };
         
-        # Icon appearance
-        magnification = true;
-        tileSize = 45;  # Medium-sized icons
-        largeSize = 70;  # Nice magnification size
-        mineffect = "scale";  # Clean minimize effect
-        minimizeToApp = true;  # Minimize to app icon
+        # Mission Control settings
+        missionControl = {
+          exposeAnimation = 0.15;  # Fast Mission Control
+        };
         
         # Hot corners for productivity
         hotCorners = {
@@ -76,28 +103,6 @@
           bottomLeft = 1;   # Disabled
           bottomRight = 1;  # Disabled
         };
-        
-        # Performance optimizations
-        exposeAnimation = 0.15;  # Fast Mission Control
-        launchanim = true;  # Keep app launch animation
-        showProcessIndicators = true;  # Show running app indicators
-        
-        # Dock applications (customize these to your preferences)
-        persistentApps = [
-          "/Applications/Nix Apps/Emacs.app"
-          "/Applications/Nix Apps/Alacritty.app"
-          "/Applications/Nix Apps/Zen Browser (Twilight).app"
-          "/System/Applications/Calendar.app"
-          "/Applications/Nix Apps/Bitwarden.app"
-          "/System/Applications/System Settings.app"
-        ];
-        
-        # Dock folders (customize these to your preferences)
-        persistentOthers = [
-          "/Users/jrudnik/Downloads"            # Downloads folder
-          "/Users/jrudnik/Documents"			# Documents folder
-          "/Users/jrudnik/Projects"				# Projects Folder
-        ];
       };
     };
     
