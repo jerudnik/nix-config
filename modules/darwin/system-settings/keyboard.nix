@@ -9,6 +9,7 @@ with lib;
 
 {
   options.darwin.system-settings.keyboard = {
+    # Key repeat and behavior settings (write to NSGlobalDomain)
     keyRepeat = mkOption {
       type = types.int;
       default = 2;
@@ -33,6 +34,26 @@ with lib;
       type = types.int;
       default = 3;
       description = ''Keyboard navigation mode (3 = full keyboard access for all controls)'';
+    };
+    
+    # Function key behavior (writes to NSGlobalDomain)
+    enableFnKeys = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''Use F1, F2, etc. as standard function keys instead of media keys'';
+    };
+    
+    # Key remapping settings (writes to system.keyboard)
+    remapCapsLockToControl = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''Remap Caps Lock key to Control'';
+    };
+    
+    remapCapsLockToEscape = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''Remap Caps Lock key to Escape (conflicts with remapCapsLockToControl)'';
     };
   };
 }

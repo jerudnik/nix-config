@@ -26,6 +26,14 @@ in {
   };
 
   config = mkIf cfg.enable {
+    # Validate keyboard configuration
+    assertions = [
+      {
+        assertion = !(cfg.keyboard.remapCapsLockToControl && cfg.keyboard.remapCapsLockToEscape);
+        message = "Cannot remap Caps Lock to both Control and Escape simultaneously";
+      }
+    ];
+    
     # Restart Dock and Finder after system defaults changes
     system.activationScripts.restartDockAndFinder.text = ''
       echo "Restarting Dock and Finder to apply system defaults..."
@@ -72,6 +80,13 @@ in {
     # This prevents NSGlobalDomain conflicts between multiple modules.
     system = {
       stateVersion = 5;
+      
+      # Keyboard remapping (from keyboard pane)
+      keyboard = {
+        enableKeyMapping = true;
+        remapCapsLockToControl = cfg.keyboard.remapCapsLockToControl;
+        remapCapsLockToEscape = cfg.keyboard.remapCapsLockToEscape;
+      };
       
       defaults = {
         # ===== Desktop & Dock Pane =====
@@ -136,6 +151,7 @@ in {
           InitialKeyRepeat = cfg.keyboard.initialKeyRepeat;
           ApplePressAndHoldEnabled = cfg.keyboard.pressAndHoldEnabled;
           AppleKeyboardUIMode = cfg.keyboard.keyboardUIMode;
+          "com.apple.keyboard.fnState" = cfg.keyboard.enableFnKeys;
           
           # Panel settings (from general.panels)
           NSNavPanelExpandedStateForSaveMode = cfg.general.panels.expandSavePanel;

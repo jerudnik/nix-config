@@ -6,9 +6,7 @@
     outputs.darwinModules.security
     outputs.darwinModules.nix-settings
     outputs.darwinModules.system-settings
-    outputs.darwinModules.keyboard
     outputs.darwinModules.homebrew
-    outputs.darwinModules.window-manager
     outputs.darwinModules.theming
     outputs.darwinModules.fonts
   ];
@@ -106,19 +104,10 @@
       };
     };
     
-    keyboard = {
-      enable = true;
-      # remapCapsLockToControl = true (default)
-    };
-    
     homebrew = {
       enable = true;
       # Homebrew casks
       casks = [ "claude" ];
-    };
-    
-    window-manager = {
-      enable = false;  # Deprecated - now using home-manager aerospace module
     };
     
     theming = {
