@@ -158,21 +158,23 @@
       };
     };
   
-  # Security configuration
-  home.security.bitwarden = {
-      enable = true;
-      
-      # macOS-specific settings
-      enableTouchID = true;
-      minimizeToTray = true;
-      startMinimized = false;
-      autoStart = false;  # Set to true if you want it to start at login
-      
-      # Security settings
-      lockTimeout = 15;  # Auto-lock after 15 minutes
-      
-      # CLI integration disabled by default (bitwarden-cli package is broken)
-      cli.enable = false;
+  # Security/Password Manager configuration
+  # WARP LAW 4.3 COMPLIANCE:
+  # - Bitwarden GUI: Installed via nix-darwin in hosts/parsley/configuration.nix
+  # - Configuration: Managed here via home-manager
+  home.security = {
+    enable = true;
+    
+    # Abstract password manager options
+    autoStart = false;  # Set to true to start at login
+    unlockMethod = "biometric";  # Use Touch ID for unlock
+    lockTimeout = 15;  # Auto-lock after 15 minutes
+    windowBehavior = "minimize-to-tray";  # Minimize to tray instead of closing
+    startBehavior = "normal";  # Start with visible window
+    
+    # Backend: Bitwarden (default implementation)
+    # To use Bitwarden-specific features, configure:
+    # implementation.bitwarden.cli.enable = true;  # Enable CLI tool
   };
   
   # AI tools configuration

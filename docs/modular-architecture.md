@@ -153,9 +153,9 @@ in {
 This pattern is used in:
 - `darwin/theming/` - Stylix backend for theming
 - `home/window-manager/` - AeroSpace backend for window management
+- `home/security/` - Bitwarden backend for password management (WARP LAW 4.3 compliant)
 
 Planned for:
-- `home/security/` - Bitwarden backend
 - `home/shell/` - Zsh/Oh-My-Zsh backend
 
 ## Module Architecture
@@ -434,6 +434,41 @@ home.window-manager = {
 - `default.nix` - Abstract interface ("what")
 - `aerospace.nix` - AeroSpace backend ("how")
 - Easy to swap implementations in the future
+
+#### `security` - Password Management (Aggregator/Implementor + WARP LAW 4.3)
+```nix
+home.security = {
+  enable = true;
+  
+  # Abstract password manager options
+  autoStart = false;
+  unlockMethod = "biometric";  # Touch ID unlock
+  lockTimeout = 15;  # Auto-lock after 15 minutes
+  windowBehavior = "minimize-to-tray";
+  startBehavior = "normal";
+  
+  # Backend selection (optional, Bitwarden is default)
+  implementation.bitwarden.enable = true;
+  implementation.bitwarden.cli.enable = false;  # Optional CLI tool
+};
+```
+
+**Provides:**
+- Abstract password manager interface (tool-agnostic)
+- Bitwarden implementation backend (default)
+- Password management with Touch ID unlock
+- Secure credential storage and autofill
+- Optional CLI tool integration
+
+**Architecture:**
+- Uses **Aggregator/Implementor Pattern**
+- `default.nix` - Abstract interface ("what")
+- `bitwarden.nix` - Bitwarden backend ("how")
+- **WARP LAW 4.3 COMPLIANCE**:
+  - GUI app (Bitwarden.app): Installed via nix-darwin (system-level)
+  - Configuration: Managed via home-manager (user-level)
+  - CLI tool: Optional, installed via home-manager (user-level)
+  - Clear separation between "install" and "configure"
 
 #### `macos` - macOS-Specific Modules
 

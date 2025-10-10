@@ -13,7 +13,15 @@
     outputs.darwinModules.fonts
   ];
 
-  # Host identification
+  # GUI Applications - Installed at system level per WARP LAW 4.3
+  # "If it has a .app bundle, nix-darwin should install it"
+  environment.systemPackages = with pkgs; [
+    alacritty
+    bitwarden       # Password manager GUI (configuration via home-manager)
+    emacs
+    warp-terminal
+    inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.twilight
+  ];
   networking = {
     hostName = "parsley";
     computerName = "parsley";
@@ -76,12 +84,12 @@
         
         # Dock applications (customize these to your preferences)
         persistentApps = [
-          "/nix/store/3wfmrb4s1m0wqy2gqildmfi5a7ddcxm9-home-manager-applications/Applications/Emacs.app" # Emacs
-          "/nix/store/3wfmrb4s1m0wqy2gqildmfi5a7ddcxm9-home-manager-applications/Applications/Alacritty.app" # Terminal
-          "/nix/store/3wfmrb4s1m0wqy2gqildmfi5a7ddcxm9-home-manager-applications/Applications/Zen Browser (Twilight).app" # Browser
-          "/System/Applications/Calendar.app" # Calendar
-          "/nix/store/3wfmrb4s1m0wqy2gqildmfi5a7ddcxm9-home-manager-applications/Applications/Bitwarden.app" # Bitwarden
-          "/System/Applications/System Settings.app" # System Settings
+          "/Applications/Nix Apps/Emacs.app"
+          "/Applications/Nix Apps/Alacritty.app"
+          "/Applications/Nix Apps/Zen Browser (Twilight).app"
+          "/System/Applications/Calendar.app"
+          "/Applications/Nix Apps/Bitwarden.app"
+          "/System/Applications/System Settings.app"
         ];
         
         # Dock folders (customize these to your preferences)

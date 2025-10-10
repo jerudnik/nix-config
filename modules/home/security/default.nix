@@ -1,137 +1,81 @@
-{ config, lib, pkgs, ... }:
+# Security/Password Manager Aggregator Module
+# This module provides an abstract interface for password management.
+# It defines "what" password management does without specifying "how" it's implemented.
+# Implementation is delegated to backend modules (e.g., bitwarden.nix).
+#
+# WARP LAW 4.3 COMPLIANCE NOTE:
+# - GUI Applications (like Bitwarden.app): Installed via nix-darwin
+# - Configuration: Managed via home-manager (this module)
+# - CLI Tools: Installed via home-manager if needed
+
+{ config, lib, ... }:
+
+with lib;
 
 let
   cfg = config.home.security;
-  inherit (lib) mkIf mkOption mkEnableOption types;
 in
 {
+  imports = [
+    ./bitwarden.nix  # Bitwarden implementation backend
+  ];
+
   options.home.security = {
-    bitwarden = {
-      enable = mkEnableOption "Bitwarden password manager with desktop app and CLI";
-
-      package = mkOption {
-        type = types.package;
-        default = pkgs.bitwarden;
-        example = lib.literalExpression "pkgs.bitwarden";
-        description = "Bitwarden desktop application package";
-      };
-
-      cli = {
-        enable = mkOption {
-          type = types.bool;
-          default = false;
-          description = "Whether to install Bitwarden CLI for terminal access (currently disabled due to broken package)";
-        };
-
-        package = mkOption {
-          type = types.package;
-          default = pkgs.bitwarden-cli;
-          example = lib.literalExpression "pkgs.bitwarden-cli";
-          description = "Bitwarden CLI package";
-        };
-      };
-
-      autoStart = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Whether to automatically start Bitwarden at login";
-      };
-
-      # macOS-specific settings
-      enableTouchID = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Enable Touch ID unlock for Bitwarden (macOS only)";
-      };
-
-      minimizeToTray = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Minimize Bitwarden to system tray instead of closing";
-      };
-
-      startMinimized = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Start Bitwarden minimized to system tray";
-      };
-
-      lockTimeout = mkOption {
-        type = types.nullOr types.int;
-        default = 15;
-        example = 30;
-        description = "Auto-lock timeout in minutes (null to disable)";
-      };
+    enable = mkEnableOption "Password manager and security tools";
+    
+    autoStart = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether to automatically start the password manager at login.
+        Implementation will handle the actual startup mechanism.
+      '';
+    };
+    
+    unlockMethod = mkOption {
+      type = types.enum [ "password" "biometric" "pin" ];
+      default = "biometric";
+      description = ''
+        Primary unlock method for the password manager.
+        - "password": Traditional master password
+        - "biometric": Touch ID, Face ID, or similar
+        - "pin": Numeric PIN code
+        Implementation may not support all methods.
+      '';
+    };
+    
+    lockTimeout = mkOption {
+      type = types.nullOr types.int;
+      default = 15;
+      example = 30;
+      description = ''
+        Auto-lock timeout in minutes.
+        Set to null to disable automatic locking.
+      '';
+    };
+    
+    windowBehavior = mkOption {
+      type = types.enum [ "close" "minimize" "minimize-to-tray" ];
+      default = "minimize-to-tray";
+      description = ''
+        Behavior when closing the password manager window.
+        - "close": Exit the application completely
+        - "minimize": Minimize to taskbar/dock
+        - "minimize-to-tray": Minimize to system tray (if supported)
+      '';
+    };
+    
+    startBehavior = mkOption {
+      type = types.enum [ "normal" "minimized" ];
+      default = "normal";
+      description = ''
+        How the password manager should start.
+        - "normal": Open with visible window
+        - "minimized": Start minimized/hidden
+      '';
     };
   };
 
-  config = mkIf cfg.bitwarden.enable {
-    # Darwin-only assertions
-    assertions = [
-      {
-        assertion = pkgs.stdenv.isDarwin;
-        message = "home.security.bitwarden is currently configured for macOS (Darwin) only";
-      }
-    ];
-
-    # Install Bitwarden desktop application
-    home.packages = with pkgs; [
-      cfg.bitwarden.package
-    ] ++ lib.optionals cfg.bitwarden.cli.enable [
-      cfg.bitwarden.cli.package
-    ];
-
-    # Configure Bitwarden desktop preferences via macOS defaults
-    targets.darwin.defaults."com.bitwarden.desktop" = {
-      # Enable Touch ID if supported and requested
-      "biometricUnlock" = cfg.bitwarden.enableTouchID;
-      
-      # Minimize to tray behavior
-      "minimizeToTrayOnStart" = cfg.bitwarden.startMinimized;
-      "closeToTray" = cfg.bitwarden.minimizeToTray;
-      
-      # Auto-lock settings
-      "lockTimeout" = cfg.bitwarden.lockTimeout;
-      
-      # Security settings
-      "clearClipboard" = 20;  # Clear clipboard after 20 seconds
-      "disableFavicon" = false;
-      "enableAutoFillOnPageLoad" = false;  # Security: require manual autofill
-      
-      # Update settings
-      "enableStartupSecurityCheck" = true;
-      "enableBrowserIntegration" = true;
-      "enableBrowserIntegrationFingerprint" = true;
-    };
-
-    # Optional: Auto-start via launchd agent
-    launchd.agents."bitwarden-autostart" = mkIf cfg.bitwarden.autoStart {
-      enable = true;
-      config = {
-        Label = "org.home-manager.bitwarden.autostart";
-        ProgramArguments = [ "/usr/bin/open" "-a" "Bitwarden" ];
-        RunAtLoad = true;
-        ProcessType = "Interactive";
-        LimitLoadToSessionType = "Aqua";
-      } // lib.optionalAttrs cfg.bitwarden.startMinimized {
-        # If start minimized is enabled, use the --hidden flag
-        ProgramArguments = [ "/usr/bin/open" "-a" "Bitwarden" "--hidden" ];
-      };
-    };
-
-    # Shell integration for CLI
-    programs.zsh.shellAliases = mkIf cfg.bitwarden.cli.enable {
-      bw = "bitwarden-cli";
-      bws = "bitwarden-cli sync";
-      bwl = "bitwarden-cli list";
-      bwg = "bitwarden-cli get";
-    };
-
-    programs.bash.shellAliases = mkIf cfg.bitwarden.cli.enable {
-      bw = "bitwarden-cli";
-      bws = "bitwarden-cli sync";
-      bwl = "bitwarden-cli list";
-      bwg = "bitwarden-cli get";
-    };
-  };
+  # No config section here - all implementation is delegated to backend modules
+  # Backend modules (like bitwarden.nix) will implement the actual password manager logic
 }
