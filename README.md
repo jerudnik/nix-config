@@ -18,26 +18,23 @@ A clean, modular Nix configuration for macOS using nix-darwin and Home Manager. 
 │   └── parsley/
 │       └── configuration.nix # Clean 81-line system config using modules
 ├── modules/
-│   ├── darwin/              # Reusable Darwin system modules (9 modules)
+│   ├── darwin/              # System modules (7 total)
 │   │   ├── core/            # Essential packages & shell
 │   │   ├── security/        # Touch ID & user management
 │   │   ├── nix-settings/    # Nix daemon & optimization
-│   │   ├── system-defaults/ # macOS system preferences
-│   │   ├── keyboard/        # Keyboard & input settings
+│   │   ├── system-settings/ # macOS System Settings (pane-based)
 │   │   ├── homebrew/        # Homebrew package management
-│   │   ├── window-manager/  # AeroSpace tiling window manager
 │   │   ├── theming/         # Stylix theming system
 │   │   └── fonts/           # Font configuration
-│   ├── home/                # Reusable home-manager modules (7 modules)
+│   ├── home/                # User modules (8 total)
 │   │   ├── shell/           # Zsh with oh-my-zsh & aliases
 │   │   ├── development/     # Dev tools, languages & editors
 │   │   ├── git/             # Git configuration
 │   │   ├── cli-tools/       # Modern CLI utilities
-│   │   ├── window-manager/  # User window manager settings
-│   │   ├── raycast/         # Raycast launcher configuration
-│   │   └── macos/           # Native macOS UI integration
-│   │       ├── launchservices/ # Default applications
-│   │       └── keybindings/    # Keyboard & hotkeys
+│   │   ├── starship/        # Cross-shell prompt
+│   │   ├── window-manager/  # AeroSpace window manager config
+│   │   ├── security/        # Bitwarden & security tools
+│   │   └── ai/              # AI tools & Fabric patterns
 │   └── nixos/               # NixOS modules (future)
 ├── scripts/
 │   ├── build.sh            # Build/switch/check script
@@ -84,7 +81,7 @@ A clean, modular Nix configuration for macOS using nix-darwin and Home Manager. 
 
 This configuration evolved from framework-dependent to advanced modular architecture:
 
-- ✅ **Modular Design**: 15 reusable modules with rich options
+- ✅ **Modular Design**: 15 reusable modules (7 darwin + 8 home) with rich options
 - ✅ **Significant Simplification**: 100+ line configs → 78-81 lines
 - ✅ **Type Safety**: Options with validation and documentation
 - ✅ **NixOS Module Pattern**: Advanced community standards
@@ -94,7 +91,7 @@ This configuration evolved from framework-dependent to advanced modular architec
 ## Features
 
 ### Modular Architecture
-- **16 reusable modules** (9 darwin + 7 home) with rich configuration options
+- **15 reusable modules** (7 darwin + 8 home) with rich configuration options
 - **NixOS module pattern** with options/config structure
 - **Type-safe configuration** with validation and documentation
 - **81-line system config** (reduced from 100+ lines)
@@ -103,23 +100,24 @@ This configuration evolved from framework-dependent to advanced modular architec
 
 ### System (nix-darwin)
 - Touch ID for sudo authentication
-- **Enhanced macOS defaults** with advanced dock configuration (hot corners, animation timing, magnification)
+- **Pane-based System Settings** - Keyboard, Dock, Appearance, Trackpad, General
+- **Unified NSGlobalDomain management** - Single source of truth preventing conflicts
 - Nix daemon optimization and binary caches
 - Automatic garbage collection and store optimization
-- AeroSpace tiling window manager with Alt-based keybindings
 - **Stylix theming system** with automatic light/dark switching and Gruvbox Material themes
 - Homebrew cask integration for GUI applications
-- Font management with iA Writer and Charter fonts
+- Font management with Nerd Fonts, iA Writer, and system fonts
 
 ### Home Manager
 - Zsh with oh-my-zsh and intelligent aliases
 - Git configuration with sensible defaults
-- Development environment (Rust, Go, Python) with optional Emacs
-- Modern CLI tools (eza, bat, ripgrep, fd, fzf, starship)
+- Development environment (Rust, Go, Python) with optional Neovim/Emacs
+- Modern CLI tools (eza, bat, ripgrep, fd, fzf)
+- Starship cross-shell prompt with Gruvbox themes
 - System monitor (btop) with beautiful Stylix theming
-- **macOS native integration** with centralized default apps and optimized keyboard behavior
-- Raycast launcher integration (apps auto-discovered)
-- Alacritty terminal with automatic theming
+- AeroSpace tiling window manager with user-specific keybindings
+- Bitwarden CLI integration for password management
+- AI tools (Fabric patterns, Claude, Gemini, Copilot)
 
 ## Modular Configuration Examples
 
@@ -132,25 +130,34 @@ darwin = {
   security = {
     enable = true;
     primaryUser = "jrudnik";
+    touchIdForSudo = true;
   };
   
   nix-settings.enable = true;
   
-  # Enhanced dock with productivity features
-  system-defaults = {
+  # Pane-based System Settings (matches macOS UI)
+  system-settings = {
     enable = true;
-    dock = {
-      autohide = true;
-      autohideDelay = 0.0;  # Instant response
-      orientation = "left"; # Better screen usage
-      magnification = true; # Hover effects
+    
+    # Desktop & Dock pane
+    desktopAndDock = {
+      dock = {
+        autohide = true;
+        autohideDelay = 0.0;  # Instant response
+        orientation = "bottom";
+        magnification = true;
+      };
       hotCorners.topRight = 11;  # Launchpad
+    };
+    
+    # Keyboard pane (includes remapping)
+    keyboard = {
+      keyRepeat = 2;
+      remapCapsLockToControl = true;
     };
   };
   
-  keyboard.enable = true;
-  homebrew.casks = [ "warp" ];
-  window-manager.enable = true;
+  homebrew.casks = [ "claude" ];
   
   theming = {
     enable = true;
@@ -180,12 +187,13 @@ home = {
     enable = true;
     languages = { rust = true; go = true; python = true; };
     editor = "micro";
-    emacs = true;  # Optional: Excellent Stylix theming!
+    neovim = true;  # Optional: Excellent Stylix theming!
   };
   
   cli-tools = {
     enable = true;
     systemMonitor = "btop";  # Beautiful Stylix theming
+    shellEnhancements.atuin = true;  # Magical shell history
   };
   
   git = {
@@ -194,21 +202,18 @@ home = {
     userEmail = "john.rudnik@gmail.com";
   };
   
-  # macOS native integration
-  macos.launchservices = {
+  starship = {
     enable = true;
-    defaultBrowser = "com.zen.browser";
+    theme = "gruvbox-rainbow";
   };
   
-  macos.keybindings = {
-    enable = true;
-    keyRepeatRate = 2;  # Fast, responsive typing
+  window-manager = {
+    enable = true;  # AeroSpace tiling WM
   };
   
-  # App organization handled automatically:
-  # - Home Manager apps: ~/Applications/Home Manager Apps
-  # - System apps: /Applications/Nix Apps
-  # - Raycast discovers all apps automatically
+  security.bitwarden.enable = true;
+  
+  ai.fabric.enable = true;  # AI-powered CLI tools
 };
 ```
 

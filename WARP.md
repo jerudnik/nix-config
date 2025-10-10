@@ -166,6 +166,63 @@
   - **review schedule**: Re-evaluate when/if nixpkgs gains claude-desktop package
 - Future exceptions require similar detailed justification
 
+**RULE 5.4: System Settings Domain Authority**
+- ❌ **NEVER** write to `NSGlobalDomain` from any module except `darwin/system-settings`
+- ❌ **NEVER** create separate modules for keyboard, trackpad, or appearance settings
+- ✅ **ALWAYS** use `darwin.system-settings` for ALL macOS System Settings
+- ✅ **ALWAYS** organize settings by System Settings pane (Keyboard, Dock, Appearance, etc.)
+- ✅ **PRINCIPLE**: Single source of truth prevents NSGlobalDomain conflicts and cache corruption
+
+**System Settings Pane Organization:**
+```nix
+darwin.system-settings = {
+  enable = true;
+  
+  # Maps to System Settings > Keyboard
+  keyboard = {
+    keyRepeat = 2;
+    remapCapsLockToControl = true;
+    enableFnKeys = true;
+  };
+  
+  # Maps to System Settings > Desktop & Dock
+  desktopAndDock = {
+    dock = { ... };
+    missionControl = { ... };
+    hotCorners = { ... };
+  };
+  
+  # Maps to System Settings > Appearance
+  appearance = {
+    automaticSwitchAppearance = true;
+  };
+  
+  # Maps to System Settings > Trackpad
+  trackpad = {
+    naturalScrolling = false;
+  };
+  
+  # Maps to System Settings > General (+ Finder)
+  general = {
+    textInput = { ... };
+    finder = { ... };
+  };
+};
+```
+
+**Why This Matters:**
+- macOS stores many settings in `NSGlobalDomain` (global preferences file)
+- Multiple modules writing to `NSGlobalDomain` causes cache corruption
+- Results in blank System Settings panes and unpredictable behavior
+- `system-settings` implements a SINGLE, UNIFIED config block to prevent conflicts
+- Organization matches macOS UI for intuitive configuration
+
+**Historical Context:**
+- Previously had separate `keyboard` module writing to `NSGlobalDomain`
+- Caused conflicts with `system-defaults` module
+- Resolved by merging all System Settings into unified `system-settings` module
+- See `docs/darwin-modules-conflicts.md` for full analysis
+
 ---
 
 ## LAW 6: FILE SYSTEM AND DIRECTORY RULES

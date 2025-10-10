@@ -158,8 +158,10 @@ in {
 ```
 
 **Module Categories:**
-- **darwin/**: macOS system modules (nix-darwin)
-- **home/**: User environment modules (home-manager)  
+- **darwin/** (7 modules): macOS system modules (nix-darwin)
+  - core, security, nix-settings, system-settings, homebrew, theming, fonts
+- **home/** (8 modules): User environment modules (home-manager)
+  - shell, development, git, cli-tools, starship, window-manager, security, ai
 - **nixos/**: Linux system modules (future compatibility)
 
 ## Data Flow
