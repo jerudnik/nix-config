@@ -22,7 +22,6 @@ in {
     };
     
     # Optional: enable editors with excellent Stylix theming
-    emacs = mkEnableOption "Emacs with excellent Stylix theming";
     neovim = mkEnableOption "Neovim with Stylix theming (alternative to Emacs)";
     
     extraPackages = mkOption {
@@ -56,14 +55,6 @@ in {
   config = mkIf cfg.enable {
     # Configuration validations
     assertions = [
-      {
-        assertion = !(cfg.emacs && cfg.neovim);
-        message = "Cannot enable both Emacs and Neovim. Choose one editor to avoid conflicts.";
-      }
-      {
-        assertion = (cfg.editor == "emacs") -> cfg.emacs;
-        message = "If editor is set to 'emacs', you must also enable 'development.emacs = true'.";
-      }
       {
         assertion = (cfg.editor == "vim") -> cfg.neovim;
         message = "If editor is set to 'vim', you should enable 'development.neovim = true' for better experience.";
@@ -127,15 +118,6 @@ in {
             git_protocol = "https";
             editor = cfg.editor;
           };
-        };
-      })
-      
-      # Emacs with Stylix theming (Stylix has excellent Emacs support)
-      (mkIf cfg.emacs {
-        emacs = {
-          enable = true;
-          # Stylix will automatically apply colors, fonts, and generate theme
-          # No additional configuration needed - Stylix handles everything!
         };
       })
       

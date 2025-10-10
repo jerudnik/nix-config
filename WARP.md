@@ -36,16 +36,22 @@
 ## LAW 2: ARCHITECTURAL BOUNDARIES ARE SACRED
 
 **RULE 2.1: Module Responsibility Separation**
-- ❌ **NEVER** put Darwin-specific options in NixOS modules or vice versa
-- ❌ **NEVER** mix system and user concerns in the same module
-- ✅ **ALWAYS** keep `modules/darwin/`, `modules/nixos/`, and `modules/home/` strictly separate
-- ✅ **ALWAYS** use the correct module type for the configuration layer
+- ❌ NEVER put Darwin-specific options in NixOS modules or vice versa.
+
+- ✅ ALWAYS keep modules/darwin/, modules/nixos/, and modules/home/ strictly separate.
+
+- ✅ ALWAYS use the correct module type for the configuration layer, following the strict division of labor:
+
+	- modules/darwin/: Manages system-level concerns. This includes the installation of all GUI applications, system-wide services, and macOS defaults.
+
+	- modules/home/: Manages user-level concerns. This includes the configuration of applications (whose installation is managed by nix-darwin), the installation and configuration of CLI-only tools, and all user-specific dotfiles.
 
 **RULE 2.2: One Module, One Concern**
-- ❌ **NEVER** create modules that handle multiple unrelated features
-- ❌ **NEVER** exceed ~100 lines per module file without splitting
-- ✅ **ALWAYS** name modules by what they do, not by category (good: `docker`, bad: `containers`)
-- ✅ **ALWAYS** create focused, single-responsibility modules
+- ❌ NEVER create monolithic modules that handle multiple unrelated features.
+
+- ✅ ALWAYS create focused, single-responsibility modules.
+
+- ✅ ALWAYS name modules by their function (the "what"), not their implementation (the "how"). For example, a module for theming should be named theming, even if it uses stylix internally.
 
 **RULE 2.3: Platform Separation Enforcement**
 - ❌ **NEVER** use platform conditionals in system modules
@@ -54,13 +60,11 @@
 - ✅ **ALWAYS** create separate implementations for different platforms
 
 **RULE 2.4: Module Creation Guidelines (Nixpkgs-First)**
-- ❌ **NEVER** create custom modules when nixpkgs provides adequate built-in modules
-- ❌ **NEVER** create wrapper modules that only add aliases or simple options
-- ❌ **NEVER** duplicate functionality already provided by nixpkgs modules
-- ✅ **ONLY** create custom modules when adding significant configuration/integration value
-- ✅ **ALWAYS** use nixpkgs built-in program modules directly in home.nix when available
-- ✅ **ALWAYS** check if `programs.<name>.enable` exists in nixpkgs before creating custom modules
-- ✅ **PRINCIPLE**: Direct usage beats wrapper modules; wrapper modules beat code duplication
+- ✅ ALWAYS structure modules to separate the abstract interface from the concrete implementation.
+
+- ✅ ALWAYS prefer an aggregator/implementor pattern for modules that wrap a specific tool. The aggregator (theming/default.nix) defines the high-level API, while the implementor (theming/stylix.nix) contains the tool-specific logic.
+
+- ✅ ALWAYS a module's options should distinguish between enable (for managing configuration) and install (for managing the package), allowing a clear separation of concerns between home-manager and nix-darwin.
 
 ---
 
@@ -102,11 +106,15 @@
 - ✅ **ALWAYS** extract logic to modules if needed
 
 **RULE 4.3: Package Management Boundaries**
-- ❌ **NEVER** put non-essential packages in `environment.systemPackages`
-- ❌ **NEVER** duplicate packages between system and user configuration
-- ✅ **ONLY** system packages: essential tools that must be system-wide
-- ✅ **ALWAYS** prefer home-manager packages for user applications
-- ✅ **RULE OF THUMB**: if you can't explain why it must be system-level, it shouldn't be
+- ❌ NEVER install GUI applications using home-manager.
+
+- ❌ NEVER put CLI tools in environment.systemPackages unless they are essential for system operation.
+
+- ✅ ALWAYS install GUI applications and system-level tools via nix-darwin in environment.systemPackages.
+
+- ✅ ALWAYS install user-specific and CLI tools via home-manager in home.packages.
+
+- ✅ RULE OF THUMB: If it has a .app bundle, nix-darwin should install it. If it's a command-line tool for your user, home-manager should install it.
 
 ---
 

@@ -5,7 +5,6 @@
   git = import ./git/default.nix;
   cli-tools = import ./cli-tools/default.nix;
   window-manager = import ./window-manager/default.nix;
-  browser = import ./browser/default.nix;
   security = import ./security/default.nix;
   ai = import ./ai/default.nix;
   # mcp module removed - using mcp-servers-nix directly

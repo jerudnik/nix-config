@@ -7,7 +7,6 @@ let
 in {
   imports = [
     ../starship  # Use the new modular starship configuration
-    ./alacritty.nix
   ];
   options.home.cli-tools = {
     enable = mkEnableOption "Modern CLI tools collection";
@@ -27,10 +26,6 @@ in {
     # Note: Starship configuration is now in ../starship module
     # Use home.starship.enable to configure starship
     
-    terminals = {
-      alacritty = mkEnableOption "GPU-accelerated terminal (alacritty)" // { default = true; };
-      warp = mkEnableOption "Warp terminal (installed via darwin.core module)" // { default = false; }; # Installed system-wide via nixpkgs
-    };
     
     # Shell integration control
     enableShellIntegration = mkOption {
@@ -66,7 +61,7 @@ in {
 
   config = mkIf cfg.enable {
     # Install CLI tools
-    # Note: Some tools (eza, zoxide, fzf, bat, starship, alacritty) are installed via programs.* 
+    # Note: Some tools (eza, zoxide, fzf, bat, starship) are installed via programs.* 
     # configuration below, so they don't need to be in home.packages
     home.packages = with pkgs; []
       ++ optionals cfg.textTools.ripgrep [ ripgrep ]
@@ -154,7 +149,6 @@ in {
       };
       
       # Note: Starship configuration is now handled in ../starship module
-      # Note: Alacritty configuration is handled in ./alacritty.nix
       # Note: System monitor (htop/btop) gets automatic Stylix theming when installed
       # Note: pay-respects, delta, gitui are installed as packages (no special config needed)
       # Note: lazygit is available via development module utilities.lazygit option
