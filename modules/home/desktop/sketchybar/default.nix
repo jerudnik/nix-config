@@ -384,32 +384,52 @@ in
               background.corner_radius=6 \
               background.height=26 \
               popup.align=center \
-              popup.height=120
+              popup.height=220
           
-          # Add popup items showing month calendar
+          # Add popup items showing month calendar with full grid
           sketchybar --add item calendar.title popup.calendar_bracket \
               --set calendar.title \
               icon.drawing=off \
               label.font="$FONT:Bold:14.0" \
               label.padding_left=0 \
               label.padding_right=0 \
-              width=200 \
+              width=250 \
               background.color=$TRANSPARENT \
               label="$(date '+%B %Y')"
+          
+          # Calendar grid header (Mo Tu We Th Fr Sa Su)
+          sketchybar --add item calendar.header popup.calendar_bracket \
+              --set calendar.header \
+              icon.drawing=off \
+              label.font="$FONT:Regular:10.0" \
+              width=250 \
+              background.color=$TRANSPARENT \
+              label="Mo Tu We Th Fr Sa Su"
+          
+          # Calendar grid rows (will be populated by script)
+          for i in {1..6}; do
+            sketchybar --add item calendar.row$i popup.calendar_bracket \
+                --set calendar.row$i \
+                icon.drawing=off \
+                label.font="$FONT:Regular:10.0" \
+                width=250 \
+                background.color=$TRANSPARENT \
+                label=""
+          done
           
           # Calendar details popup item
           sketchybar --add item calendar.details popup.calendar_bracket \
               --set calendar.details \
               icon.drawing=off \
-              label.font="$FONT:Regular:12.0" \
-              width=200 \
+              label.font="$FONT:Regular:10.0" \
+              width=250 \
               background.color=$TRANSPARENT \
               click_script="open -a 'Calendar'" \
               label="Click to open Calendar.app"
         '';
       };
       
-      # Calendar plugin with popup toggle
+      # Calendar plugin with popup toggle and month grid generation
       ".config/sketchybar/plugins/calendar.sh" = mkIf cfg.showCalendar {
         executable = true;
         text = ''
@@ -421,13 +441,45 @@ in
           # Handle click to toggle popup
           if [ "$SENDER" = "mouse.clicked" ]; then
             sketchybar --set calendar_bracket popup.drawing=toggle
+            
             # Update popup content when opened
             sketchybar --set calendar.title label="$(date '+%B %Y')"
+            
+            # Generate calendar grid
+            MONTH=$(date +%m)
+            YEAR=$(date +%Y)
+            TODAY=$(date +%d | sed 's/^0//')
+            
+            # Get first day of month (0=Sunday, 1=Monday, etc)
+            FIRST_DAY=$(date -j -f "%Y-%m-%d" "$YEAR-$MONTH-01" "+%u")
+            # Get number of days in month
+            DAYS_IN_MONTH=$(date -j -f "%Y-%m-%d" "$YEAR-$MONTH-01" -v+1m -v-1d "+%d" | sed 's/^0//')
+            
+            # Build calendar grid
+            DAY=1
+            for ROW in {1..6}; do
+              LINE=""
+              for COL in {1..7}; do
+                CELL_NUM=$(( ($ROW - 1) * 7 + $COL ))
+                
+                if [ $CELL_NUM -lt $FIRST_DAY ] || [ $DAY -gt $DAYS_IN_MONTH ]; then
+                  LINE="$LINE   "
+                else
+                  if [ $DAY -eq $TODAY ]; then
+                    LINE="$LINE$(printf "%02d*" $DAY)"
+                  else
+                    LINE="$LINE$(printf "%02d " $DAY)"
+                  fi
+                  DAY=$((DAY + 1))
+                fi
+              done
+              sketchybar --set calendar.row$ROW label="$LINE"
+            done
           fi
         '';
       };
       
-      # Battery widget with bracket for padding
+      # Battery widget with popup for power management
       ".config/sketchybar/items/battery.sh" = mkIf cfg.showBattery {
         executable = true;
         text = ''
@@ -439,14 +491,14 @@ in
               label.drawing=off \
               icon.drawing=off
           
-          # Add battery item
+          # Add battery item with popup
           sketchybar --add item battery right \
+              --subscribe battery system_woke power_source_change mouse.clicked \
               --set battery \
               update_freq=120 \
               icon.padding_left=8 \
               icon.padding_right=0 \
               label.padding_right=8 \
-              click_script="open /System/Library/PreferencePanes/Battery.prefPane" \
               script="$PLUGIN_DIR/battery.sh"
           
           # Add padding item after battery
@@ -455,7 +507,7 @@ in
               label.drawing=off \
               icon.drawing=off
           
-          # Add bracket around battery for visual grouping
+          # Add bracket with popup
           sketchybar --add bracket battery_bracket \
               battery.padding1 \
               battery \
@@ -463,11 +515,44 @@ in
               --set battery_bracket \
               background.color=$POPUP_BACKGROUND_COLOR \
               background.corner_radius=6 \
-              background.height=26
+              background.height=26 \
+              popup.align=center \
+              popup.height=150
+          
+          # Battery status popup items
+          sketchybar --add item battery.details popup.battery_bracket \
+              --set battery.details \
+              icon.drawing=off \
+              label.font="$FONT:Semibold:12.0" \
+              width=200 \
+              background.color=$TRANSPARENT
+          
+          sketchybar --add item battery.remaining popup.battery_bracket \
+              --set battery.remaining \
+              icon.drawing=off \
+              label.font="$FONT:Regular:11.0" \
+              width=200 \
+              background.color=$TRANSPARENT
+          
+          sketchybar --add item battery.charging popup.battery_bracket \
+              --set battery.charging \
+              icon.drawing=off \
+              label.font="$FONT:Regular:11.0" \
+              width=200 \
+              background.color=$TRANSPARENT
+          
+          sketchybar --add item battery.settings popup.battery_bracket \
+              --set battery.settings \
+              icon.drawing=off \
+              label.font="$FONT:Regular:10.0" \
+              label="Click to open Battery settings" \
+              width=200 \
+              background.color=$TRANSPARENT \
+              click_script="open /System/Library/PreferencePanes/Battery.prefPane"
         '';
       };
       
-      # Battery plugin
+      # Battery plugin with popup data
       ".config/sketchybar/plugins/battery.sh" = mkIf cfg.showBattery {
         executable = true;
         text = ''
@@ -491,6 +576,25 @@ in
           fi
           
           sketchybar --set $NAME icon="$ICON" label="''${PERCENTAGE}%"
+          
+          # Handle click to toggle popup and update details
+          if [ "$SENDER" = "mouse.clicked" ]; then
+            sketchybar --set battery_bracket popup.drawing=toggle
+            
+            # Get battery details
+            REMAINING=$(pmset -g batt | grep -Eo "\d+:\d+ remaining" || echo "Calculating...")
+            CONDITION=$(pmset -g batt | grep -Eo "[0-9]+%" | head -1)
+            
+            if [ -n "$CHARGING" ]; then
+              STATUS="Charging"
+            else
+              STATUS="On Battery"
+            fi
+            
+            sketchybar --set battery.details label="Battery: ''${PERCENTAGE}%"
+            sketchybar --set battery.remaining label="Time: $REMAINING"
+            sketchybar --set battery.charging label="Status: $STATUS"
+          fi
         '';
       };
       
