@@ -159,15 +159,13 @@
 - ✅ ALWAYS keep host configs simple and declarative
 - ✅ ALWAYS move complex logic into reusable modules
 - ✅ PRINCIPLE: Host configs should be data, not code
+RULE 4.3: Installation vs. Configuration Boundaries
 
-**RULE 4.3: Package Management Boundaries**
-- ❌ NEVER install user applications in environment.systemPackages unless they are system-level tools
-- ❌ NEVER install system tools in home.packages
-- ❌ NEVER duplicate package installations between system and user
-- ❌ NEVER put CLI tools in environment.systemPackages unless they are essential for system operation
-- ✅ ALWAYS install GUI applications and system-level tools via nix-darwin in environment.systemPackages
-- ✅ ALWAYS install user-specific and CLI tools via home-manager in home.packages
-- ✅ RULE OF THUMB: If it has a .app bundle, nix-darwin should install it. If it's a command-line tool for your user, home-manager should install it
+- ❌ NEVER mix package installation and configuration in the same layer
+- ❌ NEVER place user-specific configuration in system-level modules
+- ✅ ALWAYS install packages at the system-level via `environment.systemPackages`
+- ✅ ALWAYS manage user-specific configuration via `home-manager` modules
+- ✅ PRINCIPLE: The system provides the tools; the user configures them.
 
 ---
 
@@ -492,28 +490,30 @@ darwin.system-settings = {
 
 ---
 
-### ❌ VIOLATION 3: Putting CLI Tools in System Packages
+### ❌ VIOLATION 3: Mixing Installation and Configuration
 
-**BAD: CLI tools in system packages**
+**BAD: Configuring a tool in the same place it is installed**
 ```nix
 # hosts/parsley/configuration.nix
-environment.systemPackages = with pkgs; [
-  git         # ✅ OK - essential for system
-  curl        # ✅ OK - essential for system
-  ripgrep     # ❌ WRONG - user CLI tool
-  fd          # ❌ WRONG - user CLI tool
-  bat         # ❌ WRONG - user CLI tool
-];
+programs.git = {
+  enable = true; # ✅ OK - System-level installation
+  userName = "jrudnik"; # ❌ WRONG - User-specific config
+  userEmail = "john.rudnik@gmail.com"; # ❌ WRONG - User-specific config
+};
 ```
 
-**GOOD: CLI tools in home-manager**
+**GOOD: Separating Installation from Configuration**
 ```nix
+# hosts/parsley/configuration.nix
+# Installation is handled by environment.systemPackages or a system-level module
+
 # home/jrudnik/home.nix
-home.packages = with pkgs; [
-  ripgrep
-  fd
-  bat
-];
+# Configuration is handled by home-manager
+programs.git = {
+  enable = true;
+  userName = "jrudnik";
+  userEmail = "john.rudnik@gmail.com";
+};
 ```
 
 ---

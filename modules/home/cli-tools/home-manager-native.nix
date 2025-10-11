@@ -22,19 +22,8 @@ in {
     # Install CLI tools
     # Note: Some tools (eza, zoxide, fzf, bat, starship) are installed via programs.* 
     # configuration below, so they don't need to be in home.packages
-    home.packages = with pkgs; []
-      ++ optionals cfg.textTools.ripgrep [ ripgrep ]
-      ++ optionals cfg.textTools.fd [ fd ]
-      # System monitor (Stylix themes btop beautifully)
-      ++ optional (cfg.systemMonitor == "htop") htop
-      ++ optional (cfg.systemMonitor == "btop") btop
-      # Shell enhancements
-      ++ optional cfg.shellEnhancements.payRespects pay-respects
-      # Git tools
-      ++ optional cfg.gitTools.delta delta
-      ++ optional cfg.gitTools.gitui gitui
-      # warp-terminal is installed system-wide via darwin.core module
-      ;
+    home.packages = with pkgs; [];
+    
     
     # Configure individual tools
     # Note: These programs.* configurations handle both package installation and shell integration

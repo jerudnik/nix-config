@@ -35,45 +35,7 @@ in {
       }
     ];
     
-    home.packages = with pkgs; [
-      # Editor (git, curl, wget are provided by darwin.core system module)
-    ] ++ [ pkgs.${cfg.editor} ]
-    
-    # Basic utilities
-    ++ optionals cfg.utilities.enableBasicUtils [
-      tree      # Directory tree viewer
-      jq        # JSON processor
-    ]
-    
-    # Git utilities
-    ++ optionals cfg.utilities.lazygit [
-      lazygit   # Simple terminal UI for git commands
-    ]
-    
-    # Language-specific tools
-    ++ optionals cfg.languages.rust [
-      rustc cargo
-    ]
-    ++ optionals cfg.languages.go [
-      go
-    ]
-    ++ optionals cfg.languages.python [
-      python3
-    ]
-    ++ optionals cfg.languages.node [
-      nodejs yarn
-    ]
-    
-    # Optional editor packages
-    # Note: Emacs is handled by programs.emacs, not direct package installation
-    ++ optionals cfg.neovim [ neovim ]
-    
-    # GitHub CLI
-    ++ optionals cfg.github.enable [ gh ]
-    
-    # Extra packages
-    ++ cfg.extraPackages
-    ++ cfg.utilities.extraUtils;
+    home.packages = with pkgs; [];
     
     # Configure programs
     programs = mkMerge [

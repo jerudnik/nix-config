@@ -37,7 +37,7 @@ in {
         }
       '';
     };
-    
+
     modernTools = {
       enable = mkOption {
         type = types.bool;

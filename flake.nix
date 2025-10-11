@@ -76,14 +76,8 @@
             # Configure nixpkgs - overlays and unfree packages
             ({ lib, ... }: {
               nixpkgs = {
-                overlays = [ self.overlays.mcp-servers ];
-                config.allowUnfreePredicate = pkg:
-                  lib.elem (lib.getName pkg) [ 
-                    "warp-terminal"
-                    "claude"
-                    "claude-code"  # Claude Code CLI
-                    "gh-copilot"  # GitHub Copilot CLI
-                  ];
+                overlays = [ self.overlays.mcp-servers self.overlays.zen-browser ];
+                config.allowUnfree = true;
               };
             })
             

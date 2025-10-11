@@ -32,7 +32,7 @@
   home = {
     shell = {
       enable = true;
-      
+
       # Nix operation shortcuts (nrs, nrb, nfu, etc.)
       nixShortcuts = {
         enable = true;

@@ -18,7 +18,32 @@
     bitwarden       # Password manager GUI (configuration via home-manager)
     emacs
     warp-terminal
-    inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.twilight
+    zen-browser
+    # CLI tools
+    eza
+    zoxide
+    fzf
+    bat
+    ripgrep
+    fd
+    btop
+    direnv
+    atuin
+    mcfly
+    pay-respects
+    delta
+    # Development tools
+    rustc
+    cargo
+    go
+    python3
+    nodejs
+    micro
+    neovim
+    tree
+    jq
+    lazygit
+    gh
   ];
   networking = {
     hostName = "parsley";
