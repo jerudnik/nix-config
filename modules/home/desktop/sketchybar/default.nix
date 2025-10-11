@@ -384,19 +384,22 @@ in
               background.corner_radius=6 \
               background.height=26 \
               popup.align=center \
-              popup.height=170
+              popup.height=140
           
-          # Add popup items showing month calendar with full grid
+          # Add popup items showing month calendar with full grid (minimal spacing)
           sketchybar --add item calendar.title popup.calendar_bracket \
               --set calendar.title \
               icon.drawing=off \
+              icon.padding_left=0 \
+              icon.padding_right=0 \
               label.font="$FONT:Bold:14.0" \
-              label.padding_left=0 \
-              label.padding_right=0 \
+              label.padding_left=4 \
+              label.padding_right=4 \
               padding_left=0 \
               padding_right=0 \
-              y_offset=5 \
+              y_offset=0 \
               width=250 \
+              background.height=22 \
               background.color=$TRANSPARENT \
               background.padding_left=0 \
               background.padding_right=0 \
@@ -406,11 +409,16 @@ in
           sketchybar --add item calendar.header popup.calendar_bracket \
               --set calendar.header \
               icon.drawing=off \
+              icon.padding_left=0 \
+              icon.padding_right=0 \
               label.font="$FONT:Regular:10.0" \
+              label.padding_left=4 \
+              label.padding_right=4 \
               padding_left=0 \
               padding_right=0 \
               y_offset=0 \
               width=250 \
+              background.height=14 \
               background.color=$TRANSPARENT \
               background.padding_left=0 \
               background.padding_right=0 \
@@ -421,11 +429,16 @@ in
             sketchybar --add item calendar.row$i popup.calendar_bracket \
                 --set calendar.row$i \
                 icon.drawing=off \
+                icon.padding_left=0 \
+                icon.padding_right=0 \
                 label.font="$FONT:Regular:10.0" \
+                label.padding_left=4 \
+                label.padding_right=4 \
                 padding_left=0 \
                 padding_right=0 \
                 y_offset=0 \
                 width=250 \
+                background.height=14 \
                 background.color=$TRANSPARENT \
                 background.padding_left=0 \
                 background.padding_right=0 \
@@ -436,11 +449,16 @@ in
           sketchybar --add item calendar.details popup.calendar_bracket \
               --set calendar.details \
               icon.drawing=off \
+              icon.padding_left=0 \
+              icon.padding_right=0 \
               label.font="$FONT:Regular:9.0" \
+              label.padding_left=4 \
+              label.padding_right=4 \
               padding_left=0 \
               padding_right=0 \
-              y_offset=-5 \
+              y_offset=0 \
               width=250 \
+              background.height=14 \
               background.color=$TRANSPARENT \
               background.padding_left=0 \
               background.padding_right=0 \
@@ -537,17 +555,22 @@ in
               background.corner_radius=6 \
               background.height=26 \
               popup.align=center \
-              popup.height=110
+              popup.height=85
           
-          # Battery status popup items (compact spacing)
+          # Battery status popup items (minimal spacing)
           sketchybar --add item battery.details popup.battery_bracket \
               --set battery.details \
               icon.drawing=off \
+              icon.padding_left=0 \
+              icon.padding_right=0 \
               label.font="$FONT:Semibold:12.0" \
+              label.padding_left=4 \
+              label.padding_right=4 \
               padding_left=0 \
               padding_right=0 \
-              y_offset=5 \
+              y_offset=0 \
               width=200 \
+              background.height=20 \
               background.color=$TRANSPARENT \
               background.padding_left=0 \
               background.padding_right=0
@@ -555,11 +578,16 @@ in
           sketchybar --add item battery.remaining popup.battery_bracket \
               --set battery.remaining \
               icon.drawing=off \
+              icon.padding_left=0 \
+              icon.padding_right=0 \
               label.font="$FONT:Regular:11.0" \
+              label.padding_left=4 \
+              label.padding_right=4 \
               padding_left=0 \
               padding_right=0 \
               y_offset=0 \
               width=200 \
+              background.height=18 \
               background.color=$TRANSPARENT \
               background.padding_left=0 \
               background.padding_right=0
@@ -567,11 +595,16 @@ in
           sketchybar --add item battery.charging popup.battery_bracket \
               --set battery.charging \
               icon.drawing=off \
+              icon.padding_left=0 \
+              icon.padding_right=0 \
               label.font="$FONT:Regular:11.0" \
+              label.padding_left=4 \
+              label.padding_right=4 \
               padding_left=0 \
               padding_right=0 \
               y_offset=0 \
               width=200 \
+              background.height=18 \
               background.color=$TRANSPARENT \
               background.padding_left=0 \
               background.padding_right=0
@@ -579,12 +612,17 @@ in
           sketchybar --add item battery.settings popup.battery_bracket \
               --set battery.settings \
               icon.drawing=off \
+              icon.padding_left=0 \
+              icon.padding_right=0 \
               label.font="$FONT:Regular:9.0" \
               label="Click to open Battery settings" \
+              label.padding_left=4 \
+              label.padding_right=4 \
               padding_left=0 \
               padding_right=0 \
-              y_offset=-5 \
+              y_offset=0 \
               width=200 \
+              background.height=16 \
               background.color=$TRANSPARENT \
               background.padding_left=0 \
               background.padding_right=0 \
