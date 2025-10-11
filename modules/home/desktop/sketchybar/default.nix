@@ -345,7 +345,7 @@ in
         '';
       };
       
-      # Calendar widget with bracket for padding
+      # Calendar widget with popup menu
       ".config/sketchybar/items/calendar.sh" = mkIf cfg.showCalendar {
         executable = true;
         text = ''
@@ -357,7 +357,7 @@ in
               label.drawing=off \
               icon.drawing=off
           
-          # Add calendar item with click interaction
+          # Add calendar item with popup
           sketchybar --add item calendar right \
               --set calendar \
               icon=$ICON_CALENDAR \
@@ -365,7 +365,6 @@ in
               icon.padding_right=0 \
               label.padding_right=8 \
               update_freq=30 \
-              click_script="open -a 'Calendar'" \
               script="$PLUGIN_DIR/calendar.sh"
           
           # Add padding item after calendar
@@ -374,7 +373,7 @@ in
               label.drawing=off \
               icon.drawing=off
           
-          # Add bracket around calendar for visual grouping
+          # Add bracket around calendar with popup capability
           sketchybar --add bracket calendar_bracket \
               calendar.padding1 \
               calendar \
@@ -382,17 +381,48 @@ in
               --set calendar_bracket \
               background.color=$POPUP_BACKGROUND_COLOR \
               background.corner_radius=6 \
-              background.height=26
+              background.height=26 \
+              popup.align=center \
+              popup.height=120
+          
+          # Add popup items showing month calendar
+          sketchybar --add item calendar.title popup.calendar_bracket \
+              --set calendar.title \
+              icon.drawing=off \
+              label.font="$FONT:Bold:14.0" \
+              label.padding_left=0 \
+              label.padding_right=0 \
+              width=200 \
+              background.color=$TRANSPARENT \
+              label="$(date '+%B %Y')"
+          
+          # Calendar details popup item
+          sketchybar --add item calendar.details popup.calendar_bracket \
+              --set calendar.details \
+              icon.drawing=off \
+              label.font="$FONT:Regular:12.0" \
+              width=200 \
+              background.color=$TRANSPARENT \
+              click_script="open -a 'Calendar'" \
+              label="Click to open Calendar.app"
         '';
       };
       
-      # Calendar plugin
+      # Calendar plugin with popup toggle
       ".config/sketchybar/plugins/calendar.sh" = mkIf cfg.showCalendar {
         executable = true;
         text = ''
           #!/usr/bin/env bash
           
+          # Update the calendar label
           sketchybar --set $NAME label="$(date '+%a %b %d %H:%M')"
+          
+          # Handle click to toggle popup
+          if [ "$SENDER" = "mouse.clicked" ]; then
+            sketchybar --set calendar_bracket popup.drawing=toggle
+            # Update popup content when opened
+            sketchybar --set calendar.title label="$(date '+%B %Y')"
+          fi
         '';
       };
       
@@ -463,7 +493,7 @@ in
         '';
       };
       
-      # Volume widget with bracket for padding and scroll interaction
+      # Volume widget with popup slider
       ".config/sketchybar/items/volume.sh" = mkIf cfg.showVolume {
         executable = true;
         text = ''
@@ -475,15 +505,14 @@ in
               label.drawing=off \
               icon.drawing=off
           
-          # Add volume item with click and scroll interactions
+          # Add volume item with click for popup
           sketchybar --add item volume right \
+              --subscribe volume volume_change \
               --set volume \
-              update_freq=1 \
               icon.padding_left=8 \
               icon.padding_right=0 \
               label.padding_right=8 \
-              script="$PLUGIN_DIR/volume.sh" \
-              click_script="open /System/Library/PreferencePanes/Sound.prefpane"
+              script="$PLUGIN_DIR/volume.sh"
           
           # Add padding item after volume
           sketchybar --add item volume.padding2 right \
@@ -491,7 +520,7 @@ in
               label.drawing=off \
               icon.drawing=off
           
-          # Add bracket around volume for visual grouping
+          # Add bracket with popup
           sketchybar --add bracket volume_bracket \
               volume.padding1 \
               volume \
@@ -499,11 +528,25 @@ in
               --set volume_bracket \
               background.color=$POPUP_BACKGROUND_COLOR \
               background.corner_radius=6 \
-              background.height=26
+              background.height=26 \
+              popup.align=center \
+              popup.height=75
+          
+          # Add volume slider in popup
+          sketchybar --add slider volume.slider popup.volume_bracket 250 \
+              --set volume.slider \
+              slider.highlight_color=$BLUE \
+              slider.background.height=6 \
+              slider.background.corner_radius=3 \
+              slider.background.color=$GREY \
+              slider.knob.drawing=on \
+              slider.knob="󰀁" \
+              slider.percentage=50 \
+              click_script='osascript -e "set volume output volume $PERCENTAGE"'
         '';
       };
       
-      # Volume plugin
+      # Volume plugin with popup toggle and slider update
       ".config/sketchybar/plugins/volume.sh" = mkIf cfg.showVolume {
         executable = true;
         text = ''
@@ -523,6 +566,14 @@ in
           fi
           
           sketchybar --set $NAME icon="$ICON" label="''${VOLUME}%"
+          
+          # Update slider position
+          sketchybar --set volume.slider slider.percentage=$VOLUME
+          
+          # Handle click to toggle popup
+          if [ "$SENDER" = "mouse.clicked" ]; then
+            sketchybar --set volume_bracket popup.drawing=toggle
+          fi
         '';
       };
       
