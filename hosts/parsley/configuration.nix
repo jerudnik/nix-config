@@ -102,8 +102,10 @@
           # Dock applications (customize these to your preferences)
           persistentApps = [
             "/Applications/Nix Apps/Emacs.app"
+            "/Applications/Nix Apps/Zed.app"
             "/Applications/Nix Apps/Alacritty.app"
             "/Applications/Nix Apps/Zen Browser (Twilight).app"
+            "/Applications/Nix Apps/Thunderbird.app"
             "/System/Applications/Calendar.app"
             "/Applications/Nix Apps/Bitwarden.app"
             "/System/Applications/System Settings.app"
