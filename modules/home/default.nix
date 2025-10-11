@@ -11,6 +11,7 @@
   ai = import ./ai/default.nix;
   syncthing = import ./syncthing/default.nix;
   thunderbird = import ./thunderbird/default.nix;
+  sketchybar = import ./desktop/sketchybar/default.nix;
   # mcp module removed - using mcp-servers-nix directly
   
 

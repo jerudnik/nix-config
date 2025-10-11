@@ -11,7 +11,7 @@ let
   cfg = config.darwin.fonts;
 in {
   imports = [
-    ./nix-fonts.nix  # Nix-darwin fonts implementation backend
+    ./nix-fonts.nix       # Nix-darwin fonts implementation backend
   ];
 
   options.darwin.fonts = {
@@ -74,13 +74,25 @@ in {
       enableFontSmoothing = mkOption {
         type = types.bool;
         default = true;
-        description = "Enable font smoothing system-wide";
+        description = ''
+          Enable font smoothing system-wide.
+          
+          This improves font rendering on external displays and with custom fonts.
+          Note: macOS system UI fonts (menu bar, Finder, Dock) are hardcoded to
+          San Francisco and cannot be changed via any API or configuration.
+        '';
       };
       
       fontSmoothingStyle = mkOption {
         type = types.enum [ "automatic" "light" "medium" "strong" ];
-        default = "automatic";
-        description = "Font smoothing style preference";
+        default = "medium";
+        description = ''
+          Font smoothing intensity:
+          - automatic (0): Let macOS decide based on display
+          - light (1): Minimal smoothing
+          - medium (2): Balanced smoothing (recommended for Retina displays)
+          - strong (3): Maximum smoothing (for non-Retina displays)
+        '';
       };
     };
   };

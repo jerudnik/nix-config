@@ -45,6 +45,14 @@ in {
       # Start AeroSpace at login
       start-at-login = ${boolToString cfg.startAtLogin}
       
+      # Start SketchyBar after startup (if installed)
+      after-startup-command = ['exec-and-forget sketchybar']
+      
+      # Notify SketchyBar about workspace changes
+      exec-on-workspace-change = ['/bin/bash', '-c',
+        'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE'
+      ]
+      
       # Normalization settings
       enable-normalization-flatten-containers = true
       enable-normalization-opposite-orientation-for-nested-containers = true
@@ -69,7 +77,7 @@ in {
       inner.vertical = ${toString cfg.gaps.inner}
       outer.left = ${toString cfg.gaps.outer}
       outer.bottom = ${toString cfg.gaps.outer}
-      outer.top = ${toString cfg.gaps.outer}
+      outer.top = 32  # Space for SketchyBar at top (replaces macOS menu bar)
       outer.right = ${toString cfg.gaps.outer}
       
       # Main mode bindings

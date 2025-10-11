@@ -43,6 +43,8 @@
     # Utilities
     flameshot       # Screenshot tool with annotations
     syncthing       # Continuous file synchronization
+    sketchybar      # Customizable macOS status bar
+    sketchybar-app-font  # Special font for app icons in sketchybar
     
     # === CLI Tools ===
     
@@ -101,6 +103,11 @@
     
     system-settings = {
       enable = true;
+      
+      # Appearance Pane - Settings that appear in System Settings > Appearance
+      appearance = {
+        hideMenuBar = true;  # Hide macOS menu bar (using SketchyBar instead)
+      };
       
       # Keyboard Pane - Settings that appear in System Settings > Keyboard
       keyboard = {
@@ -219,6 +226,10 @@
       # iM-Writing Nerd Font as default (iA Writer aesthetic + icons)
       # Multiple Nerd Fonts installed: FiraCode, JetBrains Mono, Hack, etc.
       # iA Writer fonts and Charter serif also available
+      systemPreferences = {
+        enableFontSmoothing = true;
+        fontSmoothingStyle = "medium";  # Balanced smoothing for Retina displays
+      };
     };
     raycast = {
       enable = true;

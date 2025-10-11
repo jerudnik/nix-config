@@ -13,6 +13,7 @@
     outputs.homeManagerModules.raycast
     outputs.homeManagerModules.syncthing
     outputs.homeManagerModules.thunderbird
+    outputs.homeManagerModules.sketchybar
     # mcp module removed - using mcp-servers-nix directly
     
 
@@ -235,6 +236,35 @@
       appearance = {
         theme = "auto";  # Follows system light/dark mode
         fontSize = 14;
+      };
+    };
+    
+    sketchybar = {
+      enable = true;
+      position = "top";  # Replace macOS menu bar
+      height = 32;  # Standard menu bar height
+      font = "SF Pro";  # System font, clean and modern
+      
+      # AeroSpace workspace integration
+      aerospace = {
+        enable = true;
+        workspaces = [ "1" "2" "3" "4" "5" ];  # Match your AeroSpace workspaces
+      };
+      
+      # Widget configuration
+      showCalendar = true;   # Date/time widget
+      showBattery = true;    # Battery indicator
+      showWifi = true;       # WiFi status
+      showVolume = true;     # Volume control
+      showCpu = true;        # CPU usage
+      
+      # Color scheme (will be themed by Stylix automatically)
+      colors = {
+        bar = "0xff1e1e2e";  # Semi-transparent dark background
+        icon = "0xffcad3f5";  # Light icon color
+        label = "0xffcad3f5";  # Light label color
+        workspaceActive = "0xffed8796";  # Highlight color for active workspace
+        workspaceInactive = "0x44ffffff";  # Subtle inactive workspace background
       };
     };
     
