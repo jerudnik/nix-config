@@ -1,179 +1,479 @@
-# Application Availability Troubleshooting
+# Darwin Modules Conflict Analysis
 
-This guide addresses common issues where applications installed via nix-darwin and home-manager aren't available in your shell.
+This document identifies potential conflicts and overlaps between darwin modules, particularly focusing on NSGlobalDomain writes which can cause preference corruption.
 
-## Quick Fixes
+## ✅ **CONFLICT RESOLVED**
 
-Try these solutions in order:
+### **Previous NSGlobalDomain Conflict: keyboard vs. system-settings**
 
-### 1. Reload Shell Environment
-```bash
-# Option A: Restart shell (recommended)
-refresh-env
+**Status:** ✅ **RESOLVED** - keyboard module merged into system-settings
 
-# Option B: Reload configuration
-reload-path
-```
+**Problem (Historical):** Both modules wrote to `NSGlobalDomain`, which could cause:
+- Preference cache corruption (cfprefsd issues)
+- Settings overwriting each other
+- Blank System Settings panes
+- Unpredictable behavior
 
-### 2. Verify PATH Configuration
-```bash
-# Check if Nix paths are in PATH
-echo $PATH
+---
 
-# Expected paths should include:
-# - /etc/profiles/per-user/$USER/bin
-# - ~/.nix-profile/bin
-# - /run/current-system/sw/bin
-```
+## 📜 **Migration Timeline & Resolution**
 
-### 3. Check Application Installation
-```bash
-# Verify binaries exist
-ls -la /etc/profiles/per-user/$USER/bin/ | grep your-app
+### **Phase 1: Problem Discovery (October 2025)**
 
-# Check specific application
-which your-application-name
-```
+**Symptoms Identified:**
+- System Settings displayed blank panes after `darwin-rebuild switch`
+- Keyboard settings pane particularly affected
+- Required restart to view settings
+- Intermittent preference corruption
 
-## Debugging Steps
+**Root Cause Analysis:**
+1. **Multiple NSGlobalDomain Writers**: Both `darwin/system-defaults` and `darwin/keyboard` wrote to `NSGlobalDomain`
+2. **No Coordination**: Sequential writes without cache synchronization
+3. **cfprefsd Cache Corruption**: Preference daemon cached stale/conflicting data
+4. **Home-manager Overlap**: `home/macos/keybindings` also wrote some NSGlobalDomain keys
 
-### Enable Debug Mode
-Add to your home configuration:
+**Research Documents:**
+- `SYSTEM-SETTINGS-FIX.md` - Initial problem analysis and separation of concerns
+- `preference-domain-audit.md` - Complete audit of all preference domain writes
+- `system-settings-permanent-fix.md` - Comprehensive fix implementation
+
+### **Phase 2: Architectural Solution (October 2025)**
+
+**Decision:** Create unified `system-settings` module as single source of truth for ALL macOS System Settings
+
+**Implementation Strategy:**
+1. **Pane-Based Organization**: Mirror System Settings UI structure
+   - `keyboard.nix` - Keyboard pane settings
+   - `desktop-and-dock.nix` - Desktop & Dock pane
+   - `appearance.nix` - Appearance pane
+   - `trackpad.nix` - Trackpad pane
+   - `general.nix` - General pane (including Finder)
+
+2. **Unified Config Block**: Single coordinated NSGlobalDomain write in `default.nix`
+
+3. **Cache Management**: Added critical activation scripts:
+   ```nix
+   # Kill cfprefsd to force cache flush after all writes
+   /usr/bin/killall cfprefsd 2>/dev/null || true
+   
+   # Force macOS to reload preferences without logout
+   /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+   ```
+
+4. **Validation**: Added preference file integrity checking
+
+### **Phase 3: Migration Execution (October 2025)**
+
+**Changes Made:**
+
+#### **1. Merged keyboard module into system-settings**
+- Added keyboard options to `system-settings/keyboard.nix`:
+  - `keyRepeat` - Key repeat speed
+  - `initialKeyRepeat` - Delay before repeat
+  - `pressAndHoldEnabled` - Accent menu vs repeat
+  - `keyboardUIMode` - Full keyboard access
+  - `remapCapsLockToControl` - Caps Lock to Control
+  - `remapCapsLockToEscape` - Caps Lock to Escape
+  - `enableFnKeys` - Function key behavior
+
+- Applied settings in unified config block (`system-settings/default.nix`)
+- Removed standalone `darwin/keyboard` module
+- Updated host configs to remove `darwin.keyboard` references
+
+#### **2. Cleaned up home-manager keybindings**
+- **Moved to nix-darwin** (`system-settings/keyboard.nix`):
+  - `ApplePressAndHoldEnabled`
+  - `InitialKeyRepeat`
+  - `KeyRepeat`
+  - `AppleKeyboardUIMode`
+
+- **Kept in home-manager** (`home/macos/keybindings.nix`):
+  - `com.apple.symbolichotkeys` (system hotkeys)
+  - User-specific custom hotkeys
+
+#### **3. Established clear boundaries**
+- **nix-darwin manages** (via `system-settings`):
+  - ALL NSGlobalDomain writes
+  - System-wide keyboard/mouse/trackpad settings
+  - Dock, Finder, appearance settings
+  - Global text substitution
+
+- **home-manager manages** (via targeted modules):
+  - Application-specific preferences (`com.apple.*`, `com.microsoft.*`)
+  - Symbolic hotkeys (`com.apple.symbolichotkeys`)
+  - Launch Services handlers
+  - User-specific settings
+
+#### **4. Added Raycast conflict resolution**
+- Discovered Raycast module also writing to `com.apple.symbolichotkeys`
+- Added proper `mkMerge` to prevent overwriting keybindings
+- Eventually removed Raycast module entirely per user request
+- Documented in `raycast-removal.md`
+
+### **Phase 4: Validation & Testing (October 2025)**
+
+**Testing Performed:**
+1. ✅ Build test without applying changes
+2. ✅ Applied configuration with `darwin-rebuild switch`
+3. ✅ Verified System Settings displays all panes correctly
+4. ✅ Confirmed no restart required for changes
+5. ✅ Validated preference file integrity
+6. ✅ Confirmed cfprefsd cache synchronization
+
+**Results:**
+- ✅ System Settings displays correctly after rebuild
+- ✅ No blank panes
+- ✅ Settings apply immediately without restart
+- ✅ No preference corruption
+- ✅ Future rebuilds work correctly
+
+---
+
+## 🏗️ **Current Architecture**
+
+### **System Settings Pane Mapping**
 
 ```nix
-home.shell = {
+darwin.system-settings = {
   enable = true;
-  debugEnvironment = true;  # Add this line
-  # ... other config
+  
+  # Maps to System Settings > Keyboard
+  keyboard = {
+    keyRepeat = 2;
+    initialKeyRepeat = 15;
+    pressAndHoldEnabled = false;
+    keyboardUIMode = 3;
+    remapCapsLockToControl = true;
+    remapCapsLockToEscape = false;
+    enableFnKeys = true;
+  };
+  
+  # Maps to System Settings > Desktop & Dock
+  desktopAndDock = {
+    dock = {
+      autohide = true;
+      orientation = "bottom";
+      tilesize = 48;
+      # ... more dock settings
+    };
+    missionControl = {
+      # ... mission control settings
+    };
+    hotCorners = {
+      # ... hot corner settings
+    };
+  };
+  
+  # Maps to System Settings > Appearance
+  appearance = {
+    automaticSwitchAppearance = true;
+  };
+  
+  # Maps to System Settings > Trackpad
+  trackpad = {
+    naturalScrolling = false;
+    tapToClick = true;
+  };
+  
+  # Maps to System Settings > General (+ Finder)
+  general = {
+    textInput = {
+      smartQuotes = false;
+      smartDashes = false;
+      # ... more text input settings
+    };
+    finder = {
+      showPathBar = true;
+      showStatusBar = true;
+      # ... more Finder settings
+    };
+  };
 };
 ```
 
-Then rebuild and open a new shell to see debug output.
+### **Implementation Details**
 
-### Manual Environment Loading
-If automatic loading fails, manually source profiles:
-
-```bash
-# Source system profiles
-for profile in /nix/var/nix/profiles/default ~/.nix-profile /etc/profiles/per-user/$USER; do
-  if [ -f "$profile/etc/profile.d/nix.sh" ]; then
-    source "$profile/etc/profile.d/nix.sh"
-  fi
-done
-
-# Source home-manager session variables (if they exist)
-if [ -f "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]; then
-  source "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
-fi
+**File Structure:**
+```
+modules/darwin/system-settings/
+├── default.nix              # Aggregator with unified config block
+├── keyboard.nix             # Keyboard pane options
+├── desktop-and-dock.nix     # Desktop & Dock pane options
+├── appearance.nix           # Appearance pane options
+├── trackpad.nix             # Trackpad pane options
+└── general.nix              # General pane options
 ```
 
-## Common Issues & Solutions
+**Critical Implementation Pattern:**
+```nix
+# system-settings/default.nix
+{ config, lib, ... }:
 
-### Issue: Applications installed but not in PATH
+with lib;
 
-**Symptoms**: `which app-name` returns "not found" despite successful build
+let
+  cfg = config.darwin.system-settings;
+in {
+  imports = [
+    ./desktop-and-dock.nix
+    ./keyboard.nix
+    ./appearance.nix
+    ./trackpad.nix
+    ./general.nix
+  ];
 
-**Solution**: 
-1. Check if using integrated home-manager mode (you are)
-2. Ensure shell configuration is properly reloaded
-3. Verify PATH includes `/etc/profiles/per-user/$USER/bin`
-
-```bash
-# Quick fix
-refresh-env
+  config = mkIf cfg.enable {
+    # UNIFIED CONFIG BLOCK - Single coordinated write
+    system = {
+      keyboard = {
+        enableKeyMapping = true;
+        remapCapsLockToControl = cfg.keyboard.remapCapsLockToControl;
+        remapCapsLockToEscape = cfg.keyboard.remapCapsLockToEscape;
+      };
+      
+      defaults = {
+        NSGlobalDomain = {
+          # ALL NSGlobalDomain writes happen here in one place
+          KeyRepeat = cfg.keyboard.keyRepeat;
+          InitialKeyRepeat = cfg.keyboard.initialKeyRepeat;
+          ApplePressAndHoldEnabled = cfg.keyboard.pressAndHoldEnabled;
+          AppleKeyboardUIMode = cfg.keyboard.keyboardUIMode;
+          "com.apple.keyboard.fnState" = cfg.keyboard.enableFnKeys;
+          # ... all other NSGlobalDomain settings
+        };
+        
+        dock = { /* dock settings */ };
+        finder = { /* finder settings */ };
+        trackpad = { /* trackpad settings */ };
+      };
+    };
+    
+    # Critical: Synchronize preferences and manage cfprefsd cache
+    system.activationScripts.postActivation.text = ''
+      echo "Synchronizing macOS preferences..."
+      /usr/bin/killall cfprefsd 2>/dev/null || true
+      sleep 2
+      /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u 2>/dev/null || true
+      echo "Preferences synchronized successfully"
+    '';
+    
+    # Validate preference file integrity
+    system.activationScripts.validatePreferences.text = ''
+      if ! /usr/bin/plutil -lint ~/.GlobalPreferences.plist > /dev/null 2>&1; then
+        echo "WARNING: GlobalPreferences.plist is corrupted!" >&2
+      else
+        echo "✓ Preference validation passed"
+      fi
+    '';
+  };
+}
 ```
 
-### Issue: Environment variables not set
+---
 
-**Symptoms**: Applications complain about missing environment variables
+## 🔍 **Other Module Analysis**
 
-**Solution**: Verify session variables are loaded:
-```bash
-# Check if session variables file exists
-ls -la ~/.nix-profile/etc/profile.d/hm-session-vars.sh
+### **✅ No Conflicts Found:**
 
-# If missing, this indicates home-manager integration issue
-# Try manual environment reload
-reload-path
-```
+#### **core**
+- Scope: Essential packages, shell, system utilities
+- No NSGlobalDomain writes
+- Status: ✅ Clean
 
-### Issue: Legacy applications interfering
+#### **security**
+- Scope: Touch ID, user management, sudo
+- No NSGlobalDomain writes
+- Status: ✅ Clean
 
-**Symptoms**: Old versions of applications taking precedence
+#### **nix-settings**
+- Scope: Nix daemon, binary caches, garbage collection
+- No NSGlobalDomain writes
+- Status: ✅ Clean
 
-**Solution**: Check for legacy Nix profiles:
-```bash
-# Check for old installations
-ls -la ~/.nix-profile/bin/
+#### **homebrew**
+- Scope: Homebrew casks and Mac App Store apps
+- No NSGlobalDomain writes
+- Status: ✅ Clean
 
-# If you see old applications, clean up
-nix-collect-garbage -d
-sudo nix-collect-garbage -d
-```
+#### **theming**
+- Scope: Stylix theme management
+- No NSGlobalDomain writes (Stylix manages its own preferences)
+- Status: ✅ Clean
 
-### Issue: Shell not loading Nix environment
+#### **fonts**
+- Scope: Font installation via nix-darwin
+- Writes: `NSGlobalDomain.AppleFontSmoothing` (minimal, non-conflicting)
+- Status: ✅ Clean
 
-**Symptoms**: Fresh terminal doesn't have Nix applications
+---
 
-**Solution**: Verify shell configuration:
-```bash
-# Check if .zshrc is managed by home-manager
-ls -la ~/.zshrc
+## 📊 **Preference Domain Matrix**
 
-# Should be a symlink to nix store
-# If not, home-manager integration may be broken
-```
+| Module | NSGlobalDomain? | Conflict? | Resolution |
+|--------|----------------|-----------|------------|
+| system-settings | ✅ Yes (unified) | ✅ None | Single source of truth |
+| core | ❌ No | ✅ None | None needed |
+| security | ❌ No | ✅ None | None needed |
+| nix-settings | ❌ No | ✅ None | None needed |
+| homebrew | ❌ No | ✅ None | None needed |
+| theming | ❌ No | ✅ None | None needed |
+| fonts | ✅ Yes (minimal) | ✅ None | Non-conflicting key |
+| ~~keyboard~~ | ~~Yes~~ | ~~Conflict~~ | **Merged into system-settings** |
 
-## Advanced Diagnostics
+---
 
-### Check Nix Profile Status
-```bash
-# List current generations
-nix-env --list-generations
+## 🎯 **Key Learnings**
 
-# Check profile paths
-echo $NIX_PROFILES
-```
+### **1. Architectural Principles**
 
-### Verify Home Manager Integration
-```bash
-# Check if home-manager is integrated with nix-darwin
-# This should show your user configuration
-nix eval .#darwinConfigurations.parsley.config.home-manager.users.jrudnik.home.username
-```
+**Single Source of Truth:**
+- One module should own each preference domain
+- system-settings is the ONLY module that writes to NSGlobalDomain (except fonts' minimal write)
+- Clear ownership prevents conflicts
 
-### PATH Analysis
-```bash
-# Detailed PATH analysis
-echo $PATH | tr ':' '\n' | nl
+**Pane-Based Organization:**
+- Mirror macOS UI structure for intuitive configuration
+- Users think in terms of System Settings panes, not preference domains
+- Makes configuration discoverable and maintainable
 
-# Check each PATH entry
-for dir in $(echo $PATH | tr ':' '\n'); do
-  echo "=== $dir ==="
-  ls -la "$dir" 2>/dev/null | head -3 || echo "Directory not accessible"
-done
-```
+**Unified Config Block:**
+- All NSGlobalDomain writes must happen in one coordinated config block
+- Prevents race conditions and cache corruption
+- Enables proper cache management
 
-## Prevention
+### **2. Technical Insights**
 
-### Keep Environment Fresh
-Add to your workflow:
-```bash
-# After any nix-darwin/home-manager changes
-./scripts/build.sh switch
-refresh-env  # Start fresh shell
-```
+**cfprefsd Management:**
+- macOS caches preferences in cfprefsd daemon
+- Must kill and restart after all writes complete
+- `activateSettings -u` forces reload without logout
+- Proper sequencing is critical
 
-### Regular Maintenance
-```bash
-# Weekly cleanup to prevent conflicts
-ngc  # alias for garbage collection
-```
+**Preference Validation:**
+- Always validate .plist files after writes
+- Corruption is detectable with `plutil -lint`
+- Early detection prevents cascading issues
 
-### Configuration Best Practices
-1. Use integrated mode (nix-darwin managing home-manager) ✅ You're doing this
-2. Let home-manager handle user applications ✅ You're doing this  
-3. Avoid manual PATH modifications in shell configs
-4. Use module options instead of direct package lists when possible
+**Layer Separation:**
+- nix-darwin for system-wide settings
+- home-manager for user/application-specific settings
+- Never duplicate keys between layers
 
-This systematic approach should resolve most application availability issues with your nix-darwin and home-manager setup.
+### **3. Migration Best Practices**
+
+**Planning:**
+- Audit all preference domain writes first
+- Identify all sources of NSGlobalDomain writes
+- Plan unified architecture before implementing
+
+**Execution:**
+- Implement in phases with testing between
+- Validate after each change
+- Document architecture decisions
+
+**Testing:**
+- Test without applying (build-only)
+- Apply and verify System Settings immediately
+- Check for blank panes
+- Validate preference files
+- Test without restart
+
+---
+
+## 📝 **Future Guidelines**
+
+### **Adding New System Settings**
+
+When adding new macOS system preferences:
+
+1. **Determine the pane**: Which System Settings pane does this belong to?
+2. **Use system-settings**: Add options to the appropriate pane module
+3. **Update unified config**: Add to the unified config block in `default.nix`
+4. **Never bypass**: Don't create separate modules for system preferences
+5. **Document**: Add to module-options.md
+
+### **Preventing Future Conflicts**
+
+**Rules to follow:**
+- ✅ **ALWAYS** use `system-settings` for NSGlobalDomain writes
+- ✅ **ALWAYS** use `mkMerge` when multiple modules write to same domain
+- ✅ **ALWAYS** test System Settings after rebuild
+- ❌ **NEVER** write NSGlobalDomain from multiple modules
+- ❌ **NEVER** duplicate preference keys between nix-darwin and home-manager
+- ❌ **NEVER** bypass the unified config block
+
+### **Troubleshooting Checklist**
+
+If System Settings shows blank panes:
+
+1. **Check for conflicts**:
+   ```bash
+   grep -r "NSGlobalDomain" modules/darwin/
+   grep -r "NSGlobalDomain" modules/home/
+   ```
+
+2. **Validate preference files**:
+   ```bash
+   plutil -lint ~/.GlobalPreferences.plist
+   ```
+
+3. **Check cfprefsd**:
+   ```bash
+   log stream --debug --predicate 'process == "cfprefsd"'
+   ```
+
+4. **Clean and rebuild**:
+   ```bash
+   ./scripts/fix-system-settings.sh  # If available
+   # Or manually:
+   killall "System Settings"
+   killall cfprefsd
+   sudo killall cfprefsd
+   rm ~/.GlobalPreferences.plist
+   darwin-rebuild switch --flake ~/nix-config#parsley
+   ```
+
+---
+
+## 📚 **Related Documentation**
+
+**Active Documentation:**
+- `WARP.md` - LAW 5.4 documents system-settings domain authority
+- `module-options.md` - Complete system-settings options reference
+- `architecture.md` - Overall system design principles
+
+**Archived Documentation:**
+- `docs/archive/migrations/system-settings/SYSTEM-SETTINGS-FIX.md` - Original problem analysis
+- `docs/archive/migrations/system-settings/preference-domain-audit.md` - Complete domain audit
+- `docs/archive/migrations/system-settings/system-settings-permanent-fix.md` - Detailed fix implementation
+- `docs/archive/migrations/system-settings/raycast-removal.md` - Raycast conflict resolution
+
+---
+
+## ✅ **Resolution Summary**
+
+**Status:** ✅ **FULLY RESOLVED**
+
+**Actions Completed:**
+1. ✅ Identified NSGlobalDomain conflict between keyboard and system-settings
+2. ✅ Designed pane-based system-settings architecture
+3. ✅ Merged keyboard module into system-settings/keyboard.nix
+4. ✅ Implemented unified config block
+5. ✅ Added cfprefsd cache management
+6. ✅ Added preference validation
+7. ✅ Cleaned up home-manager keybindings
+8. ✅ Resolved Raycast symbolic hotkeys conflict
+9. ✅ Documented architecture and guidelines
+10. ✅ Tested and validated solution
+
+**Ongoing Compliance:**
+- All darwin modules now follow single source of truth principle
+- system-settings is the authoritative source for NSGlobalDomain
+- Clear guidelines prevent future conflicts
+- Architecture scales to additional System Settings panes
+
+---
+
+**Last Updated:** October 2025  
+**Migration Status:** Complete ✅  
+**Architecture:** Stable and production-ready
