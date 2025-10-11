@@ -240,7 +240,7 @@
     };
     
     sketchybar = {
-      enable = true;
+      enable = false;  # Disabled: Using native macOS menu bar instead
       position = "top";  # Replace macOS menu bar
       height = 32;  # Standard menu bar height
       font = "SF Pro";  # System font, clean and modern

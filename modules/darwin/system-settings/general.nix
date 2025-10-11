@@ -59,6 +59,12 @@ with lib;
         default = "column";
         description = "Default Finder view style";
       };
+      
+      hideFromDock = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Hide Finder icon from the Dock (Finder still runs in background)";
+      };
     };
   };
 }

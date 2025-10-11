@@ -128,6 +128,7 @@ in {
           AppleShowAllExtensions = cfg.general.finder.showAllExtensions;
           ShowPathbar = cfg.general.finder.showPathbar;
           ShowStatusBar = cfg.general.finder.showStatusBar;
+          CreateDesktop = !cfg.general.finder.hideFromDock;  # Hide Finder from Dock
           FXPreferredViewStyle = 
             if cfg.general.finder.defaultViewStyle == "icon" then "icnv"
             else if cfg.general.finder.defaultViewStyle == "list" then "Nlsv"

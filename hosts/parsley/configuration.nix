@@ -43,8 +43,6 @@
     # Utilities
     flameshot       # Screenshot tool with annotations
     syncthing       # Continuous file synchronization
-    sketchybar      # Customizable macOS status bar
-    sketchybar-app-font  # Special font for app icons in sketchybar
     
     # === CLI Tools ===
     
@@ -106,7 +104,14 @@
       
       # Appearance Pane - Settings that appear in System Settings > Appearance
       appearance = {
-        hideMenuBar = true;  # Hide macOS menu bar (using SketchyBar instead)
+        hideMenuBar = false;  # Keep native macOS menu bar visible
+      };
+      
+      # General Pane - Settings that appear in System Settings > General
+      general = {
+        finder = {
+          hideFromDock = true;  # Hide Finder from Dock (use Nimble Commander instead)
+        };
       };
       
       # Keyboard Pane - Settings that appear in System Settings > Keyboard

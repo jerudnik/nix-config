@@ -213,7 +213,19 @@ in
                            popup.background.corner_radius=$POPUP_CORNER_RADIUS \
                            popup.background.border_color=$POPUP_BORDER_COLOR \
                            popup.background.color=$POPUP_BACKGROUND_COLOR \
-                           popup.background.shadow.drawing=$SHADOW
+                           popup.background.shadow.drawing=$SHADOW \
+                                                             \
+                     --default position=popup              \
+                           drawing=on                      \
+                           icon.padding_left=0             \
+                           icon.padding_right=0            \
+                           label.padding_left=6            \
+                           label.padding_right=6           \
+                           padding_left=0                  \
+                           padding_right=0                 \
+                           background.padding_left=0       \
+                           background.padding_right=0      \
+                           background.color=$TRANSPARENT
           
           # Load item configurations
           ${optionalString cfg.aerospace.enable ''
@@ -384,44 +396,20 @@ in
               background.corner_radius=6 \
               background.height=26 \
               popup.align=center \
-              popup.height=140
+              popup.height=auto
           
-          # Add popup items showing month calendar with full grid (minimal spacing)
+          # Add popup items showing month calendar with full grid
           sketchybar --add item calendar.title popup.calendar_bracket \
               --set calendar.title \
               icon.drawing=off \
-              icon.padding_left=0 \
-              icon.padding_right=0 \
               label.font="$FONT:Bold:14.0" \
-              label.padding_left=4 \
-              label.padding_right=4 \
-              padding_left=0 \
-              padding_right=0 \
-              y_offset=0 \
-              width=250 \
-              background.height=22 \
-              background.color=$TRANSPARENT \
-              background.padding_left=0 \
-              background.padding_right=0 \
               label="$(date '+%B %Y')"
           
           # Calendar grid header (Mo Tu We Th Fr Sa Su)
           sketchybar --add item calendar.header popup.calendar_bracket \
               --set calendar.header \
               icon.drawing=off \
-              icon.padding_left=0 \
-              icon.padding_right=0 \
               label.font="$FONT:Regular:10.0" \
-              label.padding_left=4 \
-              label.padding_right=4 \
-              padding_left=0 \
-              padding_right=0 \
-              y_offset=0 \
-              width=250 \
-              background.height=14 \
-              background.color=$TRANSPARENT \
-              background.padding_left=0 \
-              background.padding_right=0 \
               label="Mo Tu We Th Fr Sa Su"
           
           # Calendar grid rows (will be populated by script)
@@ -429,19 +417,7 @@ in
             sketchybar --add item calendar.row$i popup.calendar_bracket \
                 --set calendar.row$i \
                 icon.drawing=off \
-                icon.padding_left=0 \
-                icon.padding_right=0 \
                 label.font="$FONT:Regular:10.0" \
-                label.padding_left=4 \
-                label.padding_right=4 \
-                padding_left=0 \
-                padding_right=0 \
-                y_offset=0 \
-                width=250 \
-                background.height=14 \
-                background.color=$TRANSPARENT \
-                background.padding_left=0 \
-                background.padding_right=0 \
                 label=""
           done
           
@@ -449,19 +425,7 @@ in
           sketchybar --add item calendar.details popup.calendar_bracket \
               --set calendar.details \
               icon.drawing=off \
-              icon.padding_left=0 \
-              icon.padding_right=0 \
               label.font="$FONT:Regular:9.0" \
-              label.padding_left=4 \
-              label.padding_right=4 \
-              padding_left=0 \
-              padding_right=0 \
-              y_offset=0 \
-              width=250 \
-              background.height=14 \
-              background.color=$TRANSPARENT \
-              background.padding_left=0 \
-              background.padding_right=0 \
               click_script="open -a 'Calendar'" \
               label="Click to open Calendar.app"
         '';
@@ -555,77 +519,29 @@ in
               background.corner_radius=6 \
               background.height=26 \
               popup.align=center \
-              popup.height=85
+              popup.height=auto
           
-          # Battery status popup items (minimal spacing)
+          # Battery status popup items
           sketchybar --add item battery.details popup.battery_bracket \
               --set battery.details \
               icon.drawing=off \
-              icon.padding_left=0 \
-              icon.padding_right=0 \
-              label.font="$FONT:Semibold:12.0" \
-              label.padding_left=4 \
-              label.padding_right=4 \
-              padding_left=0 \
-              padding_right=0 \
-              y_offset=0 \
-              width=200 \
-              background.height=20 \
-              background.color=$TRANSPARENT \
-              background.padding_left=0 \
-              background.padding_right=0
+              label.font="$FONT:Semibold:12.0"
           
           sketchybar --add item battery.remaining popup.battery_bracket \
               --set battery.remaining \
               icon.drawing=off \
-              icon.padding_left=0 \
-              icon.padding_right=0 \
-              label.font="$FONT:Regular:11.0" \
-              label.padding_left=4 \
-              label.padding_right=4 \
-              padding_left=0 \
-              padding_right=0 \
-              y_offset=0 \
-              width=200 \
-              background.height=18 \
-              background.color=$TRANSPARENT \
-              background.padding_left=0 \
-              background.padding_right=0
+              label.font="$FONT:Regular:11.0"
           
           sketchybar --add item battery.charging popup.battery_bracket \
               --set battery.charging \
               icon.drawing=off \
-              icon.padding_left=0 \
-              icon.padding_right=0 \
-              label.font="$FONT:Regular:11.0" \
-              label.padding_left=4 \
-              label.padding_right=4 \
-              padding_left=0 \
-              padding_right=0 \
-              y_offset=0 \
-              width=200 \
-              background.height=18 \
-              background.color=$TRANSPARENT \
-              background.padding_left=0 \
-              background.padding_right=0
+              label.font="$FONT:Regular:11.0"
           
           sketchybar --add item battery.settings popup.battery_bracket \
               --set battery.settings \
               icon.drawing=off \
-              icon.padding_left=0 \
-              icon.padding_right=0 \
               label.font="$FONT:Regular:9.0" \
               label="Click to open Battery settings" \
-              label.padding_left=4 \
-              label.padding_right=4 \
-              padding_left=0 \
-              padding_right=0 \
-              y_offset=0 \
-              width=200 \
-              background.height=16 \
-              background.color=$TRANSPARENT \
-              background.padding_left=0 \
-              background.padding_right=0 \
               click_script="open /System/Library/PreferencePanes/Battery.prefPane"
         '';
       };
