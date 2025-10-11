@@ -131,15 +131,29 @@
           
           # Dock applications (customize these to your preferences)
           persistentApps = [
-            "/Applications/Nimble Commander.app"                          # Homebrew
-            "/Applications/Nix Apps/Thunderbird.app"                      # System (nix-darwin)
-            "/Applications/Nix Apps/Zen Browser (Twilight).app"           # System (nix-darwin)
-            "/Applications/Nix Apps/Warp.app"                             # System (nix-darwin)
-            "/Applications/Brain.fm.app"                                  # Homebrew
-            "${config.users.users.jrudnik.home}/Applications/Home Manager Apps/Psst.app"  # Home Manager
-            "/Applications/Nix Apps/VLC.app"                              # System (nix-darwin)
-            "/Applications/Nix Apps/Bitwarden.app"                        # System (nix-darwin)
-            "/System/Applications/System Settings.app"                    # macOS
+            # File Management & Navigation
+            "/Applications/Nimble Commander.app"                          # Homebrew - Dual-pane file manager
+            
+            # Communication
+            "/Applications/Nix Apps/Thunderbird.app"                      # System - Email client
+            "/Applications/Beeper Desktop.app"                            # Homebrew - Universal chat
+            
+            # Browsers & Productivity
+            "/Applications/Nix Apps/Zen Browser (Twilight).app"           # System - Web browser
+            "/Applications/Nix Apps/Warp.app"                             # System - Terminal
+            
+            # Media & Entertainment
+            "/Applications/Brain.fm.app"                                  # Homebrew - Focus music
+            "${config.users.users.jrudnik.home}/Applications/Home Manager Apps/Psst.app"  # Home Manager - Spotify
+            "/Applications/Nix Apps/VLC.app"                              # System - Media player
+            
+            # Research & Documents
+            "/Applications/calibre.app"                                   # Homebrew - eBook management
+            "/Applications/JabRef.app"                                    # Homebrew - Reference manager
+            
+            # Security & System
+            "/Applications/Nix Apps/Bitwarden.app"                        # System - Password manager
+            "/System/Applications/System Settings.app"                    # macOS - System preferences
           ];
           
           # Dock folders (customize these to your preferences)

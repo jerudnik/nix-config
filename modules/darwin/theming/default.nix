@@ -116,7 +116,7 @@ in {
         
         name = mkOption {
           type = types.str;
-          default = "iMWritingQuat Nerd Font";
+          default = "iMWritingQuat Nerd Font Propo";
           description = "Sans-serif font name to use";
         };
       };

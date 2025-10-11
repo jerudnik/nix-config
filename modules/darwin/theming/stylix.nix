@@ -88,8 +88,8 @@ in {
         };
       };
       
-      # Stylix will automatically theme detected programs
-      # Let Stylix auto-detect and theme everything - no manual overrides needed
+      # Note: Stylix targets are configured per-user in home-manager
+      # See home/jrudnik/home.nix for stylix.targets configuration
     };
   };
 }

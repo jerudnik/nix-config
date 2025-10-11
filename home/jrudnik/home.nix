@@ -36,6 +36,31 @@
   # Additional packages - most packages managed via modules
   
   # Note: nixpkgs config is managed globally via useGlobalPkgs in flake.nix
+  
+  # Stylix targets - expand theming to more applications
+  # Note: Only enabling targets that are commonly available across platforms
+  stylix.targets = {
+    # Terminal emulators
+    alacritty.enable = true;
+    
+    # CLI tools - these are well-supported
+    bat.enable = true;
+    btop.enable = true;
+    fzf.enable = true;
+    
+    # Development tools
+    vim.enable = true;
+    neovim.enable = true;
+    
+    # Git tools
+    lazygit.enable = true;
+    
+    # GTK applications (limited effect on macOS)
+    gtk.enable = true;
+    
+    # Note: Shell theming (zsh) is handled by our shell module
+    # Note: Zed theming is handled by home.editors.zed.theme via mkDefault
+  };
 
   # Module configuration
   home = {
