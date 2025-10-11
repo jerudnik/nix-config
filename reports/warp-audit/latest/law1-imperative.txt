@@ -1,1 +1,0 @@
-modules/home/window-manager/default.nix:80:      alt-enter = """exec-and-forget osascript -e '

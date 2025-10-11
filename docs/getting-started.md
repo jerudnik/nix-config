@@ -3,12 +3,11 @@
 This guide will help you get up and running with this clean Nix configuration system using nix-darwin and Home Manager.
 
 > **📚 Essential Reading:**
-> - **[`workflow.md`](workflow.md)** - Complete workflow reference ⚡
-> - **[`modular-architecture.md`](modular-architecture.md)** - Advanced modular design 🏗️
-> - **[`architecture.md`](architecture.md)** - System architecture overview
-> - **[`exceptions.md`](exceptions.md)** - Exception handling framework 🛡️
-> - **[`quick-reference.md`](quick-reference.md)** - Quick commands and patterns
-> - **[`dock-and-theming-troubleshooting.md`](dock-and-theming-troubleshooting.md)** - Dock & theming troubleshooting 🎨
+|> - **[`workflow.md`](guides/workflow.md)** - Complete workflow reference ⚡
+|> - **[`modular-architecture.md`](guides/modular-architecture.md)** - Advanced modular design 🏗️
+|> - **[`architecture.md`](reference/architecture.md)** - System architecture overview
+|> - **[`exceptions.md`](reference/exceptions.md)** - Exception handling framework 🛡️
+|> - **[`quick-reference.md`](reference/quick-reference.md)** - Quick commands and patterns
 
 ## Prerequisites
 
@@ -233,7 +232,7 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVe
 - Get time information: "What time is it in Tokyo?"
 - Fetch web content: "Get the content from https://example.com"
 
-See **[MCP Integration Guide](mcp-integration.md)** for complete documentation.
+See **[MCP Integration Guide](reference/mcp.md)** for complete documentation.
 
 ### Apply Changes
 
@@ -378,11 +377,10 @@ ls -la ~/nix-config/
 
 ## Next Steps
 
-- **[Workflow Guide](workflow.md)** - Learn the development workflow
-- **[Architecture Guide](architecture.md)** - Understand the system design
-- **[MCP Integration Guide](mcp-integration.md)** - Configure Claude Desktop with MCP servers
-- **[Module Options Reference](module-options.md)** - Complete module configuration reference
-- **[Troubleshooting](troubleshooting-app-availability.md)** - Common issues and solutions
+- **[Workflow Guide](guides/workflow.md)** - Learn the development workflow
+- **[Architecture Guide](reference/architecture.md)** - Understand the system design
+- **[MCP Integration Guide](reference/mcp.md)** - Configure Claude Desktop with MCP servers
+- **[Module Options Reference](reference/module-options.md)** - Complete module configuration reference
 
 ## Migration from Other Systems
 

@@ -6,6 +6,62 @@
 
 ---
 
+## QUICK REFERENCE FOR AGENTS
+
+**Before making any changes, answer these questions:**
+
+### 1. **What am I modifying?**
+- System-level macOS settings → `modules/darwin/system-settings/`
+- User dotfiles/CLI tools → `modules/home/`
+- GUI application installation → `modules/darwin/` (environment.systemPackages)
+- Package available in nixpkgs? → Use nixpkgs module directly (NEVER create custom wrapper)
+
+### 2. **Does a module already exist?**
+- ✅ Check: `programs.<name>` in nixpkgs/home-manager first
+- ✅ Check: Current module structure in `modules/darwin/` and `modules/home/`
+- ✅ If exists: Use it directly, don't wrap it
+
+### 3. **Where do NSGlobalDomain writes go?**
+- **ONLY** in `modules/darwin/system-settings/` (LAW 5, RULE 5.4)
+- Any keyboard, trackpad, dock, appearance settings → `system-settings` panes
+
+### 4. **Build workflow:**
+```bash
+./scripts/build.sh build   # ALWAYS test first
+./scripts/build.sh switch  # Only after build succeeds
+```
+
+---
+
+## DECISION FLOWCHART: WHERE DOES THIS GO?
+
+```
+┌─────────────────────────────────────┐
+│ What are you configuring?           │
+└─────────────┬───────────────────────┘
+              │
+              ├─→ macOS System Settings (Dock, Keyboard, etc.)?
+              │   └─→ modules/darwin/system-settings/<pane>.nix
+              │
+              ├─→ GUI Application Installation?
+              │   └─→ modules/darwin/ + environment.systemPackages
+              │
+              ├─→ System Service (Nix daemon, fonts, etc.)?
+              │   └─→ modules/darwin/<service>/
+              │
+              ├─→ User Dotfiles or Config Files?
+              │   └─→ modules/home/<category>/
+              │
+              ├─→ CLI Tool Installation + Config?
+              │   ├─→ Has nixpkgs module? → Use programs.<tool>
+              │   └─→ No nixpkgs module? → modules/home/<category>/
+              │
+              └─→ NSGlobalDomain write?
+                  └─→ STOP! Only allowed in system-settings
+```
+
+---
+
 # CONFIGURATION PURITY LAWS
 
 ## LAW 1: DECLARATIVE ONLY - NO IMPERATIVE ACTIONS
@@ -36,85 +92,82 @@
 ## LAW 2: ARCHITECTURAL BOUNDARIES ARE SACRED
 
 **RULE 2.1: Module Responsibility Separation**
-- ❌ NEVER put Darwin-specific options in NixOS modules or vice versa.
-
-- ✅ ALWAYS keep modules/darwin/, modules/nixos/, and modules/home/ strictly separate.
-
+- ❌ NEVER put Darwin-specific options in NixOS modules or vice versa
+- ✅ ALWAYS keep modules/darwin/, modules/nixos/, and modules/home/ strictly separate
 - ✅ ALWAYS use the correct module type for the configuration layer, following the strict division of labor:
-
-	- modules/darwin/: Manages system-level concerns. This includes the installation of all GUI applications, system-wide services, and macOS defaults.
-
-	- modules/home/: Manages user-level concerns. This includes the configuration of applications (whose installation is managed by nix-darwin), the installation and configuration of CLI-only tools, and all user-specific dotfiles.
+	- modules/darwin/: Manages system-level concerns. This includes the installation of all GUI applications, system-wide services, and macOS defaults
+	- modules/home/: Manages user-level concerns. This includes the configuration of applications (whose installation is managed by nix-darwin), the installation and configuration of CLI-only tools, and all user-specific dotfiles
 
 **RULE 2.2: One Module, One Concern**
-- ❌ NEVER create monolithic modules that handle multiple unrelated features.
-
-- ✅ ALWAYS create focused, single-responsibility modules.
-
-- ✅ ALWAYS name modules by their function (the "what"), not their implementation (the "how"). For example, a module for theming should be named theming, even if it uses stylix internally.
+- ❌ NEVER create monolithic modules that handle multiple unrelated features
+- ✅ ALWAYS create focused, single-responsibility modules
+- ✅ ALWAYS name modules by their function (the "what"), not their implementation (the "how"). For example, a module for theming should be named theming, even if it uses stylix internally
+- ✅ GUIDELINE: Keep modules under ~100 lines when possible. Larger modules are acceptable for complex, cohesive functionality but should be reviewed for splitting opportunities
 
 **RULE 2.3: Platform Separation Enforcement**
-- ❌ **NEVER** use platform conditionals in system modules
-- ❌ **NEVER** share code between Darwin and NixOS system modules
-- ✅ **ONLY** home modules may use platform detection when necessary
-- ✅ **ALWAYS** create separate implementations for different platforms
+- ❌ NEVER use platform conditionals (e.g., if pkgs.stdenv.isDarwin) in system modules
+- ❌ NEVER mix Darwin and NixOS concerns in a single module
+- ✅ ALWAYS create separate Darwin and NixOS modules for platform-specific features
+- ✅ ALWAYS use the appropriate module system: nix-darwin for macOS, NixOS for Linux
 
-**RULE 2.4: Module Creation Guidelines (Nixpkgs-First)**
-- ✅ ALWAYS structure modules to separate the abstract interface from the concrete implementation.
-
-- ✅ ALWAYS prefer an aggregator/implementor pattern for modules that wrap a specific tool. The aggregator (theming/default.nix) defines the high-level API, while the implementor (theming/stylix.nix) contains the tool-specific logic.
-
-- ✅ ALWAYS a module's options should distinguish between enable (for managing configuration) and install (for managing the package), allowing a clear separation of concerns between home-manager and nix-darwin.
+**RULE 2.4: Nixpkgs-First Module Creation**
+- ❌ NEVER create custom modules for programs that have nixpkgs modules (e.g., programs.zsh, programs.git)
+- ❌ NEVER wrap existing nixpkgs modules in custom modules without substantial added value
+- ✅ ALWAYS check if nixpkgs or home-manager already provides a module before creating a custom one
+- ✅ ALWAYS use nixpkgs modules directly when they exist
+- ✅ ONLY create custom modules for programs without nixpkgs modules or when adding significant custom functionality
 
 ---
 
 ## LAW 3: TYPE SAFETY AND VALIDATION
 
 **RULE 3.1: Strict Type Usage**
-- ❌ **NEVER** use `types.str` when more specific types exist
-- ❌ **NEVER** create options without type specifications
-- ✅ **ALWAYS** use `types.path` for paths, `types.port` for ports, `types.enum` for choices
-- ✅ **ALWAYS** use `types.listOf`, `types.attrsOf` for collections
+- ❌ NEVER use types.str when more specific types exist (e.g., types.path for paths, types.enum for limited choices)
+- ❌ NEVER use types.anything or types.attrs without clear justification
+- ✅ ALWAYS use the most specific type available for each option
+- ✅ ALWAYS use types.enum when options have a limited set of valid values
+- ✅ ALWAYS use types.submodule for structured configuration
 
 **RULE 3.2: Documentation Requirements**
-- ❌ **NEVER** create options without descriptions
-- ❌ **NEVER** use generic or unhelpful descriptions
-- ✅ **ALWAYS** add meaningful descriptions to every option
-- ✅ **ALWAYS** document the impact and usage of each option
+- ❌ NEVER create options without descriptions
+- ❌ NEVER use vague descriptions like "enables the feature"
+- ✅ ALWAYS provide clear, meaningful descriptions for every option
+- ✅ ALWAYS explain the impact and behavior of each option
+- ✅ ALWAYS include examples for complex options
 
 **RULE 3.3: Default Value Mandates**
-- ❌ **NEVER** create options without sensible defaults
-- ❌ **NEVER** force users to configure things they don't care about
-- ✅ **ALWAYS** provide working defaults for all options
-- ✅ **ALWAYS** make the simple case simple, complex case possible
+- ❌ NEVER leave options without sensible defaults
+- ❌ NEVER use defaults that require additional configuration to work
+- ✅ ALWAYS provide working default values for all options
+- ✅ ALWAYS ensure modules work with minimal configuration
+- ✅ PRINCIPLE: Simple cases should be simple - complex cases should be possible
 
 ---
 
 ## LAW 4: BUILD AND TEST DISCIPLINE
 
 **RULE 4.1: Incremental Testing Protocol**
-- ❌ **NEVER** apply changes without testing builds first
-- ❌ **NEVER** make multiple logical changes simultaneously
-- ✅ **ALWAYS** run `./scripts/build.sh build` before `./scripts/build.sh switch`
-- ✅ **ALWAYS** make one logical change at a time
-- ✅ **ALWAYS** commit working configurations before the next change
+- ❌ NEVER make multiple unrelated changes in one commit
+- ❌ NEVER apply changes without building first
+- ✅ ALWAYS test with `./scripts/build.sh build` before applying
+- ✅ ALWAYS make one logical change at a time
+- ✅ ALWAYS ensure each commit represents a working state
 
 **RULE 4.2: Configuration Logic Restrictions**
-- ❌ **NEVER** put conditionals or logic in host configs
-- ❌ **NEVER** use `mkIf` or complex expressions in host configurations
-- ✅ **ALWAYS** keep host configs as declarative statements only
-- ✅ **ALWAYS** extract logic to modules if needed
+- ❌ NEVER put complex logic in host-specific configuration files
+- ❌ NEVER use conditionals in host configs when modules can handle it
+- ✅ ALWAYS keep host configs simple and declarative
+- ✅ ALWAYS move complex logic into reusable modules
+- ✅ PRINCIPLE: Host configs should be data, not code
 
 **RULE 4.3: Package Management Boundaries**
-- ❌ NEVER install GUI applications using home-manager.
-
-- ❌ NEVER put CLI tools in environment.systemPackages unless they are essential for system operation.
-
-- ✅ ALWAYS install GUI applications and system-level tools via nix-darwin in environment.systemPackages.
-
-- ✅ ALWAYS install user-specific and CLI tools via home-manager in home.packages.
-
-- ✅ RULE OF THUMB: If it has a .app bundle, nix-darwin should install it. If it's a command-line tool for your user, home-manager should install it.
+- ❌ NEVER install user applications in environment.systemPackages unless they are system-level tools
+- ❌ NEVER install system tools in home.packages
+- ❌ NEVER duplicate package installations between system and user
+- ❌ NEVER put CLI tools in environment.systemPackages unless they are essential for system operation
+- ✅ ALWAYS install GUI applications and system-level tools via nix-darwin in environment.systemPackages
+- ✅ ALWAYS install user-specific and CLI tools via home-manager in home.packages
+- ✅ RULE OF THUMB: If it has a .app bundle, nix-darwin should install it. If it's a command-line tool for your user, home-manager should install it
 
 ---
 
@@ -142,6 +195,136 @@
 - ✅ **ALWAYS** ensure configurations work from clean state
 - ✅ **PRINCIPLE**: Single source of truth enables reproducible deployments
 
+**RULE 5.4: System Settings Domain Authority**
+- ❌ **NEVER** write to `NSGlobalDomain` from any module except `darwin/system-settings`
+- ❌ **NEVER** create separate modules for keyboard, trackpad, appearance, or other System Settings panes
+- ❌ **NEVER** duplicate NSGlobalDomain keys between nix-darwin and home-manager
+- ✅ **ALWAYS** use `darwin.system-settings` for ALL macOS System Settings preferences
+- ✅ **ALWAYS** organize settings by System Settings pane (Keyboard, Dock, Appearance, etc.)
+- ✅ **PRINCIPLE**: Single source of truth for NSGlobalDomain prevents cache corruption and blank System Settings panes
+
+**RULE 5.4 Examples:**
+
+**❌ WRONG - Multiple Modules Writing to NSGlobalDomain:**
+```nix
+# modules/darwin/keyboard/default.nix
+system.defaults.NSGlobalDomain."com.apple.keyboard.fnState" = true;
+
+# modules/darwin/trackpad/default.nix
+system.defaults.NSGlobalDomain.AppleEnableSwipeNavigateWithScrolls = false;
+
+# This causes: Blank System Settings panes, cache corruption
+```
+
+**❌ WRONG - Home Manager Writing to NSGlobalDomain:**
+```nix
+# modules/home/macos/keybindings.nix
+targets.darwin.defaults.NSGlobalDomain = {
+  KeyRepeat = 2;
+  InitialKeyRepeat = 15;
+};
+
+# This causes: Conflicts with nix-darwin, cache corruption
+```
+
+**✅ CORRECT - Single Module with Pane Organization:**
+```nix
+# modules/darwin/system-settings/default.nix
+system.defaults.NSGlobalDomain = {
+  # Keyboard pane settings
+  "com.apple.keyboard.fnState" = cfg.keyboard.enableFnKeys;
+  KeyRepeat = cfg.keyboard.keyRepeat;
+  InitialKeyRepeat = cfg.keyboard.initialKeyRepeat;
+  
+  # Trackpad pane settings
+  AppleEnableSwipeNavigateWithScrolls = cfg.trackpad.swipeNavigation;
+  "com.apple.trackpad.scaling" = cfg.trackpad.trackpadSpeed;
+  
+  # Appearance pane settings
+  AppleInterfaceStyleSwitchesAutomatically = cfg.appearance.automaticSwitchAppearance;
+  
+  # All in ONE place, no conflicts, organized by pane
+};
+```
+
+**System Settings Pane Organization:**
+
+The `darwin.system-settings` module implements a UNIFIED config block that prevents NSGlobalDomain conflicts. All pane settings are organized to match macOS System Settings UI:
+
+```nix
+darwin.system-settings = {
+  enable = true;
+  
+  # Maps to System Settings > Keyboard
+  keyboard = {
+    keyRepeat = 2;
+    initialKeyRepeat = 15;
+    pressAndHoldEnabled = false;
+    remapCapsLockToControl = true;
+    enableFnKeys = true;
+  };
+  
+  # Maps to System Settings > Desktop & Dock
+  desktopAndDock = {
+    dock = {
+      autohide = true;
+      autohideDelay = 0.0;
+      orientation = "bottom";
+      tileSize = 48;
+      showRecents = false;
+    };
+    missionControl = {
+      separateSpaces = true;
+      exposeAnimation = 0.1;
+    };
+    hotCorners = {
+      topLeft = null;
+      topRight = "Mission Control";
+      bottomLeft = null;
+      bottomRight = null;
+    };
+  };
+  
+  # Maps to System Settings > Appearance
+  appearance = {
+    automaticSwitchAppearance = true;
+  };
+  
+  # Maps to System Settings > Trackpad
+  trackpad = {
+    naturalScrolling = false;
+    tapToClick = true;
+    trackpadSpeed = 0.6875;
+  };
+  
+  # Maps to System Settings > General (+ Finder settings)
+  general = {
+    textInput = {
+      disableAutomaticCapitalization = false;
+      disableAutomaticSpellingCorrection = false;
+    };
+    finder = {
+      showAllExtensions = true;
+      showPathbar = true;
+      defaultView = "list";
+    };
+  };
+};
+```
+
+**Why This Matters:**
+- macOS stores many settings in `NSGlobalDomain` (the global preferences domain)
+- Multiple modules writing to `NSGlobalDomain` causes cache corruption via cfprefsd
+- Results in blank System Settings panes and unpredictable behavior
+- `system-settings` implements a SINGLE, UNIFIED config block to prevent conflicts
+- Organization matches macOS UI for intuitive, maintainable configuration
+
+**Historical Context:**
+- Previously had separate `keyboard` module writing to `NSGlobalDomain`
+- Caused conflicts with other modules also writing to `NSGlobalDomain`  
+- Resolved by merging ALL System Settings into unified `system-settings` module
+- See `docs/darwin-modules-conflicts.md` for complete analysis and resolution
+
 **Current Documented Exceptions:**
 
 #### **Unfree Packages (allowUnfreePredicate)**
@@ -156,72 +339,16 @@
   - **Detail**: See `docs/exceptions.md`
 
 #### **Homebrew Casks**
-- **Claude Desktop**: Not available in nixpkgs as of 2025-10-06. Alternative analysis:
-  - **nixpkgs status**: No claude-desktop package exists in nixpkgs
-  - **upstream availability**: Official Anthropic releases via direct download and Homebrew cask only
-  - **packaging complexity**: Electron app with frequent updates, no community packaging effort
-  - **technical justification**: Homebrew cask `claude` provides official, maintained distribution
-  - **integration approach**: System-level installation via nix-homebrew + user-level MCP configuration via Home Manager
-  - **reproducibility maintained**: MCP servers use nixpkgs/mcp-servers-nix, only the GUI client uses Homebrew
-  - **review schedule**: Re-evaluate when/if nixpkgs gains claude-desktop package
+- **Claude Desktop**: Not available in nixpkgs as of 2025-10-06
+  - **Alternative analysis**:
+    - **nixpkgs status**: No claude-desktop package exists in nixpkgs
+    - **upstream availability**: Official Anthropic releases via direct download and Homebrew cask only
+    - **packaging complexity**: Electron app with frequent updates, no community packaging effort
+    - **technical justification**: Homebrew cask `claude` provides official, maintained distribution
+    - **integration approach**: System-level installation via nix-homebrew + user-level MCP configuration via Home Manager
+    - **reproducibility maintained**: MCP servers use nixpkgs/mcp-servers-nix, only the GUI client uses Homebrew
+    - **review schedule**: Re-evaluate when/if nixpkgs gains claude-desktop package
 - Future exceptions require similar detailed justification
-
-**RULE 5.4: System Settings Domain Authority**
-- ❌ **NEVER** write to `NSGlobalDomain` from any module except `darwin/system-settings`
-- ❌ **NEVER** create separate modules for keyboard, trackpad, or appearance settings
-- ✅ **ALWAYS** use `darwin.system-settings` for ALL macOS System Settings
-- ✅ **ALWAYS** organize settings by System Settings pane (Keyboard, Dock, Appearance, etc.)
-- ✅ **PRINCIPLE**: Single source of truth prevents NSGlobalDomain conflicts and cache corruption
-
-**System Settings Pane Organization:**
-```nix
-darwin.system-settings = {
-  enable = true;
-  
-  # Maps to System Settings > Keyboard
-  keyboard = {
-    keyRepeat = 2;
-    remapCapsLockToControl = true;
-    enableFnKeys = true;
-  };
-  
-  # Maps to System Settings > Desktop & Dock
-  desktopAndDock = {
-    dock = { ... };
-    missionControl = { ... };
-    hotCorners = { ... };
-  };
-  
-  # Maps to System Settings > Appearance
-  appearance = {
-    automaticSwitchAppearance = true;
-  };
-  
-  # Maps to System Settings > Trackpad
-  trackpad = {
-    naturalScrolling = false;
-  };
-  
-  # Maps to System Settings > General (+ Finder)
-  general = {
-    textInput = { ... };
-    finder = { ... };
-  };
-};
-```
-
-**Why This Matters:**
-- macOS stores many settings in `NSGlobalDomain` (global preferences file)
-- Multiple modules writing to `NSGlobalDomain` causes cache corruption
-- Results in blank System Settings panes and unpredictable behavior
-- `system-settings` implements a SINGLE, UNIFIED config block to prevent conflicts
-- Organization matches macOS UI for intuitive configuration
-
-**Historical Context:**
-- Previously had separate `keyboard` module writing to `NSGlobalDomain`
-- Caused conflicts with `system-defaults` module
-- Resolved by merging all System Settings into unified `system-settings` module
-- See `docs/darwin-modules-conflicts.md` for full analysis
 
 ---
 
@@ -299,63 +426,307 @@ modules/
 - ✅ **ALWAYS** ensure configurations work on fresh installations
 - ✅ **ALWAYS** test reproducibility across different machines when possible
 
-## AGENT TOOL UTILIZATION AND MCP GUIDANCE
+---
 
-**For AI Agents (Claude, GitHub Copilot, etc.) working with this repository:**
+## COMMON VIOLATIONS (DO NOT DO THESE)
 
-### MCP (Model Context Protocol) Tools Available
-This repository is equipped with comprehensive MCP servers that provide deep integration:
+### ❌ VIOLATION 1: Creating Custom Module for Nixpkgs Program
 
-**🔧 Core MCP Servers:**
-- **GitHub Integration**: Repository access, issues, PRs, workflows, code search
-- **Filesystem Access**: Safe file operations within repository boundaries  
-- **Git Operations**: Local repository history, branches, commits, diffs
-- **Time Utilities**: Date/time operations for scheduling and timestamps
-- **Web Fetch**: HTTP requests and web scraping capabilities
-- **Darwin/Home-Manager Search**: Nix configuration option discovery
-- **NixOS Search**: Package and configuration search
-- **Library Documentation**: Up-to-date documentation for popular libraries
+**BAD: Custom wrapper for program that nixpkgs provides**
+```nix
+# modules/home/myeditor/default.nix
+{ config, lib, pkgs, ... }:
 
-### Agent Workflow Guidelines
+{
+  options.home.myeditor.enable = lib.mkEnableOption "My Editor";
+  
+  config = lib.mkIf config.home.myeditor.enable {
+    home.packages = [ pkgs.neovim ];
+    home.file.".config/nvim/init.vim".text = "set number";
+  };
+}
+```
 
-**RULE A.1: Always Use MCP Tools for Context**
-- ❌ **NEVER** guess about repository structure without checking
-- ❌ **NEVER** assume configuration patterns without MCP exploration
-- ✅ **ALWAYS** use MCP filesystem tools to understand current state
-- ✅ **ALWAYS** use GitHub MCP to check issues, PRs, and repository history
-- ✅ **ALWAYS** use darwin/home-manager search for available options
+**GOOD: Use nixpkgs module directly**
+```nix
+# home/jrudnik/home.nix
+programs.neovim = {
+  enable = true;
+  extraConfig = "set number";
+};
+```
 
-**RULE A.2: Documentation-First Approach**  
-- ❌ **NEVER** make changes without reading relevant documentation
-- ✅ **ALWAYS** start by checking documentation modules via MCP
-- ✅ **ALWAYS** reference `docs/` directory for architectural guidance
-- ✅ **ALWAYS** verify current module options before suggesting changes
+---
 
-**RULE A.3: MCP-Assisted Validation**
-- ❌ **NEVER** suggest configurations without checking current implementation
-- ✅ **ALWAYS** use MCP tools to validate proposed changes against existing code
-- ✅ **ALWAYS** check for similar implementations in the repository
-- ✅ **ALWAYS** verify that suggested packages exist in nixpkgs
+### ❌ VIOLATION 2: Writing to NSGlobalDomain Outside system-settings
 
-### Recommended MCP Tool Usage Patterns
+**BAD: Writing to NSGlobalDomain from home-manager**
+```nix
+# modules/home/macos/keybindings.nix
+targets.darwin.defaults.NSGlobalDomain = {
+  KeyRepeat = 2;
+  InitialKeyRepeat = 15;
+};
+```
 
-**For New Feature Requests:**
-1. Use GitHub MCP to check for related issues/PRs
-2. Use filesystem MCP to explore current module structure
-3. Use darwin/home-manager search for available options
-4. Use documentation tools to understand architectural patterns
+**BAD: Writing to NSGlobalDomain from separate darwin module**
+```nix
+# modules/darwin/keyboard/default.nix
+system.defaults.NSGlobalDomain = {
+  "com.apple.keyboard.fnState" = true;
+};
+```
 
-**For Debugging/Issues:**
-1. Use git MCP to check recent changes and history
-2. Use filesystem MCP to examine current configuration state
-3. Use GitHub MCP to check for known issues or solutions
-4. Use web fetch MCP for external documentation if needed
+**GOOD: ALL NSGlobalDomain writes in system-settings**
+```nix
+# host/parsley/configuration.nix
+darwin.system-settings = {
+  enable = true;
+  keyboard = {
+    keyRepeat = 2;
+    initialKeyRepeat = 15;
+    enableFnKeys = true;
+  };
+};
+```
 
-**For Configuration Changes:**
-1. Use MCP to validate current state matches expectations
-2. Check documentation via MCP before implementing
-3. Use nixos search MCP to verify package availability
-4. Test approach with MCP filesystem operations before suggesting
+---
+
+### ❌ VIOLATION 3: Putting CLI Tools in System Packages
+
+**BAD: CLI tools in system packages**
+```nix
+# hosts/parsley/configuration.nix
+environment.systemPackages = with pkgs; [
+  git         # ✅ OK - essential for system
+  curl        # ✅ OK - essential for system
+  ripgrep     # ❌ WRONG - user CLI tool
+  fd          # ❌ WRONG - user CLI tool
+  bat         # ❌ WRONG - user CLI tool
+];
+```
+
+**GOOD: CLI tools in home-manager**
+```nix
+# home/jrudnik/home.nix
+home.packages = with pkgs; [
+  ripgrep
+  fd
+  bat
+];
+```
+
+---
+
+### ❌ VIOLATION 4: Using Homebrew When Nixpkgs Available
+
+**BAD: Homebrew for available packages**
+```nix
+# hosts/parsley/configuration.nix
+homebrew.casks = [
+  "warp"  # ❌ WRONG - available in nixpkgs as warp-terminal
+];
+```
+
+**GOOD: Check nixpkgs first**
+```nix
+# home/jrudnik/home.nix
+home.packages = with pkgs; [
+  warp-terminal  # ✅ Available in nixpkgs
+];
+
+# Only use Homebrew for truly unavailable packages
+# hosts/parsley/configuration.nix
+homebrew.casks = [
+  "claude"  # ✅ OK - not in nixpkgs, documented exception
+];
+```
+
+---
+
+### ❌ VIOLATION 5: Complex Logic in Host Config
+
+**BAD: Conditionals and logic in host file**
+```nix
+# hosts/parsley/configuration.nix
+{
+  environment.systemPackages = with pkgs; 
+    if isDevelopmentMachine then
+      [ git neovim nodejs ]
+    else
+      [ git ];
+}
+```
+
+**GOOD: Logic in modules, data in host config**
+```nix
+# modules/darwin/development/default.nix
+{ config, lib, pkgs, ... }: {
+  options.darwin.development.enable = lib.mkEnableOption "development tools";
+  config = lib.mkIf config.darwin.development.enable {
+    environment.systemPackages = with pkgs; [ neovim nodejs ];
+  };
+}
+
+# hosts/parsley/configuration.nix
+{
+  darwin.development.enable = true;  # Simple boolean flag
+}
+```
+
+---
+
+### ❌ VIOLATION 6: Manual System Commands
+
+**BAD: Imperative activation script**
+```nix
+system.activationScripts.setupMyApp = ''
+  defaults write com.myapp.preferences setting value
+  osascript -e 'tell application "Finder" to restart'
+'';
+```
+
+**GOOD: Declarative configuration**
+```nix
+# Use system.defaults for macOS preferences
+system.defaults."com.myapp.preferences" = {
+  setting = "value";
+};
+
+# Finder restarts automatically when system.defaults changes
+```
+
+---
+
+## MCP TOOL USAGE PATTERNS FOR AGENTS
+
+**For AI Agents (Claude, GitHub Copilot, etc.) working with this configuration:**
+
+### Pattern 1: Checking Package Availability
+
+**Before creating any custom module, ALWAYS check:**
+
+```bash
+# Step 1: Use MCP brave-search or web search
+Search: "nixpkgs <package-name>"
+Search: "home-manager programs.<package-name>"
+
+# Step 2: Use MCP filesystem to check existing modules
+Read: modules/home/
+Read: modules/darwin/
+
+# Step 3: Use MCP git to check history
+Search git history: "<package-name>"
+```
+
+**Example workflow:**
+```
+User asks: "Add neovim configuration"
+
+Agent thinks:
+1. Search nixpkgs: "nixpkgs neovim home-manager"
+2. Find: programs.neovim exists in home-manager ✅
+3. Decision: Use programs.neovim directly, don't create custom module
+4. Read: docs/module-options.md to see if already configured
+5. Propose: Enable programs.neovim in home configuration
+```
+
+---
+
+### Pattern 2: Understanding Current Architecture
+
+**Before proposing structural changes:**
+
+```bash
+# Step 1: Read core documentation
+MCP filesystem: Read docs/architecture.md
+MCP filesystem: Read docs/modular-architecture.md
+
+# Step 2: Examine current structure
+MCP filesystem: List modules/darwin/
+MCP filesystem: List modules/home/
+
+# Step 3: Check recent patterns
+MCP git: Show recent commits
+MCP git: Search for similar features
+```
+
+**Example workflow:**
+```
+User asks: "Add a new system settings option"
+
+Agent thinks:
+1. Read: modules/darwin/system-settings/default.nix
+2. Understand: Pane-based organization pattern
+3. Check: Which pane does this belong to?
+4. Verify: No NSGlobalDomain writes outside system-settings
+5. Propose: Add option to appropriate pane module
+```
+
+---
+
+### Pattern 3: Before Proposing NSGlobalDomain Changes
+
+**CRITICAL: Always verify NSGlobalDomain changes go to system-settings:**
+
+```bash
+# Step 1: Check system-settings structure
+MCP filesystem: Read modules/darwin/system-settings/default.nix
+MCP filesystem: List modules/darwin/system-settings/
+
+# Step 2: Search for existing patterns
+MCP git: Search history for "NSGlobalDomain"
+
+# Step 3: Verify no conflicts
+MCP filesystem: Search codebase for "NSGlobalDomain"
+Ensure: Only system-settings module writes to it
+```
+
+**Example workflow:**
+```
+User asks: "Make keyboard repeat faster"
+
+Agent thinks:
+1. Identify: This is a keyboard setting → NSGlobalDomain
+2. STOP: Check RULE 5.4 - only system-settings can write
+3. Read: modules/darwin/system-settings/keyboard.nix
+4. Find: keyRepeat option already exists
+5. Propose: Modify darwin.system-settings.keyboard.keyRepeat value
+6. NOT: Create new module or write to NSGlobalDomain elsewhere
+```
+
+---
+
+### Pattern 4: Validating Changes Before Proposing
+
+**Always validate your proposed changes:**
+
+```bash
+# Step 1: Check if module already exists
+MCP filesystem: Does modules/home/<tool>/ exist?
+MCP brave-search: Does programs.<tool> exist in nixpkgs?
+
+# Step 2: Verify build will succeed
+Check: All referenced packages exist in nixpkgs
+Check: Syntax is valid Nix
+Check: No conflicting options
+
+# Step 3: Confirm with documentation
+MCP filesystem: Read docs/module-options.md
+Verify: Proposed options follow patterns
+```
+
+---
+
+### Available MCP Servers
+
+This configuration includes the following MCP servers for agent use:
+
+- **filesystem**: Read repository files and directory structure
+- **git**: Query repository history, commits, and diffs
+- **github**: Search issues, PRs, and repositories
+- **brave-search**: Web search when needed
+- **fetch**: Retrieve web pages and documentation
 
 ### Essential Documentation for Agents
 
@@ -375,225 +746,61 @@ This repository is equipped with comprehensive MCP servers that provide deep int
 
 **🏷️ Agent Usage Tip**: Use MCP filesystem tools to access these documents directly for the most current information
 
-## Development Commands
+---
 
-### Build and Switch Configuration
-```bash
-# Test configuration (dry run)
-./scripts/build.sh build
+## AGENT PRE-FLIGHT CHECKLIST
 
-# Apply configuration (system changes)
-./scripts/build.sh switch
+Before proposing any changes, verify:
 
-# Validate flake syntax and dependencies
-./scripts/build.sh check
+- [ ] **Checked nixpkgs availability**: Searched for `programs.<tool>` or package in nixpkgs
+- [ ] **Verified module location**: Confirmed correct placement (darwin/ vs home/)
+- [ ] **NSGlobalDomain check**: Ensured no NSGlobalDomain writes outside system-settings
+- [ ] **Package boundaries**: GUI apps → environment.systemPackages, CLI tools → home.packages
+- [ ] **Read documentation**: Reviewed relevant docs in docs/ directory
+- [ ] **MCP tools used**: Used filesystem/git MCP to understand current state
+- [ ] **Build plan**: Prepared to test with `./scripts/build.sh build` first
+- [ ] **Single logical change**: Change represents one coherent modification
+- [ ] **Commit message**: Planned conventional commit format message
+- [ ] **No violations**: Double-checked against Common Violations section above
 
-# Update all flake inputs
-./scripts/build.sh update
+### Example Pre-Flight Check
 
-# Clean old generations (quick)
-./scripts/build.sh clean
+**Scenario: User asks to add ripgrep configuration**
 
-# Comprehensive cleanup with options
-./scripts/cleanup.sh
+```
+✅ Checked nixpkgs: programs.ripgrep exists in home-manager
+✅ Module location: home-manager (user CLI tool)
+✅ NSGlobalDomain: No system settings involved
+✅ Package boundary: CLI tool → home.packages (but programs.ripgrep handles this)
+✅ Read docs: Checked module-options.md
+✅ MCP used: Listed modules/home/ to verify no existing ripgrep module
+✅ Build plan: Will suggest testing with build script
+✅ Single change: Just enabling ripgrep
+✅ Commit message: "feat(cli): enable ripgrep with custom config"
+✅ No violations: Using programs.ripgrep directly (RULE 2.4 compliant)
+
+Decision: Propose enabling programs.ripgrep in home configuration ✅
 ```
 
-### Manual Commands
-```bash
-# Direct nix-darwin commands
-darwin-rebuild build --flake ~/nix-config#parsley
-sudo darwin-rebuild switch --flake ~/nix-config#parsley
+---
 
-# Standalone home-manager (when needed)
-home-manager switch --flake ~/nix-config#jrudnik@parsley
+## COMPLIANCE ENFORCEMENT
 
-# Check flake directly
-cd ~/nix-config && nix flake check
-```
+This is not optional guidance. WARP.md rules are mandatory requirements. Violations will be rejected in code review.
 
-### Testing Changes
-When modifying configuration:
-1. Always run `./scripts/build.sh build` first to test
-2. Use `./scripts/build.sh check` to validate flake syntax
-3. Only use `switch` after successful build test
+**When in doubt:**
+1. Read the relevant LAW in this document
+2. Check existing modules for patterns
+3. Consult `docs/architecture.md` for philosophy
+4. Use MCP tools to understand current implementation
+5. Review the Common Violations section above
+6. Complete the Pre-Flight Checklist
+7. Ask for clarification before proceeding
 
-## Architecture Overview
+**Remember**: The goal is not perfection, but consistency, maintainability, and reproducibility. These rules exist to make the configuration easier to understand, modify, and extend over time.
 
-This is a **modular Nix configuration** for macOS using nix-darwin and Home Manager. The key architectural principle is **clean separation between system and user configuration** through reusable modules.
+---
 
-### Core Structure
-```
-~/nix-config/
-├── flake.nix              # Main configuration with inputs/outputs
-├── hosts/parsley/          # System configuration (65 lines)
-├── home/jrudnik/           # User configuration (61 lines) 
-├── modules/
-│   ├── darwin/            # System modules (10 modules)
-│   ├── home/              # User modules (9 modules)
-│   ├── ai/                # AI tools modules
-│   └── nixos/             # Linux modules (future)
-├── overlays/              # Package overlays and modifications
-├── scripts/               # Build and cleanup scripts
-├── secrets/               # Encrypted secrets (future)
-└── docs/                  # Comprehensive documentation
-```
-
-### Configuration Philosophy
-- **No external frameworks** - Direct nix-darwin + home-manager usage
-- **Modular design** - 10 reusable Darwin modules, 9 Home Manager modules
-- **Minimal complexity** - 65-line system config, 61-line user config
-- **Type-safe options** - All modules use proper NixOS module pattern with options/config
-- **Easy scaling** - Add hosts/users without duplication
-
-### Module System
-**Darwin modules** (system-level):
-- `core` - Essential packages and shell setup
-- `security` - Touch ID, user management 
-- `nix-settings` - Nix daemon optimization, binary caches
-- `system-defaults` - macOS system preferences
-- `keyboard` - Keyboard and input configuration
-- `homebrew` - Homebrew casks and Mac App Store apps
-- `window-manager` - AeroSpace window management (deprecated)
-- `theming` - System-wide theming with Stylix
-- `fonts` - Font management and Nerd Font installation
-- `browser` - Browser configuration and management
-
-**Home modules** (user-level):
-- `shell` - Zsh with oh-my-zsh, aliases, configuration
-- `development` - Programming languages (Rust, Go, Python), editors
-- `git` - Git configuration and settings
-- `cli-tools` - Modern CLI tools (eza, bat, ripgrep, fd, zoxide, etc.)
-- `window-manager` - AeroSpace window management configuration
-- `raycast` - Raycast launcher configuration
-- `browser` - Browser configuration (Zen Browser)
-- `security` - Security tools (Bitwarden) configuration
-- `mcp` - Model Context Protocol servers for Claude Desktop
-
-### Integration Pattern
-System and user configurations are **integrated** - nix-darwin manages the Home Manager configuration:
-
-```nix
-# System config includes home-manager
-home-manager = {
-  useGlobalPkgs = true;
-  useUserPackages = true;
-  users.jrudnik = import ./home/jrudnik/home.nix;
-};
-```
-
-This ensures atomic system+user builds and consistent package versions.
-
-## Configuration Patterns
-
-### Module Usage Pattern
-All configurations use the clean module pattern:
-
-```nix
-# System config (hosts/parsley/configuration.nix)
-darwin = {
-  core.enable = true;
-  security = {
-    enable = true;
-    primaryUser = "jrudnik";
-    touchIdForSudo = true;
-  };
-  nix-settings.enable = true;
-  system-defaults.enable = true;
-};
-
-# User config (home/jrudnik/home.nix)  
-home = {
-  shell.enable = true;
-  development = {
-    enable = true;
-    languages = { rust = true; go = true; python = true; };
-    editor = "micro";
-  };
-  git = {
-    enable = true;
-    userName = "jrudnik";
-    userEmail = "john.rudnik@gmail.com";
-  };
-};
-```
-
-### Special Arguments Access
-All modules receive these arguments automatically:
-- `inputs` - Flake inputs (nixpkgs, nix-darwin, home-manager)
-- `outputs` - Flake outputs (modules, overlays)
-- Standard arguments: `config`, `pkgs`, `lib`
-
-## Adding New Configuration
-
-### New Darwin Module
-1. Create `modules/darwin/my-module/default.nix` with options/config pattern
-2. Add to `modules/darwin/default.nix` exports
-3. Import in host configuration and enable
-
-### New Home Module  
-1. Create `modules/home/my-module/default.nix` with options/config pattern
-2. Add to `modules/home/default.nix` exports
-3. Import in user configuration and enable
-
-### New Host
-1. Create `hosts/new-host/configuration.nix`
-2. Add to `flake.nix` in `darwinConfigurations`
-3. Update scripts if needed for new hostname
-
-### New User
-1. Create `home/new-user/home.nix`
-2. Add to `flake.nix` in `homeConfigurations`
-3. Add to system config's home-manager users
-
-## Common Tasks
-
-### Package Management
-- **System packages**: Only essential tools in `modules/darwin/core`
-- **User packages**: Development tools in `modules/home/development`
-- **Program config**: Use home-manager program modules when available
-
-### System Defaults
-macOS system preferences are managed declaratively in `modules/darwin/system-defaults` using nix-darwin's `system.defaults` options.
-
-### Debugging Build Issues
-1. Check syntax: `./scripts/build.sh check`
-2. Test build: `./scripts/build.sh build` 
-3. Check module options: See `docs/module-options.md`
-4. Review logs: Build output shows detailed error information
-
-### Application Availability Issues
-If applications installed via Nix aren't available after switching:
-
-1. **Restart your shell**: `refresh-env` (alias) or `exec zsh`
-2. **Reload configuration**: `reload-path` (alias) or `source ~/.zshrc`
-3. **Check PATH**: `echo $PATH` should include `/etc/profiles/per-user/$USER/bin`
-4. **Enable debugging**: Set `home.shell.debugEnvironment = true;` in your config
-5. **Manual PATH check**: `ls -la /etc/profiles/per-user/$USER/bin/` to verify binaries exist
-
-### Managing Generations
-- Quick cleanup: `./scripts/build.sh clean`
-- Interactive cleanup: `./scripts/cleanup.sh`
-- Aggressive cleanup: `./scripts/cleanup.sh aggressive`
-- View generations: `sudo nix-env --list-generations --profile /nix/var/nix/profiles/system`
-
-## Development Guidelines
-
-### Module Development
-- Use proper NixOS module pattern with `options` and `config`
-- Provide type-safe options with descriptions
-- Use `mkEnableOption` for enable flags
-- Use `mkIf cfg.enable` for conditional configuration
-- Document all options clearly
-
-### Configuration Changes
-- Test with `build` before `switch`
-- Keep configurations minimal - use module options
-- Follow the modular pattern rather than inline configuration
-- Check documentation in `docs/` for detailed examples
-
-### File Organization
-- System-level changes go in `modules/darwin/`
-- User-level changes go in `modules/home/` 
-- Host-specific settings in `hosts/hostname/`
-- User-specific settings in `home/username/`
-- Never duplicate configuration - create reusable modules instead
+*Last Updated: 2025-10-10*  
+*Version: 2.2*  
+*Changelog: Added Quick Reference, Decision Flowchart, Common Violations, MCP Tool Usage Patterns, Pre-Flight Checklist, and enhanced RULE 5.4 examples for LLM agent effectiveness*

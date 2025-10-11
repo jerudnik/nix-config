@@ -1,2 +1,0 @@
-flake.nix:110:              homebrew.taps = builtins.attrNames config.nix-homebrew.taps;
-hosts/parsley/configuration.nix:51:      casks = [ "warp" ];

@@ -1,2 +1,0 @@
-modules/darwin/window-manager/default.nix:27:    system.activationScripts.windowManager.text = ''
-modules/darwin/fonts/default.nix:114:    system.activationScripts.fonts = {
