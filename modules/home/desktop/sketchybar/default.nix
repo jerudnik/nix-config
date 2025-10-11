@@ -359,6 +359,7 @@ in
           
           # Add calendar item with popup
           sketchybar --add item calendar right \
+              --subscribe calendar mouse.clicked \
               --set calendar \
               icon=$ICON_CALENDAR \
               icon.padding_left=8 \
@@ -507,7 +508,7 @@ in
           
           # Add volume item with click for popup
           sketchybar --add item volume right \
-              --subscribe volume volume_change \
+              --subscribe volume volume_change mouse.clicked \
               --set volume \
               icon.padding_left=8 \
               icon.padding_right=0 \
