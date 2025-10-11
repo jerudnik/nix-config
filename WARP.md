@@ -21,7 +21,12 @@
 - ✅ Check: Current module structure in `modules/darwin/` and `modules/home/`
 - ✅ If exists: Use it directly, don't wrap it
 
-### 3. **Where do NSGlobalDomain writes go?**
+### 3. **Have I registered the module?**
+- ✅ Check: `modules/home/default.nix` (for user modules)
+- ✅ Check: `modules/darwin/default.nix` (for system modules)
+- ✅ If not: Add the new module to the appropriate `default.nix` file.
+
+### 4. **Where do NSGlobalDomain writes go?**
 - **ONLY** in `modules/darwin/system-settings/` (LAW 5, RULE 5.4)
 - Any keyboard, trackpad, dock, appearance settings → `system-settings` panes
 

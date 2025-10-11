@@ -6,10 +6,12 @@
     outputs.homeManagerModules.development
     outputs.homeManagerModules.git
     outputs.homeManagerModules.cli-tools
+    outputs.homeManagerModules.editors
     outputs.homeManagerModules.window-manager
     outputs.homeManagerModules.security
     outputs.homeManagerModules.ai
-    # MCP module removed - using mcp-servers-nix directly
+    outputs.homeManagerModules.raycast
+    # mcp module removed - using mcp-servers-nix directly
     
 
   ];
@@ -30,6 +32,9 @@
 
   # Module configuration
   home = {
+    editors = {
+      zed.enable = true;
+    };
     shell = {
       enable = true;
 
@@ -142,7 +147,10 @@
       # - Bitwarden integration (Alt+P)
       # Backend: AeroSpace (default implementation)
       # To use AeroSpace-specific features, configure:
-      # implementation.aerospace.extraConfig = ''...''
+    # implementation.aerospace.extraConfig = ''...''
+    };
+    raycast = {
+      enable = true;
     };
     
   };

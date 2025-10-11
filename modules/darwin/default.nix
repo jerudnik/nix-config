@@ -7,4 +7,5 @@
   homebrew = import ./homebrew/default.nix;
   theming = import ./theming/default.nix;
   fonts = import ./fonts/default.nix;
+  raycast = import ./raycast;
 }
