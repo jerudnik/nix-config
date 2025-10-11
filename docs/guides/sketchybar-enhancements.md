@@ -132,6 +132,79 @@ sketchybar = {
 };
 ```
 
+## Interactive Features (New!)
+
+### Clickable Widgets
+
+All widgets now support click interactions for quick access to system settings:
+
+| Widget | Click Action | Opens |
+|--------|-------------|-------|
+| **Workspaces** | Switch workspace | `aerospace workspace <id>` |
+| **Calendar** | Open Calendar app | Calendar.app |
+| **Battery** | Battery settings | System Settings > Battery |
+| **Volume** | Sound settings | System Settings > Sound |
+| **WiFi** | Network settings | System Settings > Network |
+| **CPU** | Activity Monitor | Activity Monitor.app |
+
+Examples:
+- Click **Calendar** widget → Calendar app opens showing current month
+- Click **Battery** widget → System Settings opens to Battery pane
+- Click **Volume** widget → System Settings opens to Sound pane
+- Click **WiFi** widget → System Settings opens to Network pane
+- Click **CPU** widget → Activity Monitor opens to view processes
+- Click any **workspace number** → Instantly switch to that workspace
+
+### Visual Enhancement: Widget Brackets
+
+Each widget now has:
+- **Subtle background** (matches Stylix theme)
+- **Rounded corners** (6px radius)
+- **Padding** on both sides (5px each)
+- **Consistent height** (26px)
+
+This creates visual separation between widgets, similar to modern status bar designs.
+
+**Before:**
+```
+│ [Calendar: Mon Jan 01 12:00][Battery: 100%][WiFi: MyNetwork] │
+                    ↓
+```
+
+**After:**
+```
+│ [  Calendar: Mon Jan 01 12:00  ] [  Battery: 100%  ] [  WiFi: MyNetwork  ] │
+    └─ Background + padding ─┘       └─ Each widget separated ─┘
+```
+
+### Fixed: WiFi Status Detection
+
+**Problem:** WiFi widget sometimes showed "Disconnected" even when connected.
+
+**Solution:** Now checks for an actual IP address instead of just SSID:
+
+```bash
+# Old method (unreliable):
+SSID=$(networksetup -getairportnetwork en0)
+# Could return empty even when connected
+
+# New method (reliable):
+IP=$(ipconfig getifaddr en0 2>/dev/null)
+if [ -n "$IP" ]; then
+  # Has IP = truly connected
+  SSID=$(networksetup -getairportnetwork en0)
+else
+  # No IP = truly disconnected
+fi
+```
+
+The widget now:
+1. Checks for IP address first (reliable indicator)
+2. Only shows "Disconnected" when truly offline
+3. Displays SSID when connected
+4. Subscribes to `wifi_change` and `system_woke` events
+5. Updates automatically after sleep/wake
+
 ## Benefits
 
 1. **Clean Workspace**: No duplicate menu bars cluttering the screen
@@ -139,8 +212,10 @@ sketchybar = {
 3. **Better Integration**: SketchyBar matches your aesthetic and shows relevant info
 4. **Workspace Awareness**: Always visible workspace indicators
 5. **System Monitoring**: At-a-glance CPU, WiFi, volume, battery status
-6. **Interactive**: Volume widget responds to clicks
-7. **Seamless**: Windows respect the status bar location (32px top gap)
+6. **🆕 Fully Interactive**: All widgets respond to clicks for quick actions
+7. **🆕 Visual Polish**: Bracketed widgets with padding and backgrounds
+8. **🆕 Reliable WiFi**: Fixed detection shows accurate connection status
+9. **Seamless**: Windows respect the status bar location (32px top gap)
 
 ## Customization
 

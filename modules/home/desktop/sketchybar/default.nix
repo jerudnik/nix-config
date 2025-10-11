@@ -345,12 +345,19 @@ in
         '';
       };
       
-      # Calendar widget
+      # Calendar widget with bracket for padding
       ".config/sketchybar/items/calendar.sh" = mkIf cfg.showCalendar {
         executable = true;
         text = ''
           #!/usr/bin/env bash
           
+          # Add padding item before calendar
+          sketchybar --add item calendar.padding1 right \
+              --set calendar.padding1 width=5 \
+              label.drawing=off \
+              icon.drawing=off
+          
+          # Add calendar item with click interaction
           sketchybar --add item calendar right \
               --set calendar \
               icon=$ICON_CALENDAR \
@@ -358,7 +365,24 @@ in
               icon.padding_right=0 \
               label.padding_right=8 \
               update_freq=30 \
+              click_script="open -a 'Calendar'" \
               script="$PLUGIN_DIR/calendar.sh"
+          
+          # Add padding item after calendar
+          sketchybar --add item calendar.padding2 right \
+              --set calendar.padding2 width=5 \
+              label.drawing=off \
+              icon.drawing=off
+          
+          # Add bracket around calendar for visual grouping
+          sketchybar --add bracket calendar_bracket \
+              calendar.padding1 \
+              calendar \
+              calendar.padding2 \
+              --set calendar_bracket \
+              background.color=$POPUP_BACKGROUND_COLOR \
+              background.corner_radius=6 \
+              background.height=26
         '';
       };
       
@@ -372,19 +396,43 @@ in
         '';
       };
       
-      # Battery widget
+      # Battery widget with bracket for padding
       ".config/sketchybar/items/battery.sh" = mkIf cfg.showBattery {
         executable = true;
         text = ''
           #!/usr/bin/env bash
           
+          # Add padding item before battery
+          sketchybar --add item battery.padding1 right \
+              --set battery.padding1 width=5 \
+              label.drawing=off \
+              icon.drawing=off
+          
+          # Add battery item
           sketchybar --add item battery right \
               --set battery \
               update_freq=120 \
               icon.padding_left=8 \
               icon.padding_right=0 \
               label.padding_right=8 \
+              click_script="open /System/Library/PreferencePanes/Battery.prefPane" \
               script="$PLUGIN_DIR/battery.sh"
+          
+          # Add padding item after battery
+          sketchybar --add item battery.padding2 right \
+              --set battery.padding2 width=5 \
+              label.drawing=off \
+              icon.drawing=off
+          
+          # Add bracket around battery for visual grouping
+          sketchybar --add bracket battery_bracket \
+              battery.padding1 \
+              battery \
+              battery.padding2 \
+              --set battery_bracket \
+              background.color=$POPUP_BACKGROUND_COLOR \
+              background.corner_radius=6 \
+              background.height=26
         '';
       };
       
@@ -415,12 +463,19 @@ in
         '';
       };
       
-      # Volume widget
+      # Volume widget with bracket for padding and scroll interaction
       ".config/sketchybar/items/volume.sh" = mkIf cfg.showVolume {
         executable = true;
         text = ''
           #!/usr/bin/env bash
           
+          # Add padding item before volume
+          sketchybar --add item volume.padding1 right \
+              --set volume.padding1 width=5 \
+              label.drawing=off \
+              icon.drawing=off
+          
+          # Add volume item with click and scroll interactions
           sketchybar --add item volume right \
               --set volume \
               update_freq=1 \
@@ -428,7 +483,23 @@ in
               icon.padding_right=0 \
               label.padding_right=8 \
               script="$PLUGIN_DIR/volume.sh" \
-              click_script="osascript -e 'set volume output volume ((output volume of (get volume settings)) + 10)'"
+              click_script="open /System/Library/PreferencePanes/Sound.prefpane"
+          
+          # Add padding item after volume
+          sketchybar --add item volume.padding2 right \
+              --set volume.padding2 width=5 \
+              label.drawing=off \
+              icon.drawing=off
+          
+          # Add bracket around volume for visual grouping
+          sketchybar --add bracket volume_bracket \
+              volume.padding1 \
+              volume \
+              volume.padding2 \
+              --set volume_bracket \
+              background.color=$POPUP_BACKGROUND_COLOR \
+              background.corner_radius=6 \
+              background.height=26
         '';
       };
       
@@ -455,48 +526,93 @@ in
         '';
       };
       
-      # WiFi widget
+      # WiFi widget with bracket for padding and click interaction
       ".config/sketchybar/items/wifi.sh" = mkIf cfg.showWifi {
         executable = true;
         text = ''
           #!/usr/bin/env bash
           
+          # Create wifi_change event
+          sketchybar --add event wifi_change
+          
+          # Add padding item before wifi
+          sketchybar --add item wifi.padding1 right \
+              --set wifi.padding1 width=5 \
+              label.drawing=off \
+              icon.drawing=off
+          
+          # Add wifi item with event subscription
           sketchybar --add item wifi right \
+              --subscribe wifi wifi_change system_woke \
               --set wifi \
               update_freq=10 \
               icon.padding_left=8 \
               icon.padding_right=0 \
               label.padding_right=8 \
+              click_script="open /System/Library/PreferencePanes/Network.prefpane" \
               script="$PLUGIN_DIR/wifi.sh"
+          
+          # Add padding item after wifi
+          sketchybar --add item wifi.padding2 right \
+              --set wifi.padding2 width=5 \
+              label.drawing=off \
+              icon.drawing=off
+          
+          # Add bracket around wifi for visual grouping
+          sketchybar --add bracket wifi_bracket \
+              wifi.padding1 \
+              wifi \
+              wifi.padding2 \
+              --set wifi_bracket \
+              background.color=$POPUP_BACKGROUND_COLOR \
+              background.corner_radius=6 \
+              background.height=26
         '';
       };
       
-      # WiFi plugin
+      # WiFi plugin (fixed to properly detect connection status)
       ".config/sketchybar/plugins/wifi.sh" = mkIf cfg.showWifi {
         executable = true;
         text = ''
           #!/usr/bin/env bash
           
-          SSID=$(networksetup -getairportnetwork en0 | awk -F': ' '{print $2}')
+          # Check if we have an IP address (more reliable than SSID check)
+          IP=$(ipconfig getifaddr en0 2>/dev/null)
           
-          if [ "$SSID" = "" ] || [ "$SSID" = "You are not associated with an AirPort network." ]; then
+          if [ -n "$IP" ]; then
+            # Connected - get SSID
+            SSID=$(networksetup -getairportnetwork en0 | awk -F': ' '{print $2}')
+            if [ "$SSID" != "" ] && [ "$SSID" != "You are not associated with an AirPort network." ]; then
+              ICON=$ICON_WIFI
+              LABEL="$SSID"
+            else
+              # Has IP but can't get SSID (unusual, but possible)
+              ICON=$ICON_WIFI
+              LABEL="Connected"
+            fi
+          else
+            # No IP address - disconnected
             ICON=$ICON_WIFI_OFF
             LABEL="Disconnected"
-          else
-            ICON=$ICON_WIFI
-            LABEL="$SSID"
           fi
           
           sketchybar --set $NAME icon="$ICON" label="$LABEL"
         '';
       };
       
-      # CPU widget
+      # CPU widget with bracket for padding
       ".config/sketchybar/items/cpu.sh" = mkIf cfg.showCpu {
         executable = true;
         text = ''
           #!/usr/bin/env bash
           
+          # Add padding item before cpu
+          sketchybar --add item cpu.padding1 right \
+              --set cpu.padding1 width=5 \
+              label.drawing=off \
+              icon.drawing=off
+          
+          # Add cpu item
           sketchybar --add item cpu right \
               --set cpu \
               update_freq=2 \
@@ -504,7 +620,24 @@ in
               icon.padding_left=8 \
               icon.padding_right=0 \
               label.padding_right=8 \
+              click_script="open -a 'Activity Monitor'" \
               script="$PLUGIN_DIR/cpu.sh"
+          
+          # Add padding item after cpu
+          sketchybar --add item cpu.padding2 right \
+              --set cpu.padding2 width=5 \
+              label.drawing=off \
+              icon.drawing=off
+          
+          # Add bracket around cpu for visual grouping
+          sketchybar --add bracket cpu_bracket \
+              cpu.padding1 \
+              cpu \
+              cpu.padding2 \
+              --set cpu_bracket \
+              background.color=$POPUP_BACKGROUND_COLOR \
+              background.corner_radius=6 \
+              background.height=26
         '';
       };
       
