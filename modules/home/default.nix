@@ -9,6 +9,7 @@
   window-manager = import ./window-manager/default.nix;
   security = import ./security/default.nix;
   ai = import ./ai/default.nix;
+  syncthing = import ./syncthing/default.nix;
   # mcp module removed - using mcp-servers-nix directly
   
 

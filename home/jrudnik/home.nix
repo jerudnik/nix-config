@@ -11,6 +11,7 @@
     outputs.homeManagerModules.security
     outputs.homeManagerModules.ai
     outputs.homeManagerModules.raycast
+    outputs.homeManagerModules.syncthing
     # mcp module removed - using mcp-servers-nix directly
     
 
@@ -151,6 +152,12 @@
     };
     raycast = {
       enable = true;
+    };
+    
+    syncthing = {
+      enable = true;
+      autoStart = true;  # Start automatically at login
+      openWebUI = false; # Don't auto-open web UI (access at http://127.0.0.1:8384)
     };
     
   };

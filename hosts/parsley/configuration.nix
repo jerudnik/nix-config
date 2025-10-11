@@ -34,7 +34,8 @@
     # Productivity & Documents
     skimpdf         # PDF reader and note-taker for macOS
     
-    # Media
+    # Media & Entertainment
+    psst            # Fast Spotify client
     vlc-bin-universal  # VLC media player (universal binary for macOS)
     
     # Security & Privacy
@@ -131,12 +132,13 @@
           
           # Dock applications (customize these to your preferences)
           persistentApps = [
-            "/Applications/Nix Apps/Emacs.app"
-            "/Applications/Nix Apps/Zed.app"
-            "/Applications/Nix Apps/Alacritty.app"
-            "/Applications/Nix Apps/Zen Browser (Twilight).app"
+            "/Applications/Nimble Commander.app"
             "/Applications/Nix Apps/Thunderbird.app"
-            "/System/Applications/Calendar.app"
+            "/Applications/Nix Apps/Zen Browser (Twilight).app"
+            "/Applications/Nix Apps/Warp.app"
+            "/Applications/brain.fm.app"
+            "/Applications/Nix Apps/Psst.app"
+            "/Applications/Nix Apps/VLC.app"
             "/Applications/Nix Apps/Bitwarden.app"
             "/System/Applications/System Settings.app"
           ];
@@ -168,10 +170,12 @@
       enable = true;
       # Homebrew casks - packages not available or broken in nixpkgs for aarch64-darwin
       casks = [
-        "beeper"   # Universal chat client (not in nixpkgs for Apple Silicon)
-        "calibre"  # eBook manager (marked broken in nixpkgs)
-        "claude"   # Anthropic's Claude Desktop
-        "jabref"   # Reference manager (not in nixpkgs for Apple Silicon)
+        "beeper"          # Universal chat client (not in nixpkgs for Apple Silicon)
+        "brainfm"         # Focus music app
+        "calibre"         # eBook manager (marked broken in nixpkgs)
+        "claude"          # Anthropic's Claude Desktop
+        "jabref"          # Reference manager (not in nixpkgs for Apple Silicon)
+        "nimble-commander" # Dual-pane file manager
       ];
     };
     
