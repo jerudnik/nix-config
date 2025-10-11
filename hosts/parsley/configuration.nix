@@ -12,41 +12,71 @@
     outputs.darwinModules.raycast
   ];
 
-  # GUI Applications - Installed at system level per WARP LAW 4.3
+  # Applications - Installed at system level per WARP LAW 4.3
   # "If it has a .app bundle, nix-darwin should install it"
   environment.systemPackages = with pkgs; [
-    alacritty
-    bitwarden       # Password manager GUI (configuration via home-manager)
+    # === GUI Applications ===
+    
+    # Editors & IDEs
     emacs
-    thunderbird     # Email client (v143.0.1 wrapped for macOS)
-    warp-terminal
     zed-editor
+    
+    # Terminals
+    alacritty
+    warp-terminal
+    
+    # Browsers
     zen-browser
-    # CLI tools
-    eza
-    zoxide
-    fzf
-    bat
-    ripgrep
-    fd
-    btop
-    direnv
-    atuin
-    mcfly
-    pay-respects
-    delta
+    
+    # Communication
+    thunderbird     # Email client
+    
+    # Productivity & Documents
+    skimpdf         # PDF reader and note-taker for macOS
+    
+    # Media
+    vlc-bin-universal  # VLC media player (universal binary for macOS)
+    
+    # Security & Privacy
+    bitwarden       # Password manager (configuration via home-manager)
+    
+    # Utilities
+    flameshot       # Screenshot tool with annotations
+    syncthing       # Continuous file synchronization
+    
+    # === CLI Tools ===
+    
+    # Modern Unix replacements
+    eza             # Modern ls
+    zoxide          # Smart cd
+    fzf             # Fuzzy finder
+    bat             # Better cat
+    ripgrep         # Better grep
+    fd              # Better find
+    btop            # System monitor
+    
+    # Shell enhancements
+    direnv          # Environment switcher
+    atuin           # Shell history
+    mcfly           # History search
+    pay-respects    # Error correction
+    delta           # Better diff
+    
     # Development tools
     rustc
     cargo
     go
     python3
     nodejs
-    micro
-    neovim
-    tree
-    jq
-    lazygit
-    gh
+    micro           # Terminal text editor
+    neovim          # Vim-based editor
+    tree            # Directory visualization
+    jq              # JSON processor
+    lazygit         # Git TUI
+    gh              # GitHub CLI
+    
+    # Image processing
+    imagemagick     # Image manipulation CLI
   ];
   networking = {
     hostName = "parsley";
@@ -136,8 +166,13 @@
     
     homebrew = {
       enable = true;
-      # Homebrew casks
-      casks = [ "claude" ];
+      # Homebrew casks - packages not available or broken in nixpkgs for aarch64-darwin
+      casks = [
+        "beeper"   # Universal chat client (not in nixpkgs for Apple Silicon)
+        "calibre"  # eBook manager (marked broken in nixpkgs)
+        "claude"   # Anthropic's Claude Desktop
+        "jabref"   # Reference manager (not in nixpkgs for Apple Silicon)
+      ];
     };
     
     theming = {
