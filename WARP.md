@@ -326,7 +326,7 @@ darwin.system-settings = {
 - Previously had separate `keyboard` module writing to `NSGlobalDomain`
 - Caused conflicts with other modules also writing to `NSGlobalDomain`  
 - Resolved by merging ALL System Settings into unified `system-settings` module
-- See `docs/darwin-modules-conflicts.md` for complete analysis and resolution
+- See `docs/reference/darwin-modules-conflicts.md` for complete analysis and resolution
 
 **Current Documented Exceptions:**
 
@@ -335,11 +335,11 @@ darwin.system-settings = {
   - **Status**: ✅ Working via nixpkgs `warp-terminal` package
   - **Location**: Home Manager user packages (WARP-compliant per RULE 4.3)
   - **Version strategy**: nixpkgs may lag ~1 week; acceptable due to built-in auto-update
-  - **Detail**: See `docs/exceptions.md` for complete technical justification
+  - **Detail**: See `docs/reference/exceptions.md` for complete technical justification
 - **Raycast**: Essential productivity launcher, no suitable FOSS alternative
-  - **Detail**: See `docs/exceptions.md`
+  - **Detail**: See `docs/reference/exceptions.md`
 - **gh-copilot**: GitHub Copilot CLI, official GitHub tool
-  - **Detail**: See `docs/exceptions.md`
+  - **Detail**: See `docs/reference/exceptions.md`
 
 #### **Homebrew Casks**
 - **Claude Desktop**: Not available in nixpkgs as of 2025-10-06
@@ -387,11 +387,11 @@ modules/
 
 **RULE 7.1: Mandatory Documentation Reading**
 - ❌ **NEVER** make changes without reading documentation first
-- ✅ **ALWAYS** review these files before making changes:
-  - `docs/architecture.md` - System architecture and design philosophy
-  - `docs/modular-architecture.md` - Advanced module patterns
-  - `docs/workflow.md` - Complete development workflow
-  - `docs/module-options.md` - Available module options reference
+- ✅ ALWAYS review these files before making changes:
+  - `docs/reference/architecture.md` - System architecture and design philosophy
+  - `docs/guides/modular-architecture.md` - Advanced module patterns
+  - `docs/guides/workflow.md` - Complete development workflow
+  - `docs/reference/module-options.md` - Available module options reference
   - `docs/getting-started.md` - Setup and configuration guide
 
 **RULE 7.2: Git and Version Control Standards**
@@ -428,6 +428,27 @@ modules/
 - ❌ **NEVER** hardcode paths or assume specific system state
 - ✅ **ALWAYS** ensure configurations work on fresh installations
 - ✅ **ALWAYS** test reproducibility across different machines when possible
+
+---
+
+## LAW 9: INTELLIGENT HOME-MANAGER CONFIGURATION
+
+**RULE 9.1: Research Before Implementing**
+- ❌ **NEVER** assume a single configuration method fits all scenarios. Different tools are best managed in different ways.
+- ✅ **ALWAYS** use MCP servers (e.g., `search_code` on GitHub, web searches) to research best practices for managing a specific application with Home Manager before writing new code.
+- ✅ **PRINCIPLE**: Leverage community knowledge. Others have likely already solved the problem.
+
+**RULE 9.2: Choose the Right Tool for the Job**
+- ❌ **NEVER** force a configuration method where it doesn't fit (e.g., templating a complex binary file).
+- ✅ **ALWAYS** select the appropriate Home Manager feature for the task. The table below provides a general guide:
+
+| Method                               | Best For...                                                                 | Example Use Case                                                        |
+| ------------------------------------ | --------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `home.file`                          | Managing static, self-contained dotfiles or simple string-based configs.    | A static `.vimrc` file, a simple `starship.toml` written as a string.     |
+| Structured Formats (`pkgs.formats`)  | Generating structured data like JSON, TOML, or YAML from native Nix code.   | Configuring alacritty (YAML), helix (TOML), or VS Code `settings.json`. |
+| Activation Scripts (`home.activation`) | Running one-time setup commands or imperative actions after a build.        | Initializing a `gpg` key, cloning a git repo, creating a database schema. |
+| Environment Variables (`home.sessionVariables`) | Configuring tools that read their settings from the environment.                | Setting `EDITOR`, `LANG`, API keys, or modifying your `$PATH`.          |
+| Templating (`pkgs.substituteAll`)    | Populating mostly-static config files with a few dynamic values from Nix.   | A `.gitconfig` with your name/email, a script pointing to a Nix-managed path. |
 
 ---
 
@@ -632,7 +653,7 @@ Agent thinks:
 1. Search nixpkgs: "nixpkgs neovim home-manager"
 2. Find: programs.neovim exists in home-manager ✅
 3. Decision: Use programs.neovim directly, don't create custom module
-4. Read: docs/module-options.md to see if already configured
+4. Read: docs/reference/module-options.md to see if already configured
 5. Propose: Enable programs.neovim in home configuration
 ```
 
@@ -644,8 +665,8 @@ Agent thinks:
 
 ```bash
 # Step 1: Read core documentation
-MCP filesystem: Read docs/architecture.md
-MCP filesystem: Read docs/modular-architecture.md
+MCP filesystem: Read docs/reference/architecture.md
+MCP filesystem: Read docs/guides/modular-architecture.md
 
 # Step 2: Examine current structure
 MCP filesystem: List modules/darwin/
@@ -717,7 +738,7 @@ Check: Syntax is valid Nix
 Check: No conflicting options
 
 # Step 3: Confirm with documentation
-MCP filesystem: Read docs/module-options.md
+MCP filesystem: Read docs/reference/module-options.md
 Verify: Proposed options follow patterns
 ```
 
@@ -736,17 +757,17 @@ This configuration includes the following MCP servers for agent use:
 ### Essential Documentation for Agents
 
 **📋 Priority Documents (agents should read these first):**
-- **[`docs/architecture.md`](docs/architecture.md)** - System architecture and design philosophy
-- **[`docs/modular-architecture.md`](docs/modular-architecture.md)** - Advanced module patterns and examples  
-- **[`docs/workflow.md`](docs/workflow.md)** - Complete development workflow guide
-- **[`docs/module-options.md`](docs/module-options.md)** - All available module options reference
+- **[`docs/reference/architecture.md`](docs/reference/architecture.md)** - System architecture and design philosophy
+- **[`docs/guides/modular-architecture.md`](docs/guides/modular-architecture.md)** - Advanced module patterns and examples  
+- **[`docs/guides/workflow.md`](docs/guides/workflow.md)** - Complete development workflow guide
+- **[`docs/reference/module-options.md`](docs/reference/module-options.md)** - All available module options reference
 - **[`docs/getting-started.md`](docs/getting-started.md)** - Setup and configuration guide
-- **[`docs/exceptions.md`](docs/exceptions.md)** - Current exceptions to WARP laws with justifications
+- **[`docs/reference/exceptions.md`](docs/reference/exceptions.md)** - Current exceptions to WARP laws with justifications
 
 **🤖 AI Tools Documentation:**
-- **[`docs/ai-tools.md`](docs/ai-tools.md)** - Complete AI tools integration guide (Claude, Gemini, Copilot, Fabric)
-- **[`docs/mcp.md`](docs/mcp.md)** - MCP (Model Context Protocol) server configuration
-- **[`docs/fabric-ai-integration.md`](docs/fabric-ai-integration.md)** - Fabric AI patterns and workflows
+- **[`docs/guides/ai-tools.md`](docs/guides/ai-tools.md)** - Complete AI tools integration guide (Claude, Gemini, Copilot, Fabric)
+- **[`docs/reference/mcp.md`](docs/reference/mcp.md)** - MCP (Model Context Protocol) server configuration
+- **[`docs/reference/fabric-ai-integration.md`](docs/reference/fabric-ai-integration.md)** - Fabric AI patterns and workflows
 - **[`modules/home/ai/patterns/fabric/README.md`](modules/home/ai/patterns/fabric/README.md)** - Custom Fabric patterns reference
 
 **🏷️ Agent Usage Tip**: Use MCP filesystem tools to access these documents directly for the most current information
@@ -764,6 +785,7 @@ Before proposing any changes, verify:
 - [ ] **Read documentation**: Reviewed relevant docs in docs/ directory
 - [ ] **MCP tools used**: Used filesystem/git MCP to understand current state
 - [ ] **Build plan**: Prepared to test with `./scripts/build.sh build` first
+- [ ] **Staged new files**: If new files were created, ensure they are staged with `git add .` before building.
 - [ ] **Single logical change**: Change represents one coherent modification
 - [ ] **Commit message**: Planned conventional commit format message
 - [ ] **No violations**: Double-checked against Common Violations section above
@@ -777,7 +799,7 @@ Before proposing any changes, verify:
 ✅ Module location: home-manager (user CLI tool)
 ✅ NSGlobalDomain: No system settings involved
 ✅ Package boundary: CLI tool → home.packages (but programs.ripgrep handles this)
-✅ Read docs: Checked module-options.md
+✅ Read docs: Checked docs/reference/module-options.md
 ✅ MCP used: Listed modules/home/ to verify no existing ripgrep module
 ✅ Build plan: Will suggest testing with build script
 ✅ Single change: Just enabling ripgrep
@@ -796,7 +818,7 @@ This is not optional guidance. WARP.md rules are mandatory requirements. Violati
 **When in doubt:**
 1. Read the relevant LAW in this document
 2. Check existing modules for patterns
-3. Consult `docs/architecture.md` for philosophy
+3. Consult `docs/reference/architecture.md` for philosophy
 4. Use MCP tools to understand current implementation
 5. Review the Common Violations section above
 6. Complete the Pre-Flight Checklist

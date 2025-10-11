@@ -18,6 +18,7 @@
     alacritty
     bitwarden       # Password manager GUI (configuration via home-manager)
     emacs
+    thunderbird     # Email client (v143.0.1 wrapped for macOS)
     warp-terminal
     zed-editor
     zen-browser
