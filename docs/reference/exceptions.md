@@ -29,6 +29,60 @@ Packages that require unfree licensing exceptions with technical justification:
 
 ---
 
+### **HOMEBREW EXCEPTIONS (LAW 5 Exceptions)**
+
+Applications installed via Homebrew due to nixpkgs limitations on aarch64-darwin:
+
+#### ✅ **Claude Desktop** - Homebrew Cask
+- **Package:** `claude`
+- **Reason:** Not available in nixpkgs as of 2025-10-11
+- **Alternative Analysis:**
+  - **nixpkgs status**: No claude-desktop package exists
+  - **upstream availability**: Official Anthropic releases via direct download and Homebrew cask only
+  - **packaging complexity**: Electron app with frequent updates, no community packaging effort
+- **Technical Justification:** Homebrew cask provides official, maintained distribution
+- **Integration:** System-level via nix-homebrew + user MCP config via Home Manager
+- **Reproducibility:** MCP servers use nixpkgs/mcp-servers-nix, only GUI uses Homebrew
+- **Review Date:** Next: 2025-04-11
+- **Status:** ✅ Approved
+
+#### ✅ **Beeper** - Homebrew Cask
+- **Package:** `beeper`
+- **Reason:** Not available for aarch64-darwin in nixpkgs
+- **Alternative Analysis:**
+  - **nixpkgs status**: Package exists but only for x86_64-linux platform
+  - **platform limitation**: `package.meta.platforms = ["x86_64-linux"]`
+  - **Error message**: "Package 'beeper-4.1.186' is not available on the requested hostPlatform: aarch64-darwin"
+- **Technical Justification:** Universal chat client (Matrix, Discord, Slack, etc.) with no macOS Apple Silicon support in nixpkgs
+- **Justification:** Essential for unified communications across multiple platforms
+- **Review Date:** Next: 2025-04-11
+- **Status:** ✅ Approved
+
+#### ✅ **Calibre** - Homebrew Cask
+- **Package:** `calibre`
+- **Reason:** Marked as broken in nixpkgs
+- **Alternative Analysis:**
+  - **nixpkgs status**: Package exists but marked as broken for aarch64-darwin
+  - **Error message**: "Package 'calibre-8.10.0' is marked as broken, refusing to evaluate"
+  - **packaging issue**: Build or runtime issues on Apple Silicon
+- **Technical Justification:** eBook management and conversion tool with broken nixpkgs build
+- **Justification:** Essential for academic/research document management
+- **Review Date:** Next: 2025-04-11 (check if nixpkgs issue resolved)
+- **Status:** ✅ Approved
+
+#### ✅ **Jabref** - Homebrew Cask
+- **Package:** `jabref`
+- **Reason:** Not available for aarch64-darwin in nixpkgs
+- **Alternative Analysis:**
+  - **nixpkgs status**: Package exists in search but not available for aarch64-darwin
+  - **platform limitation**: Platform restrictions prevent Apple Silicon installation
+- **Technical Justification:** BibTeX reference manager not packaged for macOS ARM64
+- **Justification:** Essential for academic/research bibliography management
+- **Review Date:** Next: 2025-04-11
+- **Status:** ✅ Approved
+
+---
+
 ## 🔄 **Exception Review Process**
 
 ### **Quarterly Review Schedule**
@@ -82,8 +136,8 @@ Packages that require unfree licensing exceptions with technical justification:
 ## 🎯 **Compliance Goals**
 
 ### **Target Metrics**
-- **Unfree Packages:** ≤ 5 packages maximum
-- **Homebrew Exceptions:** ≤ 2 applications maximum  
+- **Unfree Packages:** ≤ 5 packages maximum (Current: 2)
+- **Homebrew Exceptions:** ≤ 5 applications maximum (Current: 4)  
 - **Review Compliance:** 100% exceptions reviewed quarterly
 - **Documentation Currency:** All exceptions documented within 48 hours
 
@@ -116,6 +170,6 @@ Document previously resolved exceptions to prevent regression:
 
 ---
 
-**Last Updated:** 2025-10-07  
-**Next Review Due:** 2025-04-04  
+**Last Updated:** 2025-10-11  
+**Next Review Due:** 2025-04-11  
 **Maintained By:** Configuration Management
