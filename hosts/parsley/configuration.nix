@@ -35,7 +35,6 @@
     skimpdf         # PDF reader and note-taker for macOS
     
     # Media & Entertainment
-    psst            # Fast Spotify client
     vlc-bin-universal  # VLC media player (universal binary for macOS)
     
     # Security & Privacy
@@ -132,15 +131,15 @@
           
           # Dock applications (customize these to your preferences)
           persistentApps = [
-            "/Applications/Nimble Commander.app"
-            "/Applications/Nix Apps/Thunderbird.app"
-            "/Applications/Nix Apps/Zen Browser (Twilight).app"
-            "/Applications/Nix Apps/Warp.app"
-            "/Applications/brain.fm.app"
-            "/Applications/Nix Apps/Psst.app"
-            "/Applications/Nix Apps/VLC.app"
-            "/Applications/Nix Apps/Bitwarden.app"
-            "/System/Applications/System Settings.app"
+            "/Applications/Nimble Commander.app"                          # Homebrew
+            "/Applications/Nix Apps/Thunderbird.app"                      # System (nix-darwin)
+            "/Applications/Nix Apps/Zen Browser (Twilight).app"           # System (nix-darwin)
+            "/Applications/Nix Apps/Warp.app"                             # System (nix-darwin)
+            "/Applications/Brain.fm.app"                                  # Homebrew
+            "${config.users.users.jrudnik.home}/Applications/Home Manager Apps/Psst.app"  # Home Manager
+            "/Applications/Nix Apps/VLC.app"                              # System (nix-darwin)
+            "/Applications/Nix Apps/Bitwarden.app"                        # System (nix-darwin)
+            "/System/Applications/System Settings.app"                    # macOS
           ];
           
           # Dock folders (customize these to your preferences)

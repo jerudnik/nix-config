@@ -12,6 +12,7 @@
     outputs.homeManagerModules.ai
     outputs.homeManagerModules.raycast
     outputs.homeManagerModules.syncthing
+    outputs.homeManagerModules.thunderbird
     # mcp module removed - using mcp-servers-nix directly
     
 
@@ -22,6 +23,11 @@
     username = "jrudnik";
     homeDirectory = "/Users/jrudnik";
     stateVersion = "25.05";
+    
+    # User-level GUI applications
+    packages = with pkgs; [
+      psst  # Fast Spotify client with native GUI
+    ];
   };
 
   # Let Home Manager install and manage itself
@@ -34,7 +40,22 @@
   # Module configuration
   home = {
     editors = {
-      zed.enable = true;
+      zed = {
+        enable = true;
+        extensions = [
+          "nix"              # Nix language support
+          "toml"             # TOML syntax highlighting
+          "dockerfile"       # Docker support
+          "html"             # HTML support
+          "make"             # Makefile support
+          "markdown"         # Markdown preview
+          "yaml"             # YAML syntax
+          "rust"             # Rust language (if using)
+        ];
+        enableGitHubCopilot = false;  # Set to true + manual OAuth if you use Copilot
+        theme = "Gruvbox Dark Hard";   # Matches your system theme
+        fontSize = 14;
+      };
     };
     shell = {
       enable = true;
@@ -158,6 +179,38 @@
       enable = true;
       autoStart = true;  # Start automatically at login
       openWebUI = false; # Don't auto-open web UI (access at http://127.0.0.1:8384)
+    };
+    
+    thunderbird = {
+      enable = true;
+      
+      # Define a default profile
+      profiles.default = {
+        isDefault = true;
+        settings = {
+          # Add any custom Thunderbird preferences here
+          # Example: "mail.server.default.check_new_mail" = true;
+        };
+      };
+      
+      # Privacy settings
+      privacy = {
+        enableDoNotTrack = true;
+        disableTelemetry = true;
+      };
+      
+      # Features
+      features = {
+        enableOpenPGP = true;
+        enableCalendar = true;
+        compactFolders = true;
+      };
+      
+      # Appearance
+      appearance = {
+        theme = "auto";  # Follows system light/dark mode
+        fontSize = 14;
+      };
     };
     
   };

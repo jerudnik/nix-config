@@ -10,6 +10,7 @@
   security = import ./security/default.nix;
   ai = import ./ai/default.nix;
   syncthing = import ./syncthing/default.nix;
+  thunderbird = import ./thunderbird/default.nix;
   # mcp module removed - using mcp-servers-nix directly
   
 
