@@ -171,6 +171,7 @@ RULE 4.3: Installation vs. Configuration Boundaries
 - ✅ ALWAYS install packages at the system-level via `environment.systemPackages`
 - ✅ ALWAYS manage user-specific configuration via `home-manager` modules
 - ✅ PRINCIPLE: The system provides the tools; the user configures them.
+- ✅ CLARIFICATION: CLI, TUI, and GUI tools are ALL installed system-wide; home-manager handles dotfiles and user-specific settings.
 
 ---
 
@@ -191,14 +192,20 @@ RULE 4.3: Installation vs. Configuration Boundaries
 - ✅ **ALWAYS** include specific error messages or technical limitations
 - ✅ **ALWAYS** revisit exceptions periodically as nixpkgs evolves
 
-**RULE 5.3: Reproducibility Justification**
+**RULE 5.3: Unfree Package Policy**
+- ✅ **BLANKET ALLOWUNFREE PERMITTED**: This configuration uses `nixpkgs.config.allowUnfree = true` for simplicity
+- ✅ **CENTRALIZED CONFIGURATION**: Unfree config set at flake level for all hosts
+- ✅ **DOCUMENTED EXCEPTIONS**: All unfree packages documented in `docs/reference/exceptions.md`
+- ✅ **PRINCIPLE**: Pragmatic unfree policy balances security awareness with developer productivity
+
+**RULE 5.4: Reproducibility Justification**
 - ❌ **NEVER** sacrifice reproducibility for convenience
 - ❌ **NEVER** use "it's easier" as justification for non-nixpkgs sources
 - ✅ **ALWAYS** prioritize hermetic builds over installation simplicity
 - ✅ **ALWAYS** ensure configurations work from clean state
 - ✅ **PRINCIPLE**: Single source of truth enables reproducible deployments
 
-**RULE 5.4: System Settings Domain Authority**
+**RULE 5.5: System Settings Domain Authority**
 - ❌ **NEVER** write to `NSGlobalDomain` from any module except `darwin/system-settings`
 - ❌ **NEVER** create separate modules for keyboard, trackpad, appearance, or other System Settings panes
 - ❌ **NEVER** duplicate NSGlobalDomain keys between nix-darwin and home-manager
@@ -206,7 +213,7 @@ RULE 4.3: Installation vs. Configuration Boundaries
 - ✅ **ALWAYS** organize settings by System Settings pane (Keyboard, Dock, Appearance, etc.)
 - ✅ **PRINCIPLE**: Single source of truth for NSGlobalDomain prevents cache corruption and blank System Settings panes
 
-**RULE 5.4 Examples:**
+**RULE 5.5 Examples:**
 
 **❌ WRONG - Multiple Modules Writing to NSGlobalDomain:**
 ```nix

@@ -229,33 +229,53 @@ darwinSystem {
 
 ## Package Management Strategy
 
-### System Packages (Minimal)
+### System Packages (Comprehensive)
 ```nix
 # hosts/parsley/configuration.nix
 environment.systemPackages = with pkgs; [
-  git    # Essential for system
-  curl   # Required for scripts
-  wget   # Basic network tool
+  # Essential CLI tools
+  git curl wget
+  
+  # Development tools
+  rustc cargo go python3 nodejs
+  micro neovim
+  
+  # Modern CLI utilities
+  eza zoxide fzf bat ripgrep fd
+  btop tree jq lazygit gh
+  
+  # GUI applications
+  emacs zed-editor alacritty warp-terminal
+  zen-browser thunderbird bitwarden
+  
+  # Can be extensive - all tools installed here
 ];
 ```
 
-**Philosophy**: Only essential tools that need system-wide availability.
+**Philosophy**: System installs ALL tools (CLI, TUI, GUI) for system-wide availability.
 
-### User Packages (Comprehensive)  
+### Home Manager (Configuration Only)  
 ```nix
 # home/jrudnik/home.nix
-home.packages = with pkgs; [
-  # Development
-  micro rustc cargo go python3
-  
-  # Utilities
-  tree jq
-  
-  # Can be extensive
-];
+# Home Manager configures tools, doesn't install them
+programs.git = {
+  enable = true;
+  userName = "jrudnik";
+  userEmail = "john.rudnik@gmail.com";
+};
+
+programs.zsh = {
+  enable = true;
+  shellAliases = { ... };
+};
+
+programs.neovim = {
+  enable = true;
+  extraConfig = ''...'';
+};
 ```
 
-**Philosophy**: All development and personal tools via home-manager.
+**Philosophy**: Home Manager handles dotfiles and user-specific configuration, not installation.
 
 ## Configuration Patterns
 
@@ -275,13 +295,16 @@ programs.git = {
 
 ### System Settings (macOS)
 
-**Pattern using modern pane-based system-settings module:**
+**Pane-Based Configuration:**
+
+The `darwin.system-settings` module organizes macOS preferences by System Settings pane for intuitive configuration and conflict prevention:
+
 ```nix
 # hosts/parsley/configuration.nix
 darwin.system-settings = {
   enable = true;
   
-  # Desktop & Dock pane (maps to System Settings > Desktop & Dock)
+  # Desktop & Dock pane
   desktopAndDock = {
     dock = {
       autohide = true;
@@ -289,50 +312,54 @@ darwin.system-settings = {
       autohideTime = 0.15;      # Fast animation
       orientation = "bottom";
       showRecents = false;
-      
-      # Icon appearance
       magnification = true;
       tileSize = 45;            # Normal icon size
       largeSize = 70;           # Magnified size
-      
-      # Hot corners for productivity
-      hotCorners = {
-        topRight = 11;          # Launchpad
-        bottomRight = 2;        # Mission Control
-      };
     };
     
     missionControl = {
       separateSpaces = true;    # Better multi-monitor
       exposeAnimation = 0.15;   # Snappy animations
     };
+    
+    hotCorners = {
+      topLeft = 1;              # Disabled
+      topRight = 11;            # Launchpad
+      bottomLeft = 1;           # Disabled
+      bottomRight = 2;          # Mission Control
+    };
   };
   
-  # Keyboard pane (maps to System Settings > Keyboard)
+  # Keyboard pane
   keyboard = {
     keyRepeat = 2;              # Fast key repeat
     initialKeyRepeat = 15;      # Short delay
+    pressAndHoldEnabled = false; # Disable accent menu
+    keyboardUIMode = 3;         # Full keyboard access
     remapCapsLockToControl = true;
     enableFnKeys = true;
   };
   
-  # Appearance pane (maps to System Settings > Appearance)
+  # Appearance pane
   appearance = {
     automaticSwitchAppearance = true;  # Auto light/dark mode
+    hideMenuBar = false;        # Keep menu bar visible
   };
   
-  # Trackpad pane (maps to System Settings > Trackpad)
+  # Trackpad pane
   trackpad = {
     naturalScrolling = false;   # Traditional scrolling
-    tracking = 3;               # Cursor speed
   };
   
-  # General pane (maps to System Settings > General + Finder)
+  # General pane (includes Finder)
   general = {
     textInput = {
       disableAutomaticCapitalization = true;
       disableAutomaticSpellingCorrection = true;
-      disableAutomaticPeriodSubstitution = true;
+    };
+    
+    panels = {
+      expandSavePanel = true;   # Always expand save dialogs
     };
     
     finder = {
@@ -340,12 +367,19 @@ darwin.system-settings = {
       showPathbar = true;
       showStatusBar = true;
       defaultViewStyle = "column";
+      hideFromDock = false;     # Show Finder in Dock
     };
   };
 };
 ```
 
-**Why**: The `system-settings` module provides a pane-based interface that mirrors the macOS System Settings UI, making configuration intuitive and preventing NSGlobalDomain conflicts by using a single, unified configuration block. This is the **single source of truth** for all macOS system preferences.
+**Architecture Benefits:**
+- **Single source of truth**: All NSGlobalDomain writes in one unified config block
+- **Conflict prevention**: Prevents cfprefsd cache corruption and blank System Settings panes
+- **Intuitive organization**: Mirrors macOS System Settings UI structure
+- **Validated**: Includes preference file integrity checking and automatic service restarts
+
+See `docs/reference/darwin-modules-conflicts.md` for complete technical details on why this architecture is critical.
 
 ### Service Management
 
