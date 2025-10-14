@@ -29,6 +29,11 @@
       flake = false;
     };
     
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # System-wide theming framework
     stylix = {
       url = "github:danth/stylix";
@@ -48,7 +53,7 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, nix-homebrew, homebrew-core, homebrew-cask, stylix, zen-browser, mcp-servers-nix, ... }:
+  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, nix-homebrew, homebrew-core, homebrew-cask, stylix, zen-browser, mcp-servers-nix, sops-nix, ... }:
     let
       system = "aarch64-darwin";
     in {
@@ -73,6 +78,7 @@
           inherit system;
           specialArgs = self._specialArgs;
           modules = [
+            sops-nix.darwinModules.sops
             # Configure nixpkgs - overlays and unfree packages
             ({ lib, ... }: {
               nixpkgs = {
@@ -126,6 +132,9 @@
             
             # System-wide theming with Stylix
             stylix.darwinModules.stylix
+
+            # Declarative secret management
+            sops-nix.darwinModules.sops
           ];
         };
       };

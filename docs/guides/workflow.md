@@ -86,12 +86,15 @@ l       # ls -CF
 
 ### Adding New Packages
 
-**For development tools (user-specific):**
+**System installs all tools:**
 ```nix
-# Edit home/jrudnik/home.nix
-home.packages = with pkgs; [
+# Edit hosts/parsley/configuration.nix
+environment.systemPackages = with pkgs; [
+  # Essential CLI tools
+  git curl wget
+  
   # Existing packages
-  git curl wget micro tree jq
+  micro tree jq
   rustc cargo go python3
   
   # Add new packages
@@ -103,15 +106,23 @@ home.packages = with pkgs; [
 ];
 ```
 
-**For system-wide tools:**
+**Home Manager configures tools:**
 ```nix
-# Edit hosts/parsley/configuration.nix
-environment.systemPackages = with pkgs; [
-  git
-  curl
-  wget
-  # Add minimal system tools only
-];
+# Edit home/jrudnik/home.nix
+# Configure tools installed at system level
+programs.git = {
+  enable = true;
+  userName = "Your Name";
+  userEmail = "you@example.com";
+};
+
+programs.zsh = {
+  enable = true;
+  shellAliases = {
+    k = "kubectl";
+    tf = "terraform";
+  };
+};
 ```
 
 ### Configuring Programs
@@ -158,33 +169,46 @@ programs.git = {
 
 ### System Settings
 
-**macOS defaults:**
+**Pane-based configuration:**
 ```nix
 # In hosts/parsley/configuration.nix
-system.defaults = {
-  dock = {
-    autohide = true;
-    orientation = "bottom";
-    show-recents = false;
-    # Minimize windows into application icon
-    minimize-to-application = true;
+darwin.system-settings = {
+  enable = true;
+  
+  # Desktop & Dock pane
+  desktopAndDock = {
+    dock = {
+      autohide = true;
+      orientation = "bottom";
+      showRecents = false;
+      minimizeToApp = true;
+    };
   };
   
-  finder = {
-    AppleShowAllExtensions = true;
-    ShowPathbar = true;
-    ShowStatusBar = true;
-    # Show full path in title
-    _FXShowPosixPathInTitle = true;
+  # Keyboard pane
+  keyboard = {
+    keyRepeat = 2;
+    initialKeyRepeat = 15;
+    remapCapsLockToControl = true;
   };
   
-  NSGlobalDomain = {
-    # Disable automatic capitalization and corrections
-    NSAutomaticCapitalizationEnabled = false;
-    NSAutomaticSpellingCorrectionEnabled = false;
+  # General pane (includes Finder)
+  general = {
+    textInput = {
+      disableAutomaticCapitalization = true;
+      disableAutomaticSpellingCorrection = true;
+    };
     
-    # Expand save dialogs by default
-    NSNavPanelExpandedStateForSaveMode = true;
+    panels = {
+      expandSavePanel = true;
+    };
+    
+    finder = {
+      showAllExtensions = true;
+      showPathbar = true;
+      showStatusBar = true;
+      defaultViewStyle = "column";
+    };
   };
 };
 ```
@@ -194,28 +218,37 @@ system.defaults = {
 **Managing dock applications:**
 ```nix
 # In hosts/parsley/configuration.nix
-darwin.system-defaults = {
+darwin.system-settings = {
   enable = true;
-  dock = {
-    # Dock behavior
-    autohide = true;
-    autohideDelay = 0.0;  # Instant response
-    orientation = "left";  # or "bottom", "right"
-    
-    # Applications in dock
-    persistentApps = [
-      "/Applications/Warp.app"              # Your terminal
-      "/Applications/Zen.app"               # Your browser  
-      "/Applications/VS Code.app"           # Your editor
-      "/System/Applications/Messages.app"   # System app
-    ];
-    
-    # Folders in dock
-    persistentOthers = [
-      "/Users/jrudnik/Downloads"
-      "/Applications"
-      "/Users/jrudnik/Documents"
-    ];
+  
+  desktopAndDock = {
+    dock = {
+      # Dock behavior
+      autohide = true;
+      autohideDelay = 0.0;  # Instant response
+      autohideTime = 0.15;  # Fast animation
+      orientation = "bottom";  # or "left", "right"
+      showRecents = false;
+      
+      # Icon appearance
+      magnification = true;
+      tileSize = 45;
+      largeSize = 70;
+      
+      # Applications in dock
+      persistentApps = [
+        "/Applications/Nix Apps/Warp.app"              # Your terminal
+        "/Applications/Nix Apps/Zen Browser (Twilight).app"  # Your browser  
+        "/Applications/Nix Apps/Zed Editor.app"        # Your editor
+        "/System/Applications/Messages.app"            # System app
+      ];
+      
+      # Folders in dock
+      persistentOthers = [
+        "/Users/jrudnik/Downloads"
+        "/Users/jrudnik/Documents"
+      ];
+    };
   };
 };
 ```

@@ -71,17 +71,18 @@ git config --get user.email
 Controls **system-wide settings**:
 - Security policies and authentication (Touch ID, firewall)
 - System defaults (Dock, Finder, global preferences)
-- System-wide packages (minimal set)
+- **All package installation** (CLI, TUI, and GUI tools)
 - Nix daemon configuration
 - User account definitions
 
 **Home Configuration (`home/jrudnik/home.nix`)**
-Controls **user-specific settings**:
-- Development environment and tools
+Controls **user-specific configuration**:
 - Shell configuration and aliases
-- Personal applications and packages
+- Program dotfiles and settings
 - Git configuration
-- Dotfiles and user preferences
+- User preferences and custom patterns
+
+**Note**: System installs tools, Home Manager configures them.
 
 ## Common Tasks
 
@@ -89,26 +90,37 @@ Controls **user-specific settings**:
 
 Edit `hosts/parsley/configuration.nix`:
 ```nix
-# Enhanced dock configuration with apps and behavior
-darwin.system-defaults = {
+# Pane-based System Settings configuration
+darwin.system-settings = {
   enable = true;
-  dock = {
-    autohide = true;
-    orientation = "bottom";
-    showRecents = false;
-    
-    # Dock applications (customize to your preferences)
-    persistentApps = [
-      "/Applications/Warp.app"
-      "/Applications/Zen.app"
-      "/System/Applications/Messages.app"
-    ];
-    
-    # Dock folders
-    persistentOthers = [
-      "/Users/jrudnik/Downloads"
-      "/Applications"
-    ];
+  
+  # Desktop & Dock pane
+  desktopAndDock = {
+    dock = {
+      autohide = true;
+      orientation = "bottom";
+      showRecents = false;
+      
+      # Dock applications (customize to your preferences)
+      persistentApps = [
+        "/Applications/Nix Apps/Warp.app"
+        "/Applications/Nix Apps/Zen Browser (Twilight).app"
+        "/System/Applications/Messages.app"
+      ];
+      
+      # Dock folders
+      persistentOthers = [
+        "/Users/jrudnik/Downloads"
+        "/Users/jrudnik/Documents"
+      ];
+    };
+  };
+  
+  # Keyboard pane
+  keyboard = {
+    keyRepeat = 2;
+    initialKeyRepeat = 15;
+    remapCapsLockToControl = true;
   };
 };
 
@@ -128,18 +140,39 @@ darwin.theming = {
 
 ### Add Development Tools
 
-Edit `home/jrudnik/home.nix`:
+Tools are installed at the system level in `hosts/parsley/configuration.nix`:
 ```nix
-home.packages = with pkgs; [
-  # Current tools
-  git curl wget micro tree jq
+environment.systemPackages = with pkgs; [
+  # Essential CLI tools
+  git curl wget
+  
+  # Current development tools
+  micro tree jq
   rustc cargo go python3
   
-  # Add new tools
+  # Add new tools here
   nodejs yarn
   docker
-  postman
+  kubectl
 ];
+```
+
+Configure them in `home/jrudnik/home.nix`:
+```nix
+# Home Manager configures tools installed by the system
+programs.git = {
+  enable = true;
+  userName = "Your Name";
+  userEmail = "you@example.com";
+};
+
+programs.zsh = {
+  enable = true;
+  shellAliases = {
+    k = "kubectl";
+    d = "docker";
+  };
+};
 ```
 
 ### Update Shell Configuration

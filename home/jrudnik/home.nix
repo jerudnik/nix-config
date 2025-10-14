@@ -28,6 +28,8 @@
     # User-level GUI applications
     packages = with pkgs; [
       psst  # Fast Spotify client with native GUI
+      age # For sops-nix
+      sops # For sops-nix
     ];
   };
 

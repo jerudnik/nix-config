@@ -19,7 +19,6 @@ cd ~/nix-config
 nix-config/
 ├── flake.nix              # Flake entry point and outputs
 ├── flake.lock             # Locked dependency versions
-├── lib/                   # Utility functions
 ├── modules/
 │   ├── darwin/            # Reusable Darwin system modules (7 modules)
 │   │   ├── core/          # Essential system packages and shell
@@ -28,16 +27,21 @@ nix-config/
 │   │   ├── system-settings/ # macOS System Settings (pane-based)
 │   │   ├── homebrew/      # Homebrew cask management
 │   │   ├── theming/       # Stylix system-wide theming
-│   │   └── fonts/         # Font installation and management
-│   ├── home/              # Reusable home-manager modules (8 modules)
+│   │   ├── fonts/         # Font installation and management
+│   │   └── raycast/       # Raycast launcher configuration
+│   ├── home/              # Reusable home-manager modules (11 modules)
 │   │   ├── shell/         # Zsh configuration and aliases
-│   │   ├── development/   # Development environment and tools
+│   │   ├── development/   # Development environment configuration
 │   │   ├── git/           # Git configuration
-│   │   ├── cli-tools/     # Modern CLI utilities (eza, bat, etc.)
-│   │   ├── starship/      # Starship cross-shell prompt
-│   │   ├── window-manager/ # AeroSpace tiling window manager
-│   │   ├── security/      # Bitwarden password management
-│   │   └── ai/            # AI tools (Fabric, Claude, Gemini, Copilot)
+│   │   ├── cli-tools/     # Modern CLI utilities configuration
+│   │   ├── editors/       # Editor configuration (Zed, Neovim)
+│   │   ├── window-manager/ # AeroSpace tiling window manager config
+│   │   ├── security/      # Bitwarden password management config
+│   │   ├── ai/            # AI tools configuration
+│   │   ├── raycast/       # Raycast configuration
+│   │   ├── syncthing/     # Syncthing configuration
+│   │   ├── thunderbird/   # Thunderbird email configuration
+│   │   └── sketchybar/    # Sketchybar menu bar (optional)
 │   └── nixos/             # Future NixOS modules (empty)
 ├── hosts/
 │   └── parsley/           # Machine-specific configuration
@@ -45,6 +49,8 @@ nix-config/
 ├── home/
 │   └── jrudnik/           # User-specific home configuration
 │       └── home.nix
+├── overlays/              # Custom package overlays
+├── secrets/               # SOPS-encrypted secrets
 ├── docs/                  # Comprehensive documentation
 └── scripts/               # Build and maintenance scripts
 ```
@@ -52,32 +58,35 @@ nix-config/
 ## Features
 
 ### Modular Architecture
-- **15 reusable modules** (7 darwin + 8 home) with rich configuration options
+- **18 reusable modules** (8 darwin + 11 home) with rich configuration options
 - **NixOS module pattern** with options/config structure and type safety
-- **81-line system config, 78-line home config** (reduced from 100+ lines each)
+- **Clean separation** - system installs tools, home-manager configures them
 - **Easy to extend** - add hosts/users without duplication
 
 ### System (nix-darwin)
+- **All package installation** (CLI, TUI, and GUI tools) via `environment.systemPackages`
 - Touch ID for sudo authentication
 - **Pane-based System Settings** - organized by macOS System Settings panes (Keyboard, Desktop & Dock, Appearance, Trackpad, General)
 - **Unified NSGlobalDomain management** - single source of truth preventing preference conflicts
 - Keyboard remapping (Caps Lock → Control/Escape) with configurable key repeat
-- Dock configuration with hot corners, auto-hide, and magnification
+- Dock configuration with persistent apps and folders, hot corners, auto-hide
 - Nix daemon optimization with binary caches (Cachix) and automatic garbage collection
 - **Stylix theming system** with automatic light/dark switching and multiple color schemes
-- Homebrew cask integration for GUI applications
+- Homebrew cask integration for unavailable packages (documented exceptions)
 - Font management with Nerd Fonts, iA Writer, and Charter
 
 ### Home Manager
+- **Configuration only** - dotfiles and program settings for tools installed by system
 - Zsh with oh-my-zsh and intelligent aliases
 - Git configuration with sensible defaults and customizable aliases
-- Development environment (Rust, Go, Python, Node.js) with optional Neovim
-- Modern CLI tools (eza, bat, ripgrep, fd, fzf, atuin) with shell integration
+- Modern CLI tools configuration (eza, bat, ripgrep, fd, fzf, atuin)
 - Starship cross-shell prompt with multiple themes
-- System monitor (btop/htop) with beautiful Stylix theming
+- System monitor configuration (btop/htop) with Stylix theming
 - AeroSpace tiling window manager with declarative keybindings
-- Bitwarden CLI integration for password management
-- AI-powered tools (Fabric patterns, Claude Desktop + MCP, Gemini, GitHub Copilot)
+- Bitwarden password management configuration
+- Zed editor configuration with extensions and GitHub Copilot
+- AI tools configuration (Fabric patterns, Claude Desktop + MCP, Gemini CLI)
+- Email configuration (Thunderbird) and file sync (Syncthing)
 
 ## Why System Settings is Pane-Based
 

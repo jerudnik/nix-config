@@ -78,6 +78,11 @@
     # Image processing
     imagemagick     # Image manipulation CLI
   ];
+  sops = {
+    enable = true;
+    age.keyFile = "/Users/jrudnik/.config/sops/age/keys.txt";
+  };
+
   networking = {
     hostName = "parsley";
     computerName = "parsley";

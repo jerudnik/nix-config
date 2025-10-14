@@ -96,28 +96,38 @@ l       # ls -CF
 
 ### Adding Packages
 
-**User packages (recommended):**
-```nix
-# In home/jrudnik/home.nix
-home.packages = with pkgs; [
-  # Development tools
-  nodejs yarn docker kubectl
-  
-  # Utilities
-  htop ripgrep fzf
-  
-  # Programming languages
-  rustc cargo go python3
-];
-```
-
-**System packages (minimal):**
+**System packages (all tools installed here):**
 ```nix
 # In hosts/parsley/configuration.nix
 environment.systemPackages = with pkgs; [
+  # Essential CLI tools
   git curl wget
-  # Keep minimal - only essential system tools
+  
+  # Development tools
+  nodejs yarn docker kubectl
+  rustc cargo go python3
+  
+  # Utilities
+  htop ripgrep fzf eza bat fd
 ];
+```
+
+**Home Manager (configuration only):**
+```nix
+# In home/jrudnik/home.nix
+# Home Manager configures tools, doesn't install them
+programs.git = {
+  enable = true;
+  userName = "Your Name";
+  userEmail = "you@example.com";
+};
+
+programs.zsh = {
+  enable = true;
+  shellAliases = {
+    k = "kubectl";
+  };
+};
 ```
 
 ### Configuring Programs
@@ -157,35 +167,66 @@ programs.git = {
 };
 ```
 
-### System Defaults
-### Dock settings with applications:**
+### System Settings
+
+**Pane-based configuration:**
 ```nix
 # In hosts/parsley/configuration.nix
-darwin.system-defaults = {
+darwin.system-settings = {
   enable = true;
-  dock = {
-    autohide = true;
-    orientation = "bottom";
-    showRecents = false;
-    minimizeToApp = true;
+  
+  # Desktop & Dock pane
+  desktopAndDock = {
+    dock = {
+      autohide = true;
+      orientation = "bottom";
+      showRecents = false;
+      minimizeToApp = true;
+      
+      # Dock applications
+      persistentApps = [
+        "/Applications/Nix Apps/Warp.app"
+        "/Applications/Nix Apps/Zen Browser (Twilight).app"
+        "/System/Applications/Messages.app"
+      ];
+      
+      # Dock folders
+      persistentOthers = [
+        "/Users/jrudnik/Downloads"
+        "/Users/jrudnik/Documents"
+      ];
+    };
+  };
+  
+  # Keyboard pane
+  keyboard = {
+    keyRepeat = 2;
+    initialKeyRepeat = 15;
+    remapCapsLockToControl = true;
+  };
+  
+  # General pane (includes Finder)
+  general = {
+    textInput = {
+      disableAutomaticCapitalization = true;
+      disableAutomaticSpellingCorrection = true;
+    };
     
-    # Dock applications
-    persistentApps = [
-      "/Applications/Warp.app"
-      "/Applications/Zen.app" 
-      "/System/Applications/Messages.app"
-    ];
+    panels = {
+      expandSavePanel = true;
+    };
     
-    # Dock folders
-    persistentOthers = [
-      "/Users/jrudnik/Downloads"
-      "/Applications"
-    ];
+    finder = {
+      showAllExtensions = true;
+      showPathbar = true;
+      showStatusBar = true;
+      defaultViewStyle = "column";
+    };
   };
 };
 ```
 
-### Theme switching:**
+**Theme switching:**
 ```nix
 # Automatic light/dark theme switching
 darwin.theming = {
@@ -198,26 +239,6 @@ darwin.theming = {
     lightScheme = "gruvbox-material-light-medium";
     darkScheme = "gruvbox-material-dark-medium";
   };
-};
-```
-```
-
-**Finder settings:**
-```nix
-system.defaults.finder = {
-  AppleShowAllExtensions = true;
-  ShowPathbar = true;
-  ShowStatusBar = true;
-  _FXShowPosixPathInTitle = true;
-};
-```
-
-**Global preferences:**
-```nix
-system.defaults.NSGlobalDomain = {
-  NSAutomaticCapitalizationEnabled = false;
-  NSAutomaticSpellingCorrectionEnabled = false;
-  NSNavPanelExpandedStateForSaveMode = true;
 };
 ```
 
