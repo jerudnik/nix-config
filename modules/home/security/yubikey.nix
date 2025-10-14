@@ -82,10 +82,12 @@ in
     touchDetector = {
       enable = mkOption {
         type = types.bool;
-        default = true;
+        default = false;  # Linux-only package, not available on macOS
         description = ''
           Enable visual feedback when YubiKey is waiting for touch.
           Shows notifications when YubiKey needs user interaction.
+          
+          Note: yubikey-touch-detector is Linux-only and not available on macOS.
         '';
       };
     };
@@ -121,7 +123,7 @@ in
       extraConfig = ''
         # YubiKey SSH Agent
         # Keys are stored on YubiKey PIV slots
-        IdentityAgent "''${XDG_RUNTIME_DIR}/yubikey-agent/yubikey-agent.sock"
+        IdentityAgent "${config.home.homeDirectory}/.yubikey-agent.sock"
       '';
     };
     
@@ -132,12 +134,12 @@ in
         ProgramArguments = [
           "${pkgs.yubikey-agent}/bin/yubikey-agent"
           "-l"
-          "''${XDG_RUNTIME_DIR}/yubikey-agent/yubikey-agent.sock"
+          "${config.home.homeDirectory}/.yubikey-agent.sock"
         ];
         KeepAlive = true;
         RunAtLoad = true;
-        StandardOutPath = "''${HOME}/Library/Logs/yubikey-agent.log";
-        StandardErrorPath = "''${HOME}/Library/Logs/yubikey-agent.log";
+        StandardOutPath = "${config.home.homeDirectory}/Library/Logs/yubikey-agent.log";
+        StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/yubikey-agent.log";
         EnvironmentVariables = {
           PINENTRY_PROGRAM = mkDefault (
             if cfg.sshAgent.pinEntry == "mac" then "${pkgs.pinentry_mac}/Applications/pinentry-mac.app/Contents/MacOS/pinentry-mac"
@@ -201,8 +203,8 @@ in
       enable = true;
       enableSshSupport = !cfg.sshAgent.enable;  # Don't conflict with yubikey-agent
       
-      # PIN entry program
-      pinentryPackage = mkDefault (
+      # PIN entry program (using new option name)
+      pinentry.package = mkDefault (
         if cfg.sshAgent.pinEntry == "mac" then pkgs.pinentry_mac
         else if cfg.sshAgent.pinEntry == "curses" then pkgs.pinentry-curses
         else pkgs.pinentry-tty
@@ -262,10 +264,8 @@ in
       yk-ssh-test = "ssh-add -T ~/.ssh/id_*.pub || echo 'No keys loaded'";
     };
     
-    # Activation script to create directories and show setup instructions
+    # Activation script to show setup instructions
     home.activation.yubikeySetup = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      # Create YubiKey agent socket directory
-      mkdir -p "''${XDG_RUNTIME_DIR}/yubikey-agent"
       
       # Show setup instructions on first activation
       if [ ! -f "$HOME/.config/yubikey-configured" ]; then

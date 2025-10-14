@@ -42,3 +42,8 @@ secrets/*.gpg
 
 # Local overrides
 local.nix
+# SOPS - only commit encrypted files
+secrets/*.yaml
+!secrets/*.enc.yaml
+!secrets/example.yaml
+!secrets/README.md

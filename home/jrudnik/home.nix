@@ -2,6 +2,7 @@
 
 {
   imports = [
+    inputs.sops-nix.homeManagerModules.sops
     outputs.homeManagerModules.shell
     outputs.homeManagerModules.development
     outputs.homeManagerModules.git
@@ -31,6 +32,50 @@
       age # For sops-nix
       sops # For sops-nix
     ];
+  };
+
+  # SOPS secrets management for user-level secrets
+  sops = {
+    defaultSopsFile = ./user.enc.yaml;
+    age.keyFile = "/Users/jrudnik/.config/sops/age/keys.txt";
+
+    # User-level secrets
+    secrets = {
+      # API keys
+      "api_keys/github_token" = {
+        path = "${config.home.homeDirectory}/.secrets/github-token";
+      };
+
+      "api_keys/openai_api_key" = {
+        path = "${config.home.homeDirectory}/.secrets/openai-api-key";
+      };
+
+      "api_keys/anthropic_api_key" = {
+        path = "${config.home.homeDirectory}/.secrets/anthropic-api-key";
+      };
+
+      # Development secrets
+      "development/database_url" = {
+        path = "${config.home.homeDirectory}/.secrets/database-url";
+      };
+
+      "development/redis_url" = {
+        path = "${config.home.homeDirectory}/.secrets/redis-url";
+      };
+
+      # Personal SSH keys
+      "ssh/github_personal_key" = {
+        path = "${config.home.homeDirectory}/.ssh/id_ed25519";
+        mode = "0600";
+      };
+    };
+  };
+
+  # Optional: Set up shell environment to use secrets
+  home.sessionVariables = {
+    GITHUB_TOKEN = "$(cat ${config.home.homeDirectory}/.secrets/github-token 2>/dev/null || echo '')";
+    OPENAI_API_KEY = "$(cat ${config.home.homeDirectory}/.secrets/openai-api-key 2>/dev/null || echo '')";
+    ANTHROPIC_API_KEY = "$(cat ${config.home.homeDirectory}/.secrets/anthropic-api-key 2>/dev/null || echo '')";
   };
 
   # Let Home Manager install and manage itself
@@ -317,6 +362,29 @@
     # Backend: Bitwarden (default implementation)
     # To use Bitwarden-specific features, configure:
     # implementation.bitwarden.cli.enable = true;  # Enable CLI tool
+    
+    # YubiKey hardware security
+    yubikey = {
+      enable = true;
+      
+      # SSH authentication with YubiKey
+      sshAgent = {
+        enable = true;
+        pinEntry = "mac";  # Use native macOS PIN entry
+      };
+      
+      # GPG signing and encryption
+      gpg = {
+        enable = true;
+        enableGitSigning = true;  # Sign git commits with YubiKey
+      };
+      
+      # Age encryption with YubiKey plugin
+      ageEncryption.enable = true;
+      
+      # Visual feedback for touch requirement (Linux-only)
+      touchDetector.enable = false;  # Not available on macOS
+    };
   };
   
   # AI tools configuration

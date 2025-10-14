@@ -78,9 +78,30 @@
     # Image processing
     imagemagick     # Image manipulation CLI
   ];
+
+  # Declarative secret management
   sops = {
-    enable = true;
+    defaultSopsFile = ./system.enc.yaml;
     age.keyFile = "/Users/jrudnik/.config/sops/age/keys.txt";
+
+    # System-level secrets
+    secrets = {
+      # SSH keys for system services
+      "ssh/github_deploy_key" = {
+        owner = "jrudnik";
+        path = "/Users/jrudnik/.ssh/github_deploy_key";
+        mode = "0600";
+      };
+
+      # Service credentials
+      "services/backup_service_token" = {
+        owner = "jrudnik";
+      };
+
+      "services/monitoring_api_key" = {
+        owner = "jrudnik";
+      };
+    };
   };
 
   networking = {

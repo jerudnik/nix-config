@@ -18,6 +18,7 @@ in
 {
   imports = [
     ./bitwarden.nix  # Bitwarden implementation backend
+    ./yubikey.nix    # YubiKey hardware security support
   ];
 
   options.home.security = {

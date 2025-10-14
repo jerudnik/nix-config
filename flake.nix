@@ -78,7 +78,9 @@
           inherit system;
           specialArgs = self._specialArgs;
           modules = [
+            # Declarative secret management (must be imported before host config)
             sops-nix.darwinModules.sops
+            
             # Configure nixpkgs - overlays and unfree packages
             ({ lib, ... }: {
               nixpkgs = {
@@ -86,7 +88,7 @@
                 config.allowUnfree = true;
               };
             })
-            
+
             # Import the host configuration
             ./hosts/parsley/configuration.nix
             
@@ -132,9 +134,6 @@
             
             # System-wide theming with Stylix
             stylix.darwinModules.stylix
-
-            # Declarative secret management
-            sops-nix.darwinModules.sops
           ];
         };
       };
