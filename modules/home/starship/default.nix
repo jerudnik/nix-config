@@ -24,11 +24,18 @@ in {
       example = true;
     };
     
-    theme = mkOption {
-      type = types.enum [ "gruvbox-rainbow" "minimal" "nerd-font-symbols" ];
-      default = "gruvbox-rainbow";
-      description = "Starship theme configuration";
-      example = "gruvbox-rainbow";
+    preset = mkOption {
+      type = types.enum [ "powerline" "minimal" ];
+      default = "powerline";
+      description = ''
+        Starship prompt layout preset.
+        This controls the format and structure of your prompt, NOT colors.
+        Colors are automatically sourced from Stylix and adapt to light/dark mode.
+        
+        - "powerline": Multi-section prompt with arrow separators (inspired by vim-powerline)
+        - "minimal": Clean, simple prompt with minimal visual elements
+      '';
+      example = "powerline";
     };
     
     showLanguages = mkOption {

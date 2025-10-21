@@ -178,16 +178,17 @@
             
             # Browsers & Productivity
             "/Applications/Nix Apps/Zen Browser (Twilight).app"           # System - Web browser
-            "/Applications/Nix Apps/Warp.app"                             # System - Terminal
+            "/Applications/Nix Apps/Warp.app"                             # System - AI Terminal
+            "/Applications/Nix Apps/Alacritty.app"						  # System - Terminal
             
             # Media & Entertainment
             "/Applications/Brain.fm.app"                                  # Homebrew - Focus music
-            "${config.users.users.jrudnik.home}/Applications/Home Manager Apps/Psst.app"  # Home Manager - Spotify
             "/Applications/Nix Apps/VLC.app"                              # System - Media player
             
             # Research & Documents
             "/Applications/calibre.app"                                   # Homebrew - eBook management
             "/Applications/JabRef.app"                                    # Homebrew - Reference manager
+            "/Applications/Nix Apps/Skim.app"                             # Nix - PDF Viewer
             
             # Security & System
             "/Applications/Nix Apps/Bitwarden.app"                        # System - Password manager
@@ -210,7 +211,7 @@
         # Hot corners for productivity
         hotCorners = {
           topLeft = 1;      # Disabled
-          topRight = 1;    # Disabled
+          topRight = 1;     # Disabled
           bottomLeft = 1;   # Disabled
           bottomRight = 1;  # Disabled
         };
@@ -233,14 +234,14 @@
     theming = {
       enable = true;
       # Start with dark theme - Stylix will auto-adapt to system appearance
-      colorScheme = "gruvbox-material-dark-medium";
+      colorScheme = "ia-light";
       polarity = "either"; # Essential: Enables automatic light/dark switching
       
       # Enable automatic light/dark theme switching
       autoSwitch = {
         enable = true;
-        lightScheme = "gruvbox-material-light-medium";
-        darkScheme = "gruvbox-material-dark-medium";
+        lightScheme = "ia-light";
+        darkScheme = "ia-dark";
       };
       
       # Optional: Set a wallpaper to generate colors from

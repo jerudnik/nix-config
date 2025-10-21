@@ -106,8 +106,17 @@
     # GTK applications (limited effect on macOS)
     gtk.enable = true;
     
-    # Note: Shell theming (zsh) is handled by our shell module
+  # Note: Shell theming (zsh) is handled by our shell module
     # Note: Zed theming is handled by home.editors.zed.theme via mkDefault
+  };
+  
+  # Alacritty terminal - enable home-manager module for Stylix theming
+  # Installation: System-level (configuration.nix)
+  # Configuration: User-level (here) - enables Stylix to generate themed config
+  programs.alacritty = {
+    enable = true;
+    # Settings will be automatically managed by Stylix based on stylix.targets.alacritty
+    # Stylix will generate colors, fonts, and other theme-related settings
   };
 
   # Module configuration
@@ -218,13 +227,15 @@
     };
     
     # Starship cross-shell prompt configuration
+    # Note: Colors are managed by Stylix and adapt automatically to light/dark mode
     starship = {
       enable = true;
-      theme = "gruvbox-rainbow";  # Options: gruvbox-rainbow, minimal, nerd-font-symbols
+      preset = "powerline";  # Layout style: "powerline" or "minimal"
+      # Powerline preset shows all detected languages automatically
       showLanguages = [ "nodejs" "rust" "golang" "python" "nix_shell" ];
-      showSystemInfo = true;
-      showTime = true;
-      showBattery = true;
+      showSystemInfo = true;  # Shows OS icon and username
+      showTime = true;  # Shows clock in yellow section
+      showBattery = false;  # Not included in powerline preset
       cmdDurationThreshold = 4000;
     };
     

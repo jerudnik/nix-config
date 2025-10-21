@@ -34,8 +34,8 @@ in {
         message = "starship.showLanguages should contain at most 10 languages to avoid prompt clutter";
       }
       {
-        assertion = (cfg.theme == "gruvbox-rainbow") -> (config.lib ? stylix);
-        message = "starship theme 'gruvbox-rainbow' requires Stylix to be enabled for color support";
+        assertion = config.lib ? stylix;
+        message = "Starship requires Stylix to be enabled for color support";
       }
     ];
     
@@ -44,40 +44,15 @@ in {
       enableZshIntegration = cfg.enableZshIntegration;
       
       settings = mkMerge [
-        # Base configuration
+        # Base configuration (shared across all presets)
         (import ./base.nix { inherit config lib; })
         
-        # Theme-specific settings
-        (mkIf (cfg.theme == "gruvbox-rainbow") 
-          (import ./themes/gruvbox-rainbow.nix { inherit config lib; }))
-        (mkIf (cfg.theme == "minimal") 
-          (import ./themes/minimal.nix { inherit config lib; }))
-        (mkIf (cfg.theme == "nerd-font-symbols") 
-          (import ./themes/nerd-font.nix { inherit config lib; }))
-        
-        # Language modules
-        (import ./modules/languages.nix { 
-          inherit config lib; 
-          showLanguages = cfg.showLanguages;
-        })
-        
-        # System info module  
-        (mkIf cfg.showSystemInfo
-          (import ./modules/system.nix { inherit config lib; }))
-        
-        # Time module
-        (mkIf cfg.showTime
-          (import ./modules/time.nix { inherit config lib; }))
-        
-        # Battery module
-        (mkIf cfg.showBattery
-          (import ./modules/battery.nix { inherit config lib; }))
-        
-        # Status and performance modules
-        (import ./modules/status.nix { 
-          inherit config lib; 
-          cmdDurationThreshold = cfg.cmdDurationThreshold;
-        })
+        # Preset-specific layouts
+        # These define the FORMAT and STRUCTURE, not colors (colors come from Stylix)
+        (mkIf (cfg.preset == "powerline") 
+          (import ./presets/powerline.nix { inherit config lib; }))
+        (mkIf (cfg.preset == "minimal") 
+          (import ./presets/minimal.nix { inherit config lib; }))
       ];
     };
   };

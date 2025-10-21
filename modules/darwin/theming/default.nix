@@ -34,6 +34,8 @@ in {
         "kanagawa" "everforest" "github" "github-dark"
         # Monochrome options
         "black-metal" "white" "grayscale-dark" "grayscale-light"
+        # iA Writer inspired themes
+        "ia-light" "ia-dark"
       ];
       default = "gruvbox-material-dark-medium";
       description = ''
