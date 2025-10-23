@@ -63,8 +63,8 @@
         specialArgs = mkSpecialArgs host;
         modules = [
           sops-nix.nixosModules.sops
-          ./modules/common/system.nix
-          ./modules/common/user.nix
+          self.nixosModules.common.system
+          self.nixosModules.common.user
           ./hosts/${host.name}/configuration.nix
           home-manager.nixosModules.home-manager
           {
@@ -85,8 +85,8 @@
         specialArgs = mkSpecialArgs host;
         modules = [
           sops-nix.darwinModules.sops
-          ./modules/common/system.nix
-          ./modules/common/user.nix
+          self.darwinModules.common.system
+          self.darwinModules.common.user
           ./hosts/${host.name}/configuration.nix
           home-manager.darwinModules.home-manager
           {
@@ -126,9 +126,13 @@
       };
 
     in {
-      overlays = import ./overlays { inherit inputs; };
-      nixosModules = import ./modules/nixos;
-      darwinModules = import ./modules/darwin;
+      overlays = import ./overlays;
+      nixosModules = {
+        common = import ./modules/common;
+      } // import ./modules/nixos;
+      darwinModules = {
+        common = import ./modules/common;
+      } // import ./modules/darwin;
       homeManagerModules = import ./modules/home;
 
       # NixOS configurations

@@ -1,5 +1,4 @@
-# NixOS modules (for future Linux systems)
+# modules/nixos/default.nix
 {
-  # Import modules here when we add NixOS support
-  # example-module = import ./example-module;
+  # Add NixOS-specific modules here
 }
