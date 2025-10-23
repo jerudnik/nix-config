@@ -49,7 +49,12 @@ in {
     
     aliases = mkOption {
       type = types.attrsOf types.str;
-      default = {};
+      default = {
+        st = "status";
+        co = "checkout";
+        br = "branch";
+        visual = "log --oneline --graph --decorate --all";
+      };
       description = "Git aliases";
       example = literalExpression ''
         {
