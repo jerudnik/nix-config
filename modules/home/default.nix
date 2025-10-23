@@ -1,18 +1,17 @@
 # Home Manager modules
 {
-  shell = import ./shell/default.nix;
-  development = import ./development/default.nix;
-  git = import ./git/default.nix;
-  cli-tools = import ./cli-tools/default.nix;
-  editors = import ./editors/default.nix;
+  shell = import ./shell;
+  development = import ./development;
+  cli-tools = import ./cli-tools;
+  editors = import ./editors;
   raycast = import ./raycast;
-  window-manager = import ./window-manager/default.nix;
-  security = import ./security/default.nix;
-  ai = import ./ai/default.nix;
-  syncthing = import ./syncthing/default.nix;
-  thunderbird = import ./thunderbird/default.nix;
-  sketchybar = import ./desktop/sketchybar/default.nix;
-  # mcp module removed - using mcp-servers-nix directly
+  window-manager = import ./window-manager;
+  security = import ./security;
+  ai = import ./ai;
+  syncthing = import ./syncthing;
+  thunderbird = import ./thunderbird;
+  sketchybar = import ./desktop/sketchybar;
   
-
+  version-control = import ./version-control;
+  shell-prompt = import ./shell-prompt;
 }

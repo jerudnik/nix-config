@@ -9,7 +9,6 @@ in
     inputs.sops-nix.homeManagerModules.sops
     outputs.homeManagerModules.shell
     outputs.homeManagerModules.development
-    outputs.homeManagerModules.git
     outputs.homeManagerModules.cli-tools
     outputs.homeManagerModules.editors
     (lib.mkIf isDarwin outputs.homeManagerModules.window-manager)
@@ -19,6 +18,8 @@ in
     outputs.homeManagerModules.syncthing
     outputs.homeManagerModules.thunderbird
     (lib.mkIf isDarwin outputs.homeManagerModules.sketchybar)
+    outputs.homeManagerModules.version-control
+    outputs.homeManagerModules.shell-prompt
   ];
 
   # Home Manager configuration
@@ -35,10 +36,35 @@ in
     ANTHROPIC_API_KEY = "$(cat ${config.home.homeDirectory}/.secrets/anthropic-api-key 2>/dev/null || echo '')";
   };
 
-  home.shell.nixShortcuts = {
+  home.shell = {
     enable = true;
-    configPath = "~/nix-config";
-    hostName = host.name;
+    nixShortcuts = {
+      enable = true;
+      configPath = "~/nix-config";
+      hostName = host.name;
+    };
+  };
+
+  home.version-control = {
+    enable = true;
+    git = {
+      enable = true;
+      userName = "jrudnik";
+      userEmail = "john.rudnik@gmail.com";
+    };
+  };
+
+  home.editors = {
+    enable = true;
+    zed = {
+      enable = true;
+      extensions = [ "nix" "toml" "dockerfile" "html" "make" "markdown" "yaml" "rust" ];
+    };
+  };
+
+  home.shell-prompt = {
+    enable = true;
+    starship.enable = true;
   };
 
   # macOS-specific settings
