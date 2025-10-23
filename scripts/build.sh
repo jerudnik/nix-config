@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Build script for nix-config
-# Usage: ./scripts/build.sh [switch|build|check]
+# Usage: ./scripts/build.sh [switch|build|check] <hostname>
 
 set -euo pipefail
 
@@ -17,20 +17,22 @@ CONFIG_DIR="$(dirname "$SCRIPT_DIR")"
 
 # Default action
 ACTION="${1:-build}"
+HOSTNAME="${2:-parsley}"
 
 echo -e "${GREEN}=== nix-config build script ===${NC}"
 echo "Configuration directory: $CONFIG_DIR"
 echo "Action: $ACTION"
+echo "Hostname: $HOSTNAME"
 echo
 
 case "$ACTION" in
     "switch")
         echo -e "${YELLOW}Building and switching to new configuration...${NC}"
-        sudo darwin-rebuild switch --flake "$CONFIG_DIR#parsley"
+        sudo darwin-rebuild switch --flake "$CONFIG_DIR#$HOSTNAME"
         ;;
     "build")
         echo -e "${YELLOW}Building configuration (no switch)...${NC}"
-        darwin-rebuild build --flake "$CONFIG_DIR#parsley"
+        darwin-rebuild build --flake "$CONFIG_DIR#$HOSTNAME"
         ;;
     "check")
         echo -e "${YELLOW}Checking flake...${NC}"
@@ -49,7 +51,7 @@ case "$ACTION" in
         ;;
     *)
         echo -e "${RED}Unknown action: $ACTION${NC}"
-        echo "Usage: $0 [switch|build|check|update|clean]"
+        echo "Usage: $0 [switch|build|check|update|clean] <hostname>"
         exit 1
         ;;
 esac

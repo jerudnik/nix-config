@@ -44,65 +44,11 @@
     flameshot       # Screenshot tool with annotations
     syncthing       # Continuous file synchronization
     
-    # === CLI Tools ===
-    
-    # Modern Unix replacements
-    eza             # Modern ls
-    zoxide          # Smart cd
-    fzf             # Fuzzy finder
-    bat             # Better cat
-    ripgrep         # Better grep
-    fd              # Better find
-    btop            # System monitor
-    
-    # Shell enhancements
-    direnv          # Environment switcher
-    atuin           # Shell history
-    mcfly           # History search
-    pay-respects    # Error correction
-    delta           # Better diff
-    
-    # Development tools
-    rustc
-    cargo
-    go
-    python3
-    nodejs
-    micro           # Terminal text editor
-    neovim          # Vim-based editor
-    tree            # Directory visualization
-    jq              # JSON processor
-    lazygit         # Git TUI
-    gh              # GitHub CLI
-    
     # Image processing
     imagemagick     # Image manipulation CLI
   ];
 
-  # Declarative secret management
-  sops = {
-    defaultSopsFile = ./system.enc.yaml;
-    age.keyFile = "/Users/jrudnik/.config/sops/age/keys.txt";
-
-    # System-level secrets
-    secrets = {
-      # SSH keys for system services
-      "ssh/github_deploy_key" = {
-        owner = "jrudnik";
-        path = "/Users/jrudnik/.ssh/github_deploy_key";
-        mode = "0600";
-      };
-
-      # Service credentials
-      "services/backup_service_token" = {
-        owner = "jrudnik";
-      };
-
-      "services/monitoring_api_key" = {
-        owner = "jrudnik";
-      };
-    };
-  };
+  sops.defaultSopsFile = ./system.enc.yaml;
 
   networking = {
     hostName = "parsley";
