@@ -38,7 +38,7 @@ in
 
   # Declarative secret management
   sops = {
-    age.keyFile = "/Users/jrudnik/.config/sops/age/keys.txt";
+    age.keyFile = lib.mkIf pkgs.stdenv.isDarwin "/Users/jrudnik/.config/sops/age/keys.txt" (lib.mkIf pkgs.stdenv.isLinux "/home/jrudnik/.config/sops/age/keys.txt");
     secrets = {
       # SSH keys for system services
       "ssh/github_deploy_key" = {
