@@ -1,539 +1,178 @@
 # Nix Configuration Architecture
 
-A clean, modular approach to macOS system configuration using nix-darwin and Home Manager.
+A clean, modular, multi-system approach to managing system configurations using Nix, nix-darwin, and Home Manager.
 
 ## Overview
 
-This configuration system takes a **community-standard approach** to managing macOS environments with Nix. It uses established patterns (nix-darwin for system configuration, Home Manager for user configuration) while keeping everything explicit, maintainable, and easy to understand.
+This configuration system manages multiple machines (macOS and NixOS) from a single, coherent codebase. It uses established patterns—nix-darwin for macOS, NixOS for Linux, and Home Manager for user dotfiles—while emphasizing modularity, maintainability, and a clear separation of concerns.
 
 ### Core Principles
 
-1. **Separation of Concerns**: Clear distinction between system-level and user-level configuration
-2. **Minimal Abstraction**: No custom frameworks – just standard Nix, nix-darwin, and Home Manager
-3. **Modularity**: Reusable modules with well-defined options and defaults
-4. **Explicitness**: Configuration files are transparent and self-documenting
-5. **Maintainability**: Easy to modify, extend, and understand months or years later
+1.  **Multi-System Support**: Natively manage macOS and NixOS hosts.
+2.  **Separation of Concerns**: Strict boundaries between system (`hosts`), user (`home`), and shared logic (`modules`).
+3.  **Modularity**: Reusable modules for shared functionality across platforms.
+4.  **Declarative Hosts**: Host configurations are simple, declarative entry points.
+5.  **Maintainability**: The structure is designed to be easy to understand, extend, and debug.
 
 ## Directory Structure
 
 ```
 nix-config/
-├── flake.nix               # Flake definition (inputs/outputs)
-├── hosts/                  # Per-machine configurations
-│   └── parsley/           # Configuration for "parsley" host
+├── flake.nix             # ❄️ Main entry point: Defines all system and user configurations.
+│
+├── hosts/                  # 🖥️ Machine-specific SYSTEM configurations.
+│   ├── parsley/            #    (macOS host)
+│   │   └── configuration.nix
+│   └── thinkpad/           #    (NixOS host)
 │       └── configuration.nix
-├── home/                   # Per-user configurations
-│   └── jrudnik/           # Configuration for "jrudnik" user
+│
+├── home/                   # 👤 User-specific HOME configurations.
+│   └── jrudnik/
 │       └── home.nix
-├── modules/                # Reusable modules
-│   ├── darwin/            # macOS system modules (7 modules)
-│   ├── home/              # User environment modules (9 modules)
-│   └── nixos/             # Linux modules (future)
-├── overlays/              # Package customizations
-├── lib/                   # Helper functions
-└── scripts/               # Build and utility scripts
+│
+├── modules/                # 🧩 Reusable configuration modules.
+│   ├── common/             #    Shared across ALL systems (Darwin & NixOS).
+│   ├── darwin/             #    🍏 macOS-specific SYSTEM modules.
+│   ├── home/               #    👤 User-specific (Home Manager) modules.
+│   └── nixos/              #    🐧 Linux-specific SYSTEM modules.
+│
+├── overlays/               # 🎨 Custom package modifications.
+└── scripts/                # 🛠️ Utility scripts (build, switch, etc.).
 ```
 
 ## Configuration Layers
 
-This system is organized into three distinct layers, each with specific responsibilities:
+This system is organized into four distinct layers:
 
-### Flake Layer
+### 1. Flake Layer (`flake.nix`)
 
-**File**: `flake.nix`
+-   **Defines Inputs**: `nixpkgs`, `nix-darwin`, `home-manager`, etc.
+-   **Constructs Outputs**: Builds `darwinConfigurations` and `nixosConfigurations` using helper functions (`mkDarwin`, `mkNixos`).
+-   **Exports Modules**: Makes the module sets (`common`, `darwin`, `home`, `nixos`) available to all configurations.
+-   **Injects Dependencies**: Passes `specialArgs` (like `inputs`, `outputs`, and `host`) to all modules.
 
-**Responsibilities:**
-- Define inputs (nixpkgs, nix-darwin, home-manager)
-- Export configurations for each host
-- Export reusable modules and overlays
-- Provide `specialArgs` for dependency injection
+### 2. Host Layer (`hosts/<hostname>/configuration.nix`)
 
-**Key pattern:**
-```nix
-{
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    nix-darwin.url = "github:LnL7/nix-darwin";
-    home-manager.url = "github:nix-community/home-manager";
-  };
+-   **System Entry Point**: The primary configuration for a single machine.
+-   **Imports Modules**: Imports system-level modules from `modules/darwin` or `modules/nixos`.
+-   **Sets Host-Specifics**: Defines hostname, system packages, hardware settings, and system services.
+-   **Integrates Home Manager**: Specifies which user configuration from `home/` to apply to this host.
 
-  outputs = { self, nixpkgs, nix-darwin, home-manager, ... } @ inputs:
-    let
-      system = "aarch64-darwin";
-      specialArgs = { inherit inputs outputs; };
-    in {
-      darwinConfigurations = {
-        parsley = nix-darwin.lib.darwinSystem {
-          inherit system specialArgs;
-          modules = [ ./hosts/parsley/configuration.nix ];
-        };
-      };
-    };
-}
-```
+### 3. User Layer (`home/<username>/home.nix`)
 
-### System Configuration Layer
+-   **User Entry Point**: The primary configuration for a single user, portable across hosts.
+-   **Imports Modules**: Imports user-level modules from `modules/home`.
+-   **Conditional Logic**: Uses the `host` argument to apply host-specific settings (e.g., different window managers for macOS vs. Linux).
+-   **Defines User Environment**: Manages dotfiles, user-level packages, and application settings.
 
-**File**: `hosts/parsley/configuration.nix`
+### 4. Module Layer (`modules/`)
 
-**Responsibilities:**
-- System-wide settings (security, defaults)
-- System packages (minimal set)
-- User account definitions
-- Nix daemon configuration
-- Home Manager integration
-
-**Key pattern:**
-```nix
-{ config, pkgs, lib, inputs, outputs, ... }: {
-  # System identity
-  networking.hostName = "parsley";
-  system.stateVersion = 5;
-
-  # Import modules
-  imports = [
-    inputs.home-manager.darwinModules.home-manager
-    # Custom modules automatically available
-  ];
-
-  # Enable custom darwin modules
-  darwin = {
-    core.enable = true;
-    security.enable = true;
-    # ...
-  };
-
-  # Home Manager integration
-  home-manager = {
-    useGlobalPkgs = true;
-    useUserPackages = true;
-    extraSpecialArgs = specialArgs;
-    users.jrudnik = import ../../home/jrudnik/home.nix;
-  };
-}
-```
-
-### Home Configuration Layer
-
-**File**: `home/jrudnik/home.nix`
-
-**Responsibilities:**
-- User-specific packages and programs
-- Shell configuration and aliases
-- Development environment setup
-- Personal application settings
-- Dotfiles and user preferences
-
-**Key pattern:**
-```nix
-{ config, pkgs, lib, inputs, outputs, ... }: {
-  # Home Manager needs these
-  home = {
-    username = "jrudnik";
-    homeDirectory = "/Users/jrudnik"; 
-    stateVersion = "25.05";
-  };
-  
-  # Program configurations
-  programs.git = { ... };
-  programs.zsh = { ... };
-  
-  # User packages
-  home.packages = with pkgs; [ ... ];
-}
-```
-
-### Module System
-
-The module system provides reusable functionality:
-
-**Module Structure:**
-```nix
-# modules/darwin/my-module/default.nix
-{ config, lib, pkgs, ... }:
-
-with lib;
-
-let
-  cfg = config.my-module;
-in {
-  options.my-module = {
-    enable = mkEnableOption "My custom module";
-    setting = mkOption {
-      type = types.str;
-      default = "default";
-      description = "Module setting";
-    };
-  };
-
-  config = mkIf cfg.enable {
-    # Implementation
-  };
-}
-```
-
-**Module Categories:**
-- **darwin/** (7 modules): macOS system modules (nix-darwin)
-  - core, security, nix-settings, system-settings, homebrew, theming, fonts
-- **home/** (9 modules): User environment modules (home-manager)
-  - shell, development, git, cli-tools, window-manager, security, mcp, starship, ai
-- **nixos/**: Linux system modules (future compatibility)
+-   **Reusable Logic**: Contains the bulk of the configuration logic, organized by scope.
+-   **`modules/common/`**: Shared system-level settings for both macOS and NixOS (e.g., Nix configuration, user accounts, timezone). Platform-specific options MUST be conditional (`lib.mkIf`).
+-   **`modules/darwin/`**: macOS-specific system modules (e.g., Homebrew, system settings, security).
+-   **`modules/nixos/`**: NixOS-specific system modules (e.g., bootloader, kernel, filesystem).
+-   **`modules/home/`**: User-level modules, shared across all hosts (e.g., shell, editors, git).
 
 ## Data Flow
 
 ```
 flake.nix
-    ↓
-specialArgs (inputs, outputs)
-    ↓
-┌─────────────────────┬─────────────────────┐
-│   System Config     │    Home Config      │
-│  (nix-darwin)      │  (home-manager)    │
-│                     │                     │
-│ • System defaults   │ • User packages     │
-│ • Security          │ • Shell config      │
-│ • User accounts     │ • Development env   │
-│ • Global packages   │ • Personal settings │
-└─────────────────────┴─────────────────────┘
-    ↓                        ↓
-System Generation       Home Generation
+    │
+    ├─► `mkDarwin` helper for macOS hosts
+    │   │
+    │   └─► hosts/parsley/configuration.nix
+    │       │
+    │       ├─► imports modules/common/*
+    │       ├─► imports modules/darwin/*
+    │       └─► integrates home/jrudnik/home.nix
+    │
+    └─► `mkNixos` helper for NixOS hosts
+        │
+        └─► hosts/thinkpad/configuration.nix
+            │
+            ├─► imports modules/common/*
+            ├─► imports modules/nixos/*
+            └─► integrates home/jrudnik/home.nix
 ```
-
-## Configuration Inheritance
-
-### Argument Passing
-
-```nix
-# flake.nix
-specialArgs = {
-  inherit inputs outputs;
-};
-
-# Passed to all modules automatically
-darwinSystem {
-  inherit system specialArgs;
-  modules = [ ./hosts/parsley/configuration.nix ];
-};
-```
-
-### Module Access
-
-```nix
-# Any module can access:
-{ config, pkgs, lib, inputs, outputs, ... }:
-{
-  # inputs.nixpkgs, inputs.home-manager, etc.
-  # outputs.overlays, outputs.darwinModules, etc.
-}
-```
+The `home/jrudnik/home.nix` file receives the `host` object, allowing it to adapt its configuration based on the machine it's being deployed to.
 
 ## Package Management Strategy
 
-### System Packages (Comprehensive)
-```nix
-# hosts/parsley/configuration.nix
-environment.systemPackages = with pkgs; [
-  # Essential CLI tools
-  git curl wget
-  
-  # Development tools
-  rustc cargo go python3 nodejs
-  micro neovim
-  
-  # Modern CLI utilities
-  eza zoxide fzf bat ripgrep fd
-  btop tree jq lazygit gh
-  
-  # GUI applications
-  emacs zed-editor alacritty warp-terminal
-  zen-browser thunderbird bitwarden
-  
-  # Can be extensive - all tools installed here
-];
-```
+The strategy remains consistent: the **system** installs all tools, and **Home Manager** configures them.
 
-**Philosophy**: System installs ALL tools (CLI, TUI, GUI) for system-wide availability.
+-   **System Packages**: Defined in `hosts/<hostname>/configuration.nix` via `environment.systemPackages`. This includes all GUI apps, CLI tools, and TUI apps.
+-   **User Configuration**: Handled in `home/jrudnik/home.nix` and `modules/home/` via `programs.*` options. This manages dotfiles and user-specific settings.
 
-### Home Manager (Configuration Only)  
-```nix
-# home/jrudnik/home.nix
-# Home Manager configures tools, doesn't install them
-programs.git = {
-  enable = true;
-  userName = "jrudnik";
-  userEmail = "john.rudnik@gmail.com";
-};
-
-programs.zsh = {
-  enable = true;
-  shellAliases = { ... };
-};
-
-programs.neovim = {
-  enable = true;
-  extraConfig = ''...'';
-};
-```
-
-**Philosophy**: Home Manager handles dotfiles and user-specific configuration, not installation.
+This ensures a clean separation between tool availability (system) and user preferences (home).
 
 ## Configuration Patterns
 
-### Program Configuration
+### Host Configuration Example
 
-**Preferred pattern:**
-```nix
-programs.git = {
-  enable = true;
-  userName = "John Rudnik";
-  userEmail = "john.rudnik@gmail.com";
-  extraConfig = { ... };
-};
-```
-
-**Why**: Uses home-manager's program modules for proper integration.
-
-### System Settings (macOS)
-
-**Pane-Based Configuration:**
-
-The `darwin.system-settings` module organizes macOS preferences by System Settings pane for intuitive configuration and conflict prevention:
+A host configuration is lean and declarative.
 
 ```nix
-# hosts/parsley/configuration.nix
-darwin.system-settings = {
-  enable = true;
-  
-  # Desktop & Dock pane
-  desktopAndDock = {
-    dock = {
-      autohide = true;
-      autohideDelay = 0.0;      # Instant response
-      autohideTime = 0.15;      # Fast animation
-      orientation = "bottom";
-      showRecents = false;
-      magnification = true;
-      tileSize = 45;            # Normal icon size
-      largeSize = 70;           # Magnified size
-    };
-    
-    missionControl = {
-      separateSpaces = true;    # Better multi-monitor
-      exposeAnimation = 0.15;   # Snappy animations
-    };
-    
-    hotCorners = {
-      topLeft = 1;              # Disabled
-      topRight = 11;            # Launchpad
-      bottomLeft = 1;           # Disabled
-      bottomRight = 2;          # Mission Control
-    };
-  };
-  
-  # Keyboard pane
-  keyboard = {
-    keyRepeat = 2;              # Fast key repeat
-    initialKeyRepeat = 15;      # Short delay
-    pressAndHoldEnabled = false; # Disable accent menu
-    keyboardUIMode = 3;         # Full keyboard access
-    remapCapsLockToControl = true;
-    enableFnKeys = true;
-  };
-  
-  # Appearance pane
-  appearance = {
-    automaticSwitchAppearance = true;  # Auto light/dark mode
-    hideMenuBar = false;        # Keep menu bar visible
-  };
-  
-  # Trackpad pane
-  trackpad = {
-    naturalScrolling = false;   # Traditional scrolling
-  };
-  
-  # General pane (includes Finder)
-  general = {
-    textInput = {
-      disableAutomaticCapitalization = true;
-      disableAutomaticSpellingCorrection = true;
-    };
-    
-    panels = {
-      expandSavePanel = true;   # Always expand save dialogs
-    };
-    
-    finder = {
-      showAllExtensions = true;
-      showPathbar = true;
-      showStatusBar = true;
-      defaultViewStyle = "column";
-      hideFromDock = false;     # Show Finder in Dock
-    };
-  };
-};
-```
+# hosts/parsley/configuration.nix (macOS)
+{ ... }: {
+  # Set host-specifics
+  networking.hostName = "parsley";
 
-**Architecture Benefits:**
-- **Single source of truth**: All NSGlobalDomain writes in one unified config block
-- **Conflict prevention**: Prevents cfprefsd cache corruption and blank System Settings panes
-- **Intuitive organization**: Mirrors macOS System Settings UI structure
-- **Validated**: Includes preference file integrity checking and automatic service restarts
+  # Import system modules
+  imports = [
+    outputs.darwinModules.core
+    outputs.darwinModules.security
+    outputs.darwinModules.system-settings
+  ];
 
-See `docs/reference/darwin-modules-conflicts.md` for complete technical details on why this architecture is critical.
-
-### Service Management
-
-**System services:**
-```nix
-# Via nix-darwin
-launchd.daemons.my-service = { ... };
-```
-
-**User services:**  
-```nix
-# Via home-manager
-launchd.agents.my-service = { ... };
-```
-
-## Extension Points
-
-### Adding New Functionality
-
-1. **Simple additions**: Edit configuration files directly
-2. **Reusable functionality**: Create modules
-3. **Package modifications**: Use overlays
-4. **External tools**: Scripts directory
-
-### Module Development
-
-```nix
-# 1. Create module
-modules/darwin/my-feature/default.nix
-
-# 2. Export in modules/darwin/default.nix
-{
-  my-feature = import ./my-feature;
+  # Install system-wide packages for this host
+  environment.systemPackages = with pkgs; [ zed-editor warp-terminal ];
 }
+```
 
-# 3. Import in flake.nix (automatic via modules import)
+### User Configuration Example
 
-# 4. Use in configuration
-darwin.my-feature.enable = true;
+The user configuration is portable and conditional.
+
+```nix
+# home/jrudnik/home.nix
+{ pkgs, lib, host, ... }: {
+  # Set user-specifics
+  home.username = "jrudnik";
+
+  # Conditional settings based on the host OS
+  home.window-manager = lib.mkIf (pkgs.stdenv.isDarwin) {
+    enable = true; # Enables yabai/skhd via a module
+  };
+
+  programs.foot = lib.mkIf (pkgs.stdenv.isLinux) {
+    enable = true; # Use foot terminal on Linux
+  };
+}
 ```
 
 ## Build Process
 
-### Build Flow
-
-```
-flake.nix
-    ↓
-Load inputs (nixpkgs, nix-darwin, home-manager)
-    ↓
-Evaluate darwinConfiguration
-    ↓
-Process all modules
-    ↓
-Generate system profile
-    ↓
-Activate configuration
-```
-
-### Build Commands
+The build process is now host-specific.
 
 ```bash
-# Test build
-darwin-rebuild build --flake .#parsley
+# Test build for a specific host
+./scripts/build.sh parsley
+./scripts/build.sh thinkpad
 
-# Apply changes
-sudo darwin-rebuild switch --flake .#parsley
-
-# Check flake
-nix flake check
+# Apply changes for a specific host
+sudo ./scripts/switch.sh parsley
+sudo ./scripts/switch.sh thinkpad
 ```
 
 ## Best Practices
 
-### Configuration Organization
-
-1. **Keep host configs minimal**: Most logic should be in modules
-2. **Use modules for reusable features**: Don't duplicate configuration
-3. **Separate concerns**: System vs user, configuration vs implementation
-4. **Document decisions**: Add comments explaining non-obvious choices
-
-### Module Design
-
-1. **Single responsibility**: Each module handles one concern
-2. **Rich options**: Provide sensible defaults with customization points
-3. **Type safety**: Use appropriate Nix types for validation
-4. **Documentation**: Every option should have a clear description
-
-### File Organization
-
-1. **Logical grouping**: Group related modules together
-2. **Clear naming**: File names should reflect their purpose
-3. **Consistent structure**: Follow the same patterns across modules
-4. **Minimal nesting**: Keep directory structure flat when possible
-
-## Common Patterns
-
-### Conditional Configuration
-
-```nix
-config = mkIf cfg.enable {
-  # Only apply when module is enabled
-};
-```
-
-### Platform Detection
-
-```nix
-# In home-manager modules only
-config = lib.mkIf pkgs.stdenv.isDarwin {
-  # macOS-specific configuration
-};
-```
-
-### Merging Lists
-
-```nix
-home.packages = with pkgs; [
-  # Base packages
-] ++ lib.optionals cfg.extraTools [
-  # Optional packages
-];
-```
-
-## Troubleshooting
-
-### Configuration Won't Build
-
-1. Check flake syntax: `nix flake check`
-2. Build with trace: `darwin-rebuild build --flake .#parsley --show-trace`
-3. Verify module imports are correct
-4. Check for typos in option names
-
-### Changes Not Applied
-
-1. Ensure you used `sudo` for system changes
-2. Restart affected services (Dock, Finder)
-3. Check generation: `sudo nix-env --list-generations --profile /nix/var/nix/profiles/system`
-4. Verify configuration is active: `darwin-rebuild --version`
-
-### Module Not Found
-
-1. Verify module is exported in `modules/darwin/default.nix` or `modules/home/default.nix`
-2. Check import path in flake.nix
-3. Ensure module directory contains `default.nix`
-4. Rebuild flake: `nix flake update`
+-   **Host-Specific First**: If a setting applies to only one machine, put it in `hosts/<hostname>/configuration.nix`.
+-   **Promote to Common**: If you find yourself duplicating a system setting across multiple hosts, move it to a `modules/common/` module with appropriate conditionals.
+-   **Keep User Config Portable**: `home/jrudnik/home.nix` should be able to be deployed on any host. Use conditionals for OS or hostname differences.
 
 ## Next Steps
 
-- **[Module Options Reference](module-options.md)** - Complete documentation of all module options
-- **[Workflow Guide](../guides/workflow.md)** - Development and build processes
-- **[Modular Architecture Guide](../guides/modular-architecture.md)** - Advanced module patterns
-- **[Getting Started](../getting-started.md)** - Quick start guide for new users
-
----
-
-This architecture provides a solid foundation for declarative macOS system management that's both powerful and maintainable.
+-   **[Module Options Reference](module-options.md)** - Complete documentation of all module options.
+-   **[Workflow Guide](../guides/workflow.md)** - Development and build processes for the multi-system setup.
+-   **[Modular Architecture Guide](../guides/modular-architecture.md)** - Advanced module patterns.
+-   **[Getting Started](../getting-started.md)** - Quick start guide for new users and hosts.

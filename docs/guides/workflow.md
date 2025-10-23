@@ -1,326 +1,106 @@
 # Workflow Guide
 
-Complete reference for working with this Nix configuration effectively.
+Complete reference for working with this multi-system Nix configuration effectively.
 
 ## Daily Workflow
 
 ### Making Changes
 
-1. **Edit configuration files**
-   ```bash
-   cd ~/nix-config
-   
-   # Edit system settings
-   $EDITOR hosts/parsley/configuration.nix
-   
-   # Edit user settings
-   $EDITOR home/jrudnik/home.nix
-   ```
+1.  **Identify the Scope**:
+    -   **System-wide change for one host?** → `hosts/<hostname>/configuration.nix`
+    -   **Shared system change for all hosts?** → `modules/common/`
+    -   **User-specific change for all hosts?** → `home/jrudnik/home.nix` or `modules/home/`
 
-2. **Test changes**
-   ```bash
-   # Quick syntax check
-   nix flake check
-   
-   # Test build without applying
-   ./scripts/build.sh build
-   ```
+2.  **Edit Configuration Files**:
+    ```bash
+    cd ~/nix-config
 
-3. **Apply changes**
-   ```bash
-   # Apply system and home configuration
-   ./scripts/build.sh switch
-   ```
+    # Edit system settings for a specific host
+    $EDITOR hosts/parsley/configuration.nix
 
-4. **Verify changes**
-   ```bash
-   # Check if new packages are available
-   which new-package
-   
-   # Test new aliases or settings
-   alias new-alias
-   ```
+    # Edit user settings (applies to all hosts)
+    $EDITOR home/jrudnik/home.nix
+    ```
+
+3.  **Test Changes for a Specific Host**:
+    You must now specify which host you are building for.
+
+    ```bash
+    # Test build for the 'parsley' (macOS) host
+    ./scripts/build.sh parsley
+
+    # Test build for the 'thinkpad' (NixOS) host
+    ./scripts/build.sh thinkpad
+    ```
+
+4.  **Apply Changes to a Specific Host**:
+    ```bash
+    # Apply system and home configuration to 'parsley'
+    sudo ./scripts/switch.sh parsley
+
+    # Apply system and home configuration to 'thinkpad'
+    sudo ./scripts/switch.sh thinkpad
+    ```
 
 ### Using Build Scripts
 
-The `scripts/build.sh` script provides convenient commands:
+The build scripts now require a `<hostname>` argument.
 
 ```bash
-# Test build (no changes applied)
-./scripts/build.sh build
+# Test build for a host
+./scripts/build.sh <hostname>
 
-# Apply configuration (system + home)
-./scripts/build.sh switch
+# Apply configuration to a host
+sudo ./scripts/switch.sh <hostname>
 
-# Check flake syntax and structure
-./scripts/build.sh check
+# Check flake syntax (no hostname needed)
+nix flake check
 
-# Update all flake inputs
-./scripts/build.sh update
-
-# Clean up old generations
-./scripts/build.sh clean
-```
-
-### Shell Aliases
-
-After applying your configuration, these aliases are available:
-
-```bash
-# Nix operations
-nrs     # sudo darwin-rebuild switch --flake ~/nix-config#parsley
-nrb     # darwin-rebuild build --flake ~/nix-config#parsley
-nfu     # nix flake update
-nfc     # nix flake check
-ngc     # nix-collect-garbage -d && sudo nix-collect-garbage -d
-
-# File operations
-ll      # ls -alF
-la      # ls -A
-l       # ls -CF
-..      # cd ..
-...     # cd ../..
+# Update all flake inputs (no hostname needed)
+nix flake update
 ```
 
 ## Development Patterns
 
-### Adding New Packages
+### Adding a New Host
 
-**System installs all tools:**
+1.  **Create Host Directory**: `mkdir hosts/new-machine`
+2.  **Create `configuration.nix`**: Add host-specific settings and import necessary modules.
+3.  **Add to `flake.nix`**: Add a new entry in `nixosConfigurations` or `darwinConfigurations`.
+4.  **Build**: `./scripts/build.sh new-machine`
+
+### Adding a New Package to a Host
+
+Install packages at the system level in the host's configuration file.
+
 ```nix
-# Edit hosts/parsley/configuration.nix
+# Edit hosts/thinkpad/configuration.nix
 environment.systemPackages = with pkgs; [
-  # Essential CLI tools
-  git curl wget
-  
-  # Existing packages
-  micro tree jq
-  rustc cargo go python3
-  
-  # Add new packages
-  nodejs_20    # Specific version
-  yarn
+  # Add packages specific to this host
   docker
   kubectl
-  terraform
 ];
 ```
 
-**Home Manager configures tools:**
+Then, configure the package in `home/jrudnik/home.nix`, possibly with a conditional if it's not available on all systems.
+
 ```nix
 # Edit home/jrudnik/home.nix
-# Configure tools installed at system level
-programs.git = {
+programs.docker = lib.mkIf (host.name == "thinkpad") {
   enable = true;
-  userName = "Your Name";
-  userEmail = "you@example.com";
-};
-
-programs.zsh = {
-  enable = true;
-  shellAliases = {
-    k = "kubectl";
-    tf = "terraform";
-  };
 };
 ```
 
-### Configuring Programs
+### Adding a Shared Module
 
-**Shell configuration:**
-```nix
-# In home/jrudnik/home.nix
-programs.zsh = {
-  enable = true;
-  enableCompletion = true;
-  
-  shellAliases = {
-    # Add custom aliases
-    deploy = "cd ~/projects && ./deploy.sh";
-    logs = "sudo tail -f /var/log/system.log";
-  };
-  
-  oh-my-zsh = {
-    enable = true;
-    plugins = [ "git" "macos" "docker" "node" ];
-    theme = "robbyrussell";
-  };
-};
-```
+1.  **Create the Module**:
+    -   Shared system setting? → `modules/common/`
+    -   macOS-specific setting? → `modules/darwin/`
+    -   User-specific setting? → `modules/home/`
 
-**Git configuration:**
-```nix
-programs.git = {
-  enable = true;
-  userName = "John Rudnik";
-  userEmail = "john.rudnik@gmail.com";
-  
-  extraConfig = {
-    init.defaultBranch = "main";
-    pull.rebase = false;
-    push.default = "simple";
-    
-    # Add more git settings
-    core.editor = "micro";
-    diff.tool = "vimdiff";
-  };
-};
-```
+2.  **Export the Module**: Add it to the `default.nix` in its directory.
 
-### System Settings
-
-**Pane-based configuration:**
-```nix
-# In hosts/parsley/configuration.nix
-darwin.system-settings = {
-  enable = true;
-  
-  # Desktop & Dock pane
-  desktopAndDock = {
-    dock = {
-      autohide = true;
-      orientation = "bottom";
-      showRecents = false;
-      minimizeToApp = true;
-    };
-  };
-  
-  # Keyboard pane
-  keyboard = {
-    keyRepeat = 2;
-    initialKeyRepeat = 15;
-    remapCapsLockToControl = true;
-  };
-  
-  # General pane (includes Finder)
-  general = {
-    textInput = {
-      disableAutomaticCapitalization = true;
-      disableAutomaticSpellingCorrection = true;
-    };
-    
-    panels = {
-      expandSavePanel = true;
-    };
-    
-    finder = {
-      showAllExtensions = true;
-      showPathbar = true;
-      showStatusBar = true;
-      defaultViewStyle = "column";
-    };
-  };
-};
-```
-
-### Dock Configuration
-
-**Managing dock applications:**
-```nix
-# In hosts/parsley/configuration.nix
-darwin.system-settings = {
-  enable = true;
-  
-  desktopAndDock = {
-    dock = {
-      # Dock behavior
-      autohide = true;
-      autohideDelay = 0.0;  # Instant response
-      autohideTime = 0.15;  # Fast animation
-      orientation = "bottom";  # or "left", "right"
-      showRecents = false;
-      
-      # Icon appearance
-      magnification = true;
-      tileSize = 45;
-      largeSize = 70;
-      
-      # Applications in dock
-      persistentApps = [
-        "/Applications/Nix Apps/Warp.app"              # Your terminal
-        "/Applications/Nix Apps/Zen Browser (Twilight).app"  # Your browser  
-        "/Applications/Nix Apps/Zed Editor.app"        # Your editor
-        "/System/Applications/Messages.app"            # System app
-      ];
-      
-      # Folders in dock
-      persistentOthers = [
-        "/Users/jrudnik/Downloads"
-        "/Users/jrudnik/Documents"
-      ];
-    };
-  };
-};
-```
-
-**Finding application paths:**
-```bash
-# List all applications
-ls -la /Applications/
-ls -la /System/Applications/
-
-# Find specific apps
-find /Applications -name "*.app" -maxdepth 1
-```
-
-### Theme Management
-
-**Setting up automatic theme switching:**
-```nix
-# In hosts/parsley/configuration.nix
-darwin.theming = {
-  enable = true;
-  
-  # Base theme (provides colors for polarity adaptation)
-  colorScheme = "gruvbox-material-dark-medium";
-  
-  # Essential: enables automatic light/dark adaptation
-  polarity = "either";
-  
-  # Optional: Configure theme preferences
-  autoSwitch = {
-    enable = true;
-    lightScheme = "gruvbox-material-light-medium";
-    darkScheme = "gruvbox-material-dark-medium";
-  };
-};
-```
-
-**Testing theme switching:**
-```bash
-# Check current theme status
-nix-theme-switch
-
-# Test switching (change in System Preferences)
-# macOS > System Preferences > General > Appearance
-# Switch between "Light" and "Dark"
-
-# Applications will automatically adapt!
-```
-
-**Popular theme combinations:**
-```nix
-# Catppuccin (very popular)
-autoSwitch = {
-  enable = true;
-  lightScheme = "catppuccin-latte";
-  darkScheme = "catppuccin-mocha";
-};
-
-# Tokyo Night (developer favorite)
-autoSwitch = {
-  enable = true;
-  lightScheme = "tokyo-night-light";
-  darkScheme = "tokyo-night-dark";
-};
-
-# GitHub (clean and professional)
-autoSwitch = {
-  enable = true;
-  lightScheme = "github";
-  darkScheme = "github-dark";
-};
-```
+3.  **Import and Use**: Import the module in the relevant `configuration.nix` or `home.nix`.
 
 ## Version Management
 
@@ -328,198 +108,33 @@ autoSwitch = {
 
 ```bash
 # Update all inputs
-./scripts/build.sh update
-
-# Update specific input
-nix flake lock --update-input nixpkgs
-
-# Update and apply
-./scripts/build.sh update && ./scripts/build.sh switch
+nix flake update
 ```
 
 ### Rollback Strategy
 
-**System rollbacks:**
+Rollbacks are now host-specific.
+
+**System Rollbacks (NixOS)**:
 ```bash
-# List generations
-sudo nix-env --list-generations --profile /nix/var/nix/profiles/system
-
-# Rollback to previous generation
-sudo nix-env --rollback --profile /nix/var/nix/profiles/system
-
-# Rollback to specific generation
-sudo nix-env --switch-generation 42 --profile /nix/var/nix/profiles/system
+# On the thinkpad host
+sudo nixos-rebuild --rollback
 ```
 
-**Home Manager rollbacks:**
+**System Rollbacks (macOS)**:
 ```bash
-# List home generations
-home-manager generations
-
-# Rollback home configuration
-home-manager switch --flake .#jrudnik@parsley --rollback
+# On the parsley host
+sudo darwin-rebuild --rollback
 ```
 
-### Generation Management
-
-```bash
-# Clean up old generations (older than 30 days)
-./scripts/build.sh clean
-
-# Manual cleanup
-sudo nix-collect-garbage --delete-older-than 30d
-nix-collect-garbage --delete-older-than 30d
-```
-
-## Development Workflow
-
-### Testing Changes
-
-1. **Incremental testing:**
-   ```bash
-   # Test specific parts
-   nix build .#darwinConfigurations.parsley.system
-   nix build '.#homeConfigurations."jrudnik@parsley".activationPackage'
-   ```
-
-2. **Dry run:**
-   ```bash
-   # See what would change
-   darwin-rebuild build --flake .#parsley --show-trace
-   ```
-
-3. **Safe switching:**
-   ```bash
-   # Build first, then switch
-   ./scripts/build.sh build && ./scripts/build.sh switch
-   ```
-
-### Debugging Issues
-
-**Build failures:**
-```bash
-# Detailed error output
-nix flake check --show-trace
-darwin-rebuild build --flake .#parsley --show-trace
-
-# Check specific configuration
-nix eval .#darwinConfigurations.parsley.config.system.build.toplevel
-```
-
-**Runtime issues:**
-```bash
-# Check if services are running
-sudo launchctl list | grep nix
-
-# Restart nix daemon
-sudo launchctl stop org.nixos.nix-daemon
-sudo launchctl start org.nixos.nix-daemon
-
-# Check system logs
-log stream --predicate 'subsystem == "com.apple.system"'
-```
-
-### Performance Tips
-
-1. **Use binary caches:**
-   ```nix
-   # In hosts/parsley/configuration.nix
-   nix.settings = {
-     substituters = [
-       "https://cache.nixos.org/"
-       "https://nix-community.cachix.org"
-     ];
-   };
-   ```
-
-2. **Optimize builds:**
-   ```bash
-   # Enable store optimization
-   nix.optimise.automatic = true;
-   
-   # Parallel builds
-   nix.settings.max-jobs = "auto";
-   ```
-
-3. **Faster rebuilds:**
-   ```bash
-   # Only rebuild home config
-   home-manager switch --flake .#jrudnik@parsley
-   
-   # Skip building if no changes
-   darwin-rebuild switch --flake .#parsley --fast
-   ```
-
-## Collaboration Workflow
-
-### Git Workflow
-
-```bash
-# Standard workflow
-cd ~/nix-config
-git add .
-git commit -m "feat: add nodejs development environment"
-git push
-
-# Feature branches for major changes
-git checkout -b feature/new-development-setup
-# Make changes
-git push -u origin feature/new-development-setup
-# Create PR on GitHub
-```
-
-### Configuration Sharing
-
-```bash
-# Share current configuration
-git clone https://github.com/jerudnik/nix-config.git
-cd nix-config
-./scripts/build.sh switch
-
-# Customize for different user/host
-cp -r home/jrudnik home/newuser
-cp -r hosts/parsley hosts/newhost
-# Edit configurations as needed
-```
-
-### Documentation Updates
-
-When adding new features:
-
-1. Update relevant documentation in `docs/`
-2. Add examples to configuration files
-3. Update the main `README.md` if needed
-4. Document any breaking changes
+**Home Manager Rollbacks**:
+Home Manager rollbacks are tied to the system generation. When you roll back the system, Home Manager rolls back with it.
 
 ## Best Practices
 
-1. **Always test before applying:**
-   ```bash
-   ./scripts/build.sh build && ./scripts/build.sh switch
-   ```
-
-2. **Keep configurations minimal:**
-   - System config: Essential system settings only
-   - Home config: User-specific tools and preferences
-
-3. **Use version control effectively:**
-   - Commit working configurations
-   - Use descriptive commit messages
-   - Tag stable releases
-
-4. **Regular maintenance:**
-   ```bash
-   # Weekly update and cleanup
-   ./scripts/build.sh update
-   ./scripts/build.sh switch
-   ./scripts/build.sh clean
-   ```
-
-5. **Monitor system health:**
-   ```bash
-   # Check Nix store size
-   du -sh /nix/store
-   
-   # Check for broken symlinks
-   nix-store --verify --check-contents
-   ```
+1.  **Always Test Before Applying**:
+    ```bash
+    ./scripts/build.sh <hostname> && sudo ./scripts/switch.sh <hostname>
+    ```
+2.  **Keep Host Configs Minimal**: Most logic should be in `modules`. Host configs should be for data (packages, settings), not complex code.
+3.  **Use Conditionals**: In shared files like `modules/common/user.nix` or `home/jrudnik/home.nix`, use `lib.mkIf pkgs.stdenv.isDarwin` or `lib.mkIf (host.name == "parsley")` to handle differences between machines.
