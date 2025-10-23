@@ -1,5 +1,9 @@
-{ config, pkgs, lib, inputs, outputs, ... }:
+{ config, pkgs, lib, inputs, outputs, host, ... }:
 
+let
+  isDarwin = pkgs.stdenv.isDarwin;
+  isLinux = pkgs.stdenv.isLinux;
+in
 {
   imports = [
     inputs.sops-nix.homeManagerModules.sops
@@ -8,62 +12,38 @@
     outputs.homeManagerModules.git
     outputs.homeManagerModules.cli-tools
     outputs.homeManagerModules.editors
-    outputs.homeManagerModules.window-manager
+    (lib.mkIf isDarwin outputs.homeManagerModules.window-manager)
     outputs.homeManagerModules.security
     outputs.homeManagerModules.ai
-    outputs.homeManagerModules.raycast
+    (lib.mkIf isDarwin outputs.homeManagerModules.raycast)
     outputs.homeManagerModules.syncthing
     outputs.homeManagerModules.thunderbird
-    outputs.homeManagerModules.sketchybar
-    # mcp module removed - using mcp-servers-nix directly
-    
-
+    (lib.mkIf isDarwin outputs.homeManagerModules.sketchybar)
   ];
 
   # Home Manager configuration
   home = {
     username = "jrudnik";
-    homeDirectory = "/Users/jrudnik";
+    homeDirectory = lib.mkIf isDarwin "/Users/jrudnik" (lib.mkIf isLinux "/home/jrudnik");
     stateVersion = "25.05";
     
-    # User-level GUI applications
     packages = with pkgs; [
-      psst  # Fast Spotify client with native GUI
-      age # For sops-nix
-      sops # For sops-nix
+      psst
+      age
+      sops
     ];
   };
 
-  # SOPS secrets management for user-level secrets
   sops = {
     defaultSopsFile = ./user.enc.yaml;
-    age.keyFile = "/Users/jrudnik/.config/sops/age/keys.txt";
+    age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
 
-    # User-level secrets
     secrets = {
-      # API keys
-      "api_keys/github_token" = {
-        path = "${config.home.homeDirectory}/.secrets/github-token";
-      };
-
-      "api_keys/openai_api_key" = {
-        path = "${config.home.homeDirectory}/.secrets/openai-api-key";
-      };
-
-      "api_keys/anthropic_api_key" = {
-        path = "${config.home.homeDirectory}/.secrets/anthropic-api-key";
-      };
-
-      # Development secrets
-      "development/database_url" = {
-        path = "${config.home.homeDirectory}/.secrets/database-url";
-      };
-
-      "development/redis_url" = {
-        path = "${config.home.homeDirectory}/.secrets/redis-url";
-      };
-
-      # Personal SSH keys
+      "api_keys/github_token" = { path = "${config.home.homeDirectory}/.secrets/github-token"; };
+      "api_keys/openai_api_key" = { path = "${config.home.homeDirectory}/.secrets/openai-api-key"; };
+      "api_keys/anthropic_api_key" = { path = "${config.home.homeDirectory}/.secrets/anthropic-api-key"; };
+      "development/database_url" = { path = "${config.home.homeDirectory}/.secrets/database-url"; };
+      "development/redis_url" = { path = "${config.home.homeDirectory}/.secrets/redis-url"; };
       "ssh/github_personal_key" = {
         path = "${config.home.homeDirectory}/.ssh/id_ed25519";
         mode = "0600";
@@ -71,374 +51,202 @@
     };
   };
 
-  # Optional: Set up shell environment to use secrets
   home.sessionVariables = {
     GITHUB_TOKEN = "$(cat ${config.home.homeDirectory}/.secrets/github-token 2>/dev/null || echo '')";
     OPENAI_API_KEY = "$(cat ${config.home.homeDirectory}/.secrets/openai-api-key 2>/dev/null || echo '')";
     ANTHROPIC_API_KEY = "$(cat ${config.home.homeDirectory}/.secrets/anthropic-api-key 2>/dev/null || echo '')";
   };
 
-  # Let Home Manager install and manage itself
   programs.home-manager.enable = true;
   
-  # Additional packages - most packages managed via modules
-  
-  # Note: nixpkgs config is managed globally via useGlobalPkgs in flake.nix
-  
-  # Stylix targets - expand theming to more applications
-  # Note: Only enabling targets that are commonly available across platforms
   stylix.targets = {
-    # Terminal emulators
     alacritty.enable = true;
-    
-    # CLI tools - these are well-supported
     bat.enable = true;
     btop.enable = true;
     fzf.enable = true;
-    
-    # Development tools
     vim.enable = true;
     neovim.enable = true;
-    
-    # Git tools
     lazygit.enable = true;
-    
-    # GTK applications (limited effect on macOS)
     gtk.enable = true;
-    
-  # Note: Shell theming (zsh) is handled by our shell module
-    # Note: Zed theming is handled by home.editors.zed.theme via mkDefault
   };
   
-  # Alacritty terminal - enable home-manager module for Stylix theming
-  # Installation: System-level (configuration.nix)
-  # Configuration: User-level (here) - enables Stylix to generate themed config
-  programs.alacritty = {
+  programs.alacritty.enable = true;
+
+  home.editors.zed = {
     enable = true;
-    # Settings will be automatically managed by Stylix based on stylix.targets.alacritty
-    # Stylix will generate colors, fonts, and other theme-related settings
+    extensions = [ "nix" "toml" "dockerfile" "html" "make" "markdown" "yaml" "rust" ];
+    enableGitHubCopilot = false;
+    theme = "Gruvbox Dark Hard";
+    fontSize = 14;
   };
 
-  # Module configuration
-  home = {
-    editors = {
-      zed = {
-        enable = true;
-        extensions = [
-          "nix"              # Nix language support
-          "toml"             # TOML syntax highlighting
-          "dockerfile"       # Docker support
-          "html"             # HTML support
-          "make"             # Makefile support
-          "markdown"         # Markdown preview
-          "yaml"             # YAML syntax
-          "rust"             # Rust language (if using)
-        ];
-        enableGitHubCopilot = false;  # Set to true + manual OAuth if you use Copilot
-        theme = "Gruvbox Dark Hard";   # Matches your system theme
-        fontSize = 14;
-      };
-    };
-    shell = {
+  home.shell = {
+    enable = true;
+    nixShortcuts = {
       enable = true;
+      configPath = "~/nix-config";
+      hostName = host.name;
+    };
+    modernTools.enable = true;
+    aliases.lg = "lazygit";
+  };
+    
+  home.development = {
+    enable = true;
+    languages = { rust = true; go = true; python = true; };
+    editor = "micro";
+    neovim = false;
+    github.enable = true;
+    utilities.lazygit = true;
+  };
+    
+  home.git = {
+    enable = true;
+    userName = "jrudnik";
+    userEmail = "john.rudnik@gmail.com";
+    aliases = {
+      st = "status";
+      co = "checkout";
+      br = "branch";
+      ci = "commit";
+      pushf = "push --force-with-lease";
+      unstage = "reset HEAD --";
+      amend = "commit --amend";
+      undo = "reset --soft HEAD~1";
+      last = "log -1 HEAD";
+      visual = "log --oneline --graph --decorate --all";
+      recent = "for-each-ref --sort=-committerdate refs/heads/ --format='%(committerdate:short) %(refname:short)'";
+      please = "push --force-with-lease";
+      commend = "commit --amend --no-edit";
+    };
+  };
+    
+  home.cli-tools = {
+    enable = true;
+    systemMonitor = "btop";
+  };
+    
+  home.starship = {
+    enable = true;
+    preset = "powerline";
+    showLanguages = [ "nodejs" "rust" "golang" "python" "nix_shell" ];
+    showSystemInfo = true;
+    showTime = true;
+    showBattery = false;
+    cmdDurationThreshold = 4000;
+  };
 
-      # Nix operation shortcuts (nrs, nrb, nfu, etc.)
-      nixShortcuts = {
-        enable = true;
-        configPath = "~/nix-config";
-        hostName = "parsley";
-      };
-      
-      # Modern CLI tools (eza, bat, ripgrep, fd, zoxide)
-      modernTools = {
-        enable = true;
-        replaceLegacy = true;  # ls→eza, cat→bat, grep→rg, etc.
-      };
-      
-      # Custom aliases (highest priority)
-      aliases = {
-        # Git utilities
-        lg = "lazygit";  # Simple terminal UI for git commands
-      };
-      
-      # Backend: Zsh with Oh-My-Zsh (default implementation)
-      # To use Zsh-specific features, configure:
-      # implementation.zsh.theme = "robbyrussell";  # Default theme
-      # implementation.zsh.plugins = [ "git" "macos" ];  # Default plugins
-    };
+  home.window-manager = lib.mkIf isDarwin {
+    enable = true;
+  };
+
+  home.raycast = lib.mkIf isDarwin {
+    enable = true;
+  };
     
-    development = {
-      enable = true;
-      languages = {
-        rust = true;
-        go = true;
-        python = true;
-      };
-      editor = "micro";
-      neovim = false;  # Alternative: Neovim with automatic theming
-      
-      # Enable GitHub CLI with shell completion
-      github.enable = true;
-      
-      # Git utilities
-      utilities.lazygit = true;  # Simple terminal UI for git commands
-    };
+  home.syncthing = {
+    enable = true;
+    autoStart = true;
+    openWebUI = false;
+  };
     
-    git = {
-      enable = true;
-      userName = "jrudnik";
-      userEmail = "john.rudnik@gmail.com";
-      
-      # Git aliases: Choose one approach:
-      # Option 1: Use comprehensive built-in aliases (38 curated shortcuts)
-      # aliases = {};  # Empty = use built-in productivity aliases
-      
-      # Option 2: Custom aliases (overrides all built-in aliases)
-      aliases = {
-        # Essential shortcuts
-        st = "status";
-        co = "checkout";
-        br = "branch";
-        ci = "commit";
-        
-        # Workflow shortcuts
-        pushf = "push --force-with-lease";
-        unstage = "reset HEAD --";
-        amend = "commit --amend";
-        undo = "reset --soft HEAD~1";
-        last = "log -1 HEAD";
-        visual = "log --oneline --graph --decorate --all";
-        
-        # Branch management
-        recent = "for-each-ref --sort=-committerdate refs/heads/ --format='%(committerdate:short) %(refname:short)'";
-        
-        # Handy workflows
-        please = "push --force-with-lease";
-        commend = "commit --amend --no-edit";
-      };
-      # To see all built-in aliases, check: docs/module-options.md
+  home.thunderbird = {
+    enable = true;
+    profiles.default.isDefault = true;
+    privacy = {
+      enableDoNotTrack = true;
+      disableTelemetry = true;
     };
-    
-    cli-tools = {
-      enable = true;
-      
-      # Optional: Modern system monitor (btop has beautiful Stylix theming)
-      systemMonitor = "btop";  # Options: "none", "htop", "btop"
+    features = {
+      enableOpenPGP = true;
+      enableCalendar = true;
+      compactFolders = true;
     };
-    
-    # Starship cross-shell prompt configuration
-    # Note: Colors are managed by Stylix and adapt automatically to light/dark mode
-    starship = {
-      enable = true;
-      preset = "powerline";  # Layout style: "powerline" or "minimal"
-      # Powerline preset shows all detected languages automatically
-      showLanguages = [ "nodejs" "rust" "golang" "python" "nix_shell" ];
-      showSystemInfo = true;  # Shows OS icon and username
-      showTime = true;  # Shows clock in yellow section
-      showBattery = false;  # Not included in powerline preset
-      cmdDurationThreshold = 4000;
+    appearance = {
+      theme = "auto";
+      fontSize = 14;
     };
+  };
     
-    # Apps appear in standard locations automatically:
-    # - Home Manager apps: ~/Applications/Home Manager Apps
-    # - nix-darwin system apps: /Applications/Nix Apps
-    
-    window-manager = {
+  home.sketchybar = lib.mkIf isDarwin {
+    enable = false;
+    position = "top";
+    height = 32;
+    font = "SF Pro";
+    aerospace = {
       enable = true;
-      # Abstract window manager configuration:
-      # - Alt-based keybindings (default)
-      # - Clean window gaps and layout (8px)
-      # - Warp terminal integration (Alt+Enter)
-      # - Zen Browser integration (Alt+B)
-      # - Bitwarden integration (Alt+P)
-      # Backend: AeroSpace (default implementation)
-      # To use AeroSpace-specific features, configure:
-    # implementation.aerospace.extraConfig = ''...''
+      workspaces = [ "1" "2" "3" "4" "5" ];
     };
-    raycast = {
-      enable = true;
-    };
-    
-    syncthing = {
-      enable = true;
-      autoStart = true;  # Start automatically at login
-      openWebUI = false; # Don't auto-open web UI (access at http://127.0.0.1:8384)
-    };
-    
-    thunderbird = {
-      enable = true;
-      
-      # Define a default profile
-      profiles.default = {
-        isDefault = true;
-        settings = {
-          # Add any custom Thunderbird preferences here
-          # Example: "mail.server.default.check_new_mail" = true;
+    showCalendar = true;
+    showBattery = true;
+    showWifi = true;
+    showVolume = true;
+    showCpu = true;
+  };
+
+  home.file = lib.mkIf isDarwin {
+    "Library/Application Support/Claude/claude_desktop_config.json".source =
+      inputs.mcp-servers-nix.lib.mkConfig pkgs {
+        programs = {
+          filesystem = {
+            enable = true;
+            args = [ config.home.homeDirectory ];
+          };
+          github.enable = true;
+          git.enable = true;
+          time.enable = true;
+          fetch.enable = true;
         };
       };
-      
-      # Privacy settings
-      privacy = {
-        enableDoNotTrack = true;
-        disableTelemetry = true;
-      };
-      
-      # Features
-      features = {
-        enableOpenPGP = true;
-        enableCalendar = true;
-        compactFolders = true;
-      };
-      
-      # Appearance
-      appearance = {
-        theme = "auto";  # Follows system light/dark mode
-        fontSize = 14;
-      };
-    };
-    
-    sketchybar = {
-      enable = false;  # Disabled: Using native macOS menu bar instead
-      position = "top";  # Replace macOS menu bar
-      height = 32;  # Standard menu bar height
-      font = "SF Pro";  # System font, clean and modern
-      
-      # AeroSpace workspace integration
-      aerospace = {
-        enable = true;
-        workspaces = [ "1" "2" "3" "4" "5" ];  # Match your AeroSpace workspaces
-      };
-      
-      # Widget configuration
-      showCalendar = true;   # Date/time widget
-      showBattery = true;    # Battery indicator
-      showWifi = true;       # WiFi status
-      showVolume = true;     # Volume control
-      showCpu = true;        # CPU usage
-      
-      # Color scheme (will be themed by Stylix automatically)
-      colors = {
-        bar = "0xff1e1e2e";  # Semi-transparent dark background
-        icon = "0xffcad3f5";  # Light icon color
-        label = "0xffcad3f5";  # Light label color
-        workspaceActive = "0xffed8796";  # Highlight color for active workspace
-        workspaceInactive = "0x44ffffff";  # Subtle inactive workspace background
-      };
-    };
-    
   };
   
-  # MCP (Model Context Protocol) servers configuration using mcp-servers-nix
-  # This generates the configuration file for Claude Desktop (and claude-code automatically)
-  home.file."Library/Application Support/Claude/claude_desktop_config.json".source =
-    inputs.mcp-servers-nix.lib.mkConfig pkgs {
-      # Uses "claude" flavor by default - generates standard Claude Desktop format
-      programs = {
-        # Filesystem access - official MCP server from mcp-servers-nix
-        filesystem = {
-          enable = true;
-          args = [ config.home.homeDirectory ];  # Allow access to home directory
-        };
-        
-        # GitHub integration - official server (works read-only without token)
-        github.enable = true;
-        # To add GitHub token securely:
-        # github.passwordCommand.GITHUB_TOKEN = [ "gh" "auth" "token" ];
-        
-        # Git operations - safe, no secrets required
-        git.enable = true;
-        
-        # Time utilities - safe, no secrets required
-        time.enable = true;
-        
-        # Web fetch capability - safe, no secrets required
-        fetch.enable = true;
-      };
-    };
-  
-  # Security/Password Manager configuration
-  # WARP LAW 4.3 COMPLIANCE:
-  # - Bitwarden GUI: Installed via nix-darwin in hosts/parsley/configuration.nix
-  # - Configuration: Managed here via home-manager
   home.security = {
     enable = true;
+    autoStart = false;
+    unlockMethod = lib.mkIf isDarwin "biometric" (lib.mkIf isLinux "password");
+    lockTimeout = 15;
+    windowBehavior = "minimize-to-tray";
+    startBehavior = "normal";
     
-    # Abstract password manager options
-    autoStart = false;  # Set to true to start at login
-    unlockMethod = "biometric";  # Use Touch ID for unlock
-    lockTimeout = 15;  # Auto-lock after 15 minutes
-    windowBehavior = "minimize-to-tray";  # Minimize to tray instead of closing
-    startBehavior = "normal";  # Start with visible window
-    
-    # Backend: Bitwarden (default implementation)
-    # To use Bitwarden-specific features, configure:
-    # implementation.bitwarden.cli.enable = true;  # Enable CLI tool
-    
-    # YubiKey hardware security
     yubikey = {
       enable = true;
-      
-      # SSH authentication with YubiKey
       sshAgent = {
         enable = true;
-        pinEntry = "mac";  # Use native macOS PIN entry
+        pinEntry = lib.mkIf isDarwin "mac" (lib.mkIf isLinux "gtk2");
       };
-      
-      # GPG signing and encryption
       gpg = {
         enable = true;
-        enableGitSigning = true;  # Sign git commits with YubiKey
+        enableGitSigning = true;
       };
-      
-      # Age encryption with YubiKey plugin
       ageEncryption.enable = true;
-      
-      # Visual feedback for touch requirement (Linux-only)
-      touchDetector.enable = false;  # Not available on macOS
+      touchDetector.enable = isLinux;
     };
   };
   
-  # AI tools configuration
-  programs = {
-    # Secret management (macOS Keychain integration)
-    ai.secrets = {
-      enable = true;  # Enable to use keychain for API keys
-      shellIntegration = true;  # Auto-source secrets in shell
+  programs.ai = {
+    secrets = {
+      enable = isDarwin;
+      shellIntegration = isDarwin;
     };
-    
-    # Code Analysis & Prompt Generation
-    code2prompt.enable = true;        # ✅ Code → prompt converter
-    files-to-prompt.enable = true;    # ✅ Files → prompt converter
-    goose-cli.enable = false;         # Disabled (requires API keys)
-    
-    # AI Productivity Patterns - using nixpkgs module
-    fabric-ai = {                     # ✅ Fabric AI productivity patterns
+    code2prompt.enable = true;
+    files-to-prompt.enable = true;
+    goose-cli.enable = false;
+    fabric-ai = {
       enable = true;
-      enablePatternsAliases = true;   # Create shell aliases for all patterns
-      enableYtAlias = true;           # Enable YouTube transcript helper
+      enablePatternsAliases = true;
+      enableYtAlias = true;
     };
-    
-    # LLM Interfaces - using nixpkgs built-in modules
-    github-copilot-cli.enable = true; # ✅ GitHub Copilot CLI
-    claude-desktop.enable = false;    # Claude Desktop (Homebrew cask)
-    
-    # AI CLI tools - direct nixpkgs modules (no custom wrappers needed)
-    claude-code.enable = true;        # ✅ Claude Code terminal (from nixpkgs)
-    gemini-cli.enable = true;         # ✅ Gemini CLI (from nixpkgs)
-    
-    # Diagnostics tool
-    ai.diagnostics.enable = true;
+    github-copilot-cli.enable = true;
+    claude-desktop.enable = false;
+    claude-code.enable = true;
+    gemini-cli.enable = true;
+    diagnostics.enable = true;
   };
   
-  # Note: MCP servers configured via mcp-servers-nix (see lines 178-204)
-  
-  # XDG directories
   xdg.enable = true;
   
-  # Link custom Fabric AI patterns (task definitions)
   xdg.configFile."fabric/patterns" = {
     source = ./../../modules/home/ai/patterns/fabric/tasks;
     recursive = true;
   };
-  
 }

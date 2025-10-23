@@ -14,12 +14,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     
-    # Declarative homebrew management
     nix-homebrew = {
       url = "github:zhaofengli/nix-homebrew";
     };
     
-    # Homebrew tap sources
     homebrew-core = {
       url = "github:homebrew/homebrew-core";
       flake = false;
@@ -34,108 +32,115 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # System-wide theming framework
     stylix = {
       url = "github:danth/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     
-    # Zen browser
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     
-    # MCP servers - Nix-based configuration framework for MCP servers
     mcp-servers-nix = {
       url = "github:natsukium/mcp-servers-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, nix-homebrew, homebrew-core, homebrew-cask, stylix, zen-browser, mcp-servers-nix, sops-nix, ... }:
+  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, sops-nix, nix-homebrew, homebrew-core, homebrew-cask, stylix, ... }:
     let
-      system = "aarch64-darwin";
+      # Supported systems
+      systems = [
+        "aarch64-darwin"
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+
+      # Helper to generate a NixOS configuration
+      mkNixos = host: nixpkgs.lib.nixosSystem {
+        system = host.system;
+        specialArgs = mkSpecialArgs host;
+        modules = [
+          sops-nix.nixosModules.sops
+          ./modules/common/system.nix
+          ./modules/common/user.nix
+          ./hosts/${host.name}/configuration.nix
+          home-manager.nixosModules.home-manager
+          {
+            nixpkgs.overlays = [ self.overlays.mcp-servers self.overlays.zen-browser ];
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              extraSpecialArgs = mkSpecialArgs host;
+              users.jrudnik = import ./home/jrudnik/home.nix;
+            };
+          }
+        ];
+      };
+
+      # Helper to generate a nix-darwin configuration
+      mkDarwin = host: nix-darwin.lib.darwinSystem {
+        system = host.system;
+        specialArgs = mkSpecialArgs host;
+        modules = [
+          sops-nix.darwinModules.sops
+          ./modules/common/system.nix
+          ./modules/common/user.nix
+          ./hosts/${host.name}/configuration.nix
+          home-manager.darwinModules.home-manager
+          {
+            nixpkgs.overlays = [ self.overlays.mcp-servers self.overlays.zen-browser ];
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              extraSpecialArgs = mkSpecialArgs host;
+              users.jrudnik = import ./home/jrudnik/home.nix;
+            };
+          }
+          nix-homebrew.darwinModules.nix-homebrew
+          {
+            nix-homebrew = {
+              enable = true;
+              enableRosetta = true;
+              user = "jrudnik";
+              taps = {
+                "homebrew/homebrew-core" = homebrew-core;
+                "homebrew/homebrew-cask" = homebrew-cask;
+              };
+              mutableTaps = false;
+            };
+          }
+          stylix.darwinModules.stylix
+          ({ config, ... }: {
+            homebrew.taps = builtins.attrNames config.nix-homebrew.taps;
+          })
+        ];
+      };
+
+      # Helper to create specialArgs
+      mkSpecialArgs = host: {
+        inherit inputs;
+        outputs = self.outputs;
+        host = host;
+      };
+
     in {
-      # Custom packages and modifications, exported as overlays
       overlays = import ./overlays { inherit inputs; };
-      
-      # Custom NixOS/nix-darwin modules
       nixosModules = import ./modules/nixos;
       darwinModules = import ./modules/darwin;
       homeManagerModules = import ./modules/home;
-      
-      # Create specialArgs that all modules can access
-      _specialArgs = {
-        inherit inputs;
-        outputs = self.outputs;
+
+      # NixOS configurations
+      nixosConfigurations = {
+        thinkpad = mkNixos { name = "thinkpad"; system = "x86_64-linux"; };
+        "mac-pro-ai" = mkNixos { name = "mac-pro-ai"; system = "aarch64-linux"; };
+        "media-server" = mkNixos { name = "media-server"; system = "x86_64-linux"; };
       };
 
       # nix-darwin configurations
-      # Accessible via 'darwin-rebuild --flake .#parsley'
       darwinConfigurations = {
-        parsley = nix-darwin.lib.darwinSystem {
-          inherit system;
-          specialArgs = self._specialArgs;
-          modules = [
-            # Declarative secret management (must be imported before host config)
-            sops-nix.darwinModules.sops
-            
-            # Configure nixpkgs - overlays and unfree packages
-            ({ lib, ... }: {
-              nixpkgs = {
-                overlays = [ self.overlays.mcp-servers self.overlays.zen-browser ];
-                config.allowUnfree = true;
-              };
-            })
-
-            # Import the host configuration
-            ./hosts/parsley/configuration.nix
-            
-            # Make home-manager available to the system
-            home-manager.darwinModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                extraSpecialArgs = self._specialArgs;
-                users.jrudnik = import ./home/jrudnik/home.nix;
-              };
-            }
-            
-            # Declarative homebrew management
-            nix-homebrew.darwinModules.nix-homebrew
-            {
-              nix-homebrew = {
-                # Install Homebrew under the default prefix
-                enable = true;
-
-                # Apple Silicon: Also install Homebrew under Intel prefix for Rosetta 2
-                enableRosetta = true;
-
-                # User owning the Homebrew prefix
-                user = "jrudnik";
-
-                # Declarative tap management
-                taps = {
-                  "homebrew/homebrew-core" = homebrew-core;
-                  "homebrew/homebrew-cask" = homebrew-cask;
-                };
-
-                # Enable fully-declarative tap management
-                mutableTaps = false;
-              };
-            }
-            
-            # Align homebrew taps config with nix-homebrew
-            ({ config, ... }: {
-              homebrew.taps = builtins.attrNames config.nix-homebrew.taps;
-            })
-            
-            # System-wide theming with Stylix
-            stylix.darwinModules.stylix
-          ];
-        };
+        parsley = mkDarwin { name = "parsley"; system = "aarch64-darwin"; };
       };
     };
 }
