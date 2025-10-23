@@ -22,18 +22,6 @@ in
     # Modern Unix replacements
     eza             # Modern ls
     zoxide          # Smart cd
-    fzf             # Fuzzy finder
-    bat             # Better cat
-    ripgrep         # Better grep
-    fd              # Better find
-    btop            # System monitor
-
-    # Shell enhancements
-    direnv          # Environment switcher
-    atuin           # Shell history
-    mcfly           # History search
-    pay-respects    # Error correction
-    delta           # Better diff
 
     # Development tools
     rustc
@@ -42,11 +30,10 @@ in
     python3
     nodejs
     micro           # Terminal text editor
-    neovim          # Vim-based editor
     tree            # Directory visualization
     jq              # JSON processor
-    lazygit         # Git TUI
-    gh              # GitHub CLI
+    age             # For sops-nix
+    sops            # For sops-nix
   ];
 
   # Declarative secret management

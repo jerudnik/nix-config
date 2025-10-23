@@ -22,7 +22,6 @@
     zed-editor
     
     # Terminals
-    alacritty
     warp-terminal
     
     # Browsers
@@ -36,6 +35,7 @@
     
     # Media & Entertainment
     vlc-bin-universal  # VLC media player (universal binary for macOS)
+    psst               # Spotify client
     
     # Security & Privacy
     bitwarden       # Password manager (configuration via home-manager)

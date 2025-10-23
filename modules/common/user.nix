@@ -4,12 +4,6 @@
   # Home Manager configuration
   home = {
     stateVersion = "25.05";
-
-    packages = with pkgs; [
-      psst
-      age
-      sops
-    ];
   };
 
   programs.home-manager.enable = true;

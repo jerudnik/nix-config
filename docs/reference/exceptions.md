@@ -81,6 +81,28 @@ Applications installed via Homebrew due to nixpkgs limitations on aarch64-darwin
 - **Review Date:** Next: 2025-04-11
 - **Status:** ✅ Approved
 
+#### ✅ **Brain.fm** - Homebrew Cask
+- **Package:** `brainfm`
+- **Reason:** Not available in nixpkgs.
+- **Alternative Analysis:**
+  - **nixpkgs status**: No `brainfm` package exists.
+  - **upstream availability**: Official releases via direct download and Homebrew cask only.
+- **Technical Justification:** Proprietary application with no Nix packaging available.
+- **Justification:** Essential for focus and productivity.
+- **Review Date:** Next: 2025-04-11
+- **Status:** ✅ Approved (pending documentation)
+
+#### ✅ **Nimble Commander** - Homebrew Cask
+- **Package:** `nimble-commander`
+- **Reason:** Not available in nixpkgs.
+- **Alternative Analysis:**
+  - **nixpkgs status**: No `nimble-commander` package exists.
+  - **upstream availability**: Official releases via direct download and Homebrew cask only.
+- **Technical Justification:** Dual-pane file manager for macOS with no Nix packaging available.
+- **Justification:** Core workflow tool for file management.
+- **Review Date:** Next: 2025-04-11
+- **Status:** ✅ Approved (pending documentation)
+
 ---
 
 ## 🔄 **Exception Review Process**
